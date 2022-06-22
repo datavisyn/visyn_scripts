@@ -11,7 +11,7 @@ const webpackHelper = require('./webpackHelper');
 const path = require('path');
 const webpack = require('webpack');
 const resolve = require('path').resolve;
-const workspacePath = resolve(__dirname, '../');
+const workspacePath = process.cwd(); // resolve(__dirname, '../')
 const now = new Date();
 const prefix = (n) => n < 10 ? ('0' + n) : n.toString();
 const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
@@ -216,13 +216,13 @@ const config = {
 
                 }]
             },
-            {
+            /*{
                 test: require.resolve('jquery'),
                 loader: 'expose-loader',
                 options: {
                     exposes: ['window.jQuery', '$']
                 }
-            },
+            },*/
             // used to remove inline loaders
             {test: fileLoaderRegex, loader: 'file-loader?name=[name].[ext]'}
         ],

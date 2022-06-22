@@ -1,4 +1,6 @@
-module.exports = {
+module.exports = ({
+  tsconfigRootDir
+}) => ({
     root: true,
     extends: [
       "airbnb",
@@ -27,7 +29,7 @@ module.exports = {
     parserOptions: {
       // Make sure eslint and VS Code use the same path for the tsconfig.json:
       // https://github.com/typescript-eslint/typescript-eslint/issues/251
-      tsconfigRootDir: __dirname,
+      tsconfigRootDir,
       project: "./tsconfig.eslint.json"
     },
     rules: {
@@ -69,4 +71,4 @@ module.exports = {
         displayName: "static public field",
       }]
     }
-};
+});
