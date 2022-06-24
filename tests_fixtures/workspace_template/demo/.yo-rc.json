@@ -1,0 +1,48 @@
+{
+  "generator-phovea": {
+    "type": "app-slib",
+    "modules": [],
+    "libraries": [],
+    "libraryAliases": {},
+    "registry": {},
+    "vendor": ["node_modules.*(d3|bootstrap|jquery|select2)"],
+    "vendors": {
+      "others": "phovea.*|tdp_.*|tdp-.*|datavisyn.*",
+      "phovea": "phovea.*",
+      "tdp": "tdp_.|tdp-.*",
+      "dv": "datavisyn.*"
+    },
+    "filesToLoad": {
+      "file-loader": "404|robots"
+    },
+    "libraryExternals": [],
+    "name": "demo",
+    "author": "datavisyn",
+    "today": "Fri, 07 Jul 2022 07:55:47 GMT",
+    "githubAccount": "datavisyn",
+    "sextensions": [],
+    "app": "demo",
+    "clientOnly": false,
+    "entries": {
+      "app": {
+        "js": "dist/index.initialize.js",
+        "html": "index.html",
+        "template": "dist/index.template.ejs",
+        "chunkName": "app",
+        "excludeChunks": []
+      }
+    },
+    "unknown": {
+      "requirements": [],
+      "dockerPackages": []
+    },
+    "ignores": [],
+    "extensions": [],
+    "promptValues": {
+      "authorName": "datavisyn",
+      "authorEmail": "contact@datavisyn.io",
+      "authorUrl": "https://www.datavisyn.io/",
+      "githubAccount": "datavisyn"
+    }
+  }
+}

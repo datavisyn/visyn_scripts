@@ -1,0 +1,39 @@
+{
+  "name": "demo",
+  "version": "0.0.1-SNAPSHOT",
+  "private": true,
+  "author": {
+    "name": "datavisyn GmbH",
+    "email": "contact@datavisyn.io",
+    "url": "https://www.datavisyn.io"
+  },
+  "bugs": {
+    "url": "https://github.com/datavisyn/visyn_scripts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:datavisyn/visyn_scripts.git"
+  },
+  "scripts": {
+    "build": "npm run clean && npm run compile",
+    "clean": "rimraf build dist lib",
+    "compile:watch": "visyn_scripts compile --watch",
+    "compile": "visyn_scripts compile",
+    "copy": "visyn_scripts copy",
+    "docs": "visyn_scripts docs",
+    "lint:fix": "visyn_scripts lint --fix",
+    "lint": "visyn_scripts lint",
+    "postcompile": "npm run copy",
+    "posttest": "npm run lint",
+    "prebuild": "npm run test",
+    "storybook:build": "build-storybook",
+    "test:watch": "visyn_scripts test --watch",
+    "test": "visyn_scripts test"
+  },
+  "dependencies": {
+    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
+  },
+  "devDependencies": {
+    "visyn_scripts": "git+ssh://git@github.com:datavisyn/visyn_scripts#develop"
+  }
+}

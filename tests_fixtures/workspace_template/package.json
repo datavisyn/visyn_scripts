@@ -1,0 +1,21 @@
+{
+  "name": "demo_workspace",
+  "version": "0.0.1-SNAPSHOT",
+  "private": true,
+  "author": {
+    "name": "datavisyn GmbH",
+    "email": "contact@datavisyn.io",
+    "url": "https://www.datavisyn.io"
+  },
+  "scripts": {
+    "build": "visyn_scripts build",
+    "build:demo": "cd demo && npm run build",
+    "copy:demo": "cd demo && npm run copy"
+  },
+  "dependencies": {
+    "demo": "file:./demo"
+  },
+  "devDependencies": {
+    "visyn_scripts": "file:../../"
+  }
+}

@@ -216,13 +216,13 @@ const config = {
 
                 }]
             },
-            /*{
+            {
                 test: require.resolve('jquery'),
                 loader: 'expose-loader',
                 options: {
                     exposes: ['window.jQuery', '$']
                 }
-            },*/
+            },
             // used to remove inline loaders
             {test: fileLoaderRegex, loader: 'file-loader?name=[name].[ext]'}
         ],
