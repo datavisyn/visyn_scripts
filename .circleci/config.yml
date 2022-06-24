@@ -28,6 +28,9 @@ jobs:
           name: Show installed npm dependencies
           command: npm list --depth=1 || true
       - run:
+          name: Run linting
+          command: npm run lint
+      - run:
           name: Run test
           command: npm run test
       - persist_to_workspace:

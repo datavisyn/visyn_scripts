@@ -1,18 +1,13 @@
-const { call } = require("./utils");
+const { call } = require('./utils');
 
 module.exports = {
-  command: "lint",
-  describe: "Lint a repository using ESLint",
-  builder: (yargs) =>
-    yargs.option("fix", {
-      default: false,
-      type: "boolean",
-    }),
+  command: 'lint [strings...]',
+  describe: 'Lint a repository using ESLint',
+  builder: (yargs) => yargs.option('cache', {
+    default: true,
+    type: 'boolean',
+  }),
   handler: (args) => {
-    call(
-      `eslint ${
-        args.fix ? "--fix" : ""
-      } --cache src/**/*.ts{,x} tests/**/*.ts{,x}`
-    );
+    call(`eslint ${args.cache ? '--cache' : ''} ${(args.strings || []).join(' ')} src/**/*.ts{,x} tests/**/*.ts{,x}`);
   },
 };

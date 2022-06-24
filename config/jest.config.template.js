@@ -2,8 +2,10 @@
 let pluginsToTransform = ['tdp_*', 'phovea_*', 'lineupjs'].join('|');
 
 if (pluginsToTransform.length > 0) {
-  /**  Attention: Negative Lookahead! This regex adds the specified repos to a whitelist that holds plugins that are excluded from the transformIgnorePatterns.
-   * This means that pluginsToTransform should contain all repos that export ts files. They can only be handled by the transformation. */
+  /**  Attention: Negative Lookahead! This regex adds the specified repos to a
+   * whitelist that holds plugins that are excluded from the transformIgnorePatterns.
+   * This means that pluginsToTransform should contain all repos that export ts files.
+   * They can only be handled by the transformation. */
   pluginsToTransform = `(?!${pluginsToTransform})`;
 }
 
@@ -20,7 +22,10 @@ module.exports = {
   testRegex: '(.*(test|spec))\\.(tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
-  transformIgnorePatterns: [`../node_modules/${pluginsToTransform}`, `node_modules/${pluginsToTransform}`],
+  transformIgnorePatterns: [
+    `../node_modules/${pluginsToTransform}`,
+    `node_modules/${pluginsToTransform}`,
+  ],
   globals: {
     __VERSION__: 'TEST_VERSION',
     __APP_CONTEXT__: 'TEST_CONTEXT',

@@ -1,14 +1,14 @@
-const { execSync } = require("child_process");
+const { execSync } = require('child_process');
 
 const call = (command) => {
   try {
     execSync(command, {
-      stdio: "inherit",
+      stdio: 'inherit',
     });
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error(e);
-    process.exit(1)
-    // Ignore error as it is already printed to the console.
+    process.exit(1);
   }
 };
 

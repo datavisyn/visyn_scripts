@@ -1,9 +1,9 @@
-const { call } = require("./utils");
+const { call } = require('./utils');
 
 module.exports = {
-  command: "docs",
+  command: 'docs [strings...]',
   describe: 'Generate docs of a repository using typedoc',
-  handler: () => {
-    call(`typedoc --options ./typedoc.js src/**.ts`);
+  handler: (args) => {
+    call(`typedoc --options ./typedoc.js ${(args.strings || []).join(' ')} src/**.ts`);
   },
 };

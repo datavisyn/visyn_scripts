@@ -1,14 +1,9 @@
-const { call } = require("./utils");
+const { call } = require('./utils');
 
 module.exports = {
-    command: "compile",
-    describe: 'Build a repository using typescript',
-    builder: (yargs) =>
-      yargs.option("watch", {
-        default: false,
-        type: "boolean",
-      }),
-    handler: (args) => {
-        call(`tsc ${args.watch ? "-w" : ""}`);
-    },
-  };
+  command: 'compile [strings...]',
+  describe: 'Build a repository using typescript',
+  handler: (args) => {
+    call(`tsc ${(args.strings || []).join(' ')}`);
+  },
+};
