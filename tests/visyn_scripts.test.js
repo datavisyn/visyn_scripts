@@ -58,7 +58,7 @@ describe('cli', () => {
     await runCommand('build');
     expect(call).toHaveBeenCalledWith(
       expect.stringMatching(
-        /(?=.*webpack)(?=.*--mode production)(?=.*webpack\.prod\.js)/,
+        /(?=.*webpack)(?=.*webpack\.config\.js)/,
       ),
     );
   });
@@ -68,7 +68,7 @@ describe('cli', () => {
     await runCommand('build', '--mode', 'development');
     expect(call).toHaveBeenCalledWith(
       expect.stringMatching(
-        /(?=.*webpack)(?=.*--mode development)(?=.*webpack\.dev\.js)/,
+        /(?=.*webpack)(?=.*--mode development)(?=.*webpack\.config\.js)/,
       ),
     );
   });

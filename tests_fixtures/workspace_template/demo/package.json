@@ -26,7 +26,6 @@
     "postcompile": "npm run copy",
     "posttest": "npm run lint",
     "prebuild": "npm run test",
-    "storybook:build": "build-storybook",
     "test:watch": "visyn_scripts test --watch",
     "test": "visyn_scripts test"
   },

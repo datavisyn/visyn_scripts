@@ -2,13 +2,13 @@ const { resolve } = require('path');
 const { call } = require('./utils');
 
 module.exports = {
-  command: 'build [strings...]',
-  describe: 'Build a workspace using webpack',
+  command: 'start [strings...]',
+  describe: 'Start webpack serve',
   handler: (args) => {
     const configPath = resolve(
       __dirname,
       '../../config/webpack.config.js',
     );
-    call(`webpack --config ${configPath} ${(args.strings || []).join(' ')}`);
+    call(`webpack serve --mode development --config ${configPath} --progress ${(args.strings || []).join(' ')}`);
   },
 };
