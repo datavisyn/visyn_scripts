@@ -55,6 +55,7 @@ module.exports = (env, argv) => {
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
 
   if (isSingleRepoMode && workspaceRepos.length !== 1) {
+    // eslint-disable-next-line no-console
     console.error('In single repo mode, only a single workspace repo can be mentioned.');
     process.exit(1);
   }
@@ -98,6 +99,50 @@ module.exports = (env, argv) => {
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
+
+  const copyPluginPatterns = copyAppFiles.concat([
+    fs.existsSync(workspaceMetaDataFile) && {
+      from: workspaceMetaDataFile,
+      to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
+      // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+      transform: () => {
+        function resolveScreenshot(appDirectory) {
+          const f = path.join(appDirectory, './media/screenshot.png');
+          if (!fs.existsSync(f)) {
+            return null;
+          }
+          const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
+          return `data:image/png;base64,${buffer}`;
+        }
+
+        const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
+        const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
+          now.getUTCMinutes(),
+        )}${prefix(now.getUTCSeconds())}`;
+
+        return JSON.stringify(
+          {
+            name: appPkg.name,
+            displayName: appPkg.displayName || appPkg.name,
+            version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
+            repository: appPkg.repository?.url,
+            homepage: appPkg.homepage,
+            description: appPkg.description,
+            screenshot: resolveScreenshot(defaultAppPath),
+            buildId,
+          },
+          null,
+          2,
+        );
+      },
+    },
+    // use package-lock json as buildInfo
+    fs.existsSync(workspaceBuildInfoFile) && {
+      from: workspaceBuildInfoFile,
+      to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
+    },
+  ].filter(Boolean));
+
   // Merge app and workspace properties
   const mergedRegistry = {
     ...registry,
@@ -173,7 +218,7 @@ module.exports = (env, argv) => {
       type: 'filesystem',
       // TODO: Check if we need that
       // version: createEnvironmentHash(env.raw),
-      cacheDirectory: path.join(workspacePath, 'webpack_cache'),
+      cacheDirectory: path.join(workspacePath, 'node_modules/.cache'),
       store: 'pack',
       buildDependencies: {
         defaultWebpack: ['webpack/lib/'],
@@ -449,49 +494,8 @@ module.exports = (env, argv) => {
         silent: true, // hide any errors
         defaults: false, // load '.env.defaults' as the default values if empty.
       }),
-      new CopyPlugin({
-        patterns: copyAppFiles.concat([
-          {
-            from: workspaceMetaDataFile,
-            to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
-            // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
-            transform: () => {
-              function resolveScreenshot(appDirectory) {
-                const f = path.join(appDirectory, './media/screenshot.png');
-                if (!fs.existsSync(f)) {
-                  return null;
-                }
-                const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
-                return `data:image/png;base64,${buffer}`;
-              }
-
-              const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-              const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
-                now.getUTCMinutes(),
-              )}${prefix(now.getUTCSeconds())}`;
-
-              return JSON.stringify(
-                {
-                  name: appPkg.name,
-                  displayName: appPkg.displayName || appPkg.name,
-                  version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
-                  repository: appPkg.repository?.url,
-                  homepage: appPkg.homepage,
-                  description: appPkg.description,
-                  screenshot: resolveScreenshot(defaultAppPath),
-                  buildId,
-                },
-                null,
-                2,
-              );
-            },
-          },
-          // use package-lock json as buildInfo
-          {
-            from: workspaceBuildInfoFile,
-            to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
-          },
-        ]),
+      copyPluginPatterns.length > 0 && new CopyPlugin({
+        patterns: copyPluginPatterns,
       }),
       // For each workspace repo, create an instance of the TS checker to typecheck.
       isEnvDevelopment
