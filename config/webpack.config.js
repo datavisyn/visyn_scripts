@@ -14,6 +14,13 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
+
+// style files regexes
+const cssRegex = /\.css$/;
+const cssModuleRegex = /\.module\.css$/;
+const sassRegex = /\.(scss|sass)$/;
+const sassModuleRegex = /\.module\.(scss|sass)$/;
 
 module.exports = (env, argv) => {
   const { mode } = argv;
@@ -22,6 +29,12 @@ module.exports = (env, argv) => {
   if (!isEnvDevelopment && !isEnvProduction) {
     throw Error(`Invalid mode passed: ${mode}`);
   }
+  /**
+   * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
+   */
+  const isSingleRepoMode = env.workspace_mode === 'single';
+  // Source maps are resource heavy and can cause out of memory issue for large source files.
+  const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
   const now = new Date();
   const year = now.getFullYear();
@@ -37,7 +50,7 @@ module.exports = (env, argv) => {
     devServerProxy: any;
   } */
   // eslint-disable-next-line global-require,import/no-dynamic-require
-  const workspaceYoRcFile = require(path.join(workspacePath, '.yo-rc-workspace.json'));
+  const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
   // eslint-disable-next-line global-require,import/no-dynamic-require
   const workspacePkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
@@ -45,20 +58,10 @@ module.exports = (env, argv) => {
   const workspaceRegistryFile = path.join(workspacePath, 'phovea_registry.js');
   const workspaceRegistry = workspaceYoRcFile.registry || [];
   const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
-  const workspaceRepos = workspaceYoRcFile.frontendRepos || [];
+  const workspaceRepos = isSingleRepoMode ? ['./'] : (workspaceYoRcFile.frontendRepos || []);
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
 
-  /**
-   * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
-   */
-  const isSingleRepoMode = env.workspace_mode === 'single';
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
-
-  if (isSingleRepoMode && workspaceRepos.length !== 1) {
-    // eslint-disable-next-line no-console
-    console.error('In single repo mode, only a single workspace repo can be mentioned.');
-    process.exit(1);
-  }
 
   const defaultAppPath = path.join(workspacePath, defaultApp);
   // eslint-disable-next-line global-require,import/no-dynamic-require
@@ -88,7 +91,7 @@ module.exports = (env, argv) => {
     // eslint-disable-next-line no-unused-vars
     filesToLoad,
     copyFiles,
-  // eslint-disable-next-line global-require,import/no-dynamic-require
+    // eslint-disable-next-line global-require,import/no-dynamic-require
   } = require(path.join(defaultAppPath, '.yo-rc.json'))['generator-phovea'];
   // TODO: This is not required anymore, or is it?
   // const fileLoaderRegex =
@@ -100,53 +103,140 @@ module.exports = (env, argv) => {
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
 
-  const copyPluginPatterns = copyAppFiles.concat([
-    fs.existsSync(workspaceMetaDataFile) && {
-      from: workspaceMetaDataFile,
-      to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
-      // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
-      transform: () => {
-        function resolveScreenshot(appDirectory) {
-          const f = path.join(appDirectory, './media/screenshot.png');
-          if (!fs.existsSync(f)) {
-            return null;
+  const copyPluginPatterns = copyAppFiles.concat(
+    [
+      fs.existsSync(workspaceMetaDataFile) && {
+        from: workspaceMetaDataFile,
+        to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
+        // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+        transform: () => {
+          function resolveScreenshot(appDirectory) {
+            const f = path.join(appDirectory, './media/screenshot.png');
+            if (!fs.existsSync(f)) {
+              return null;
+            }
+            const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
+            return `data:image/png;base64,${buffer}`;
           }
-          const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
-          return `data:image/png;base64,${buffer}`;
-        }
 
-        const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-        const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
-          now.getUTCMinutes(),
-        )}${prefix(now.getUTCSeconds())}`;
+          const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
+          const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
+            now.getUTCMinutes(),
+          )}${prefix(now.getUTCSeconds())}`;
 
-        return JSON.stringify(
-          {
-            name: appPkg.name,
-            displayName: appPkg.displayName || appPkg.name,
-            version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
-            repository: appPkg.repository?.url,
-            homepage: appPkg.homepage,
-            description: appPkg.description,
-            screenshot: resolveScreenshot(defaultAppPath),
-            buildId,
-          },
-          null,
-          2,
-        );
+          return JSON.stringify(
+            {
+              name: appPkg.name,
+              displayName: appPkg.displayName || appPkg.name,
+              version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
+              repository: appPkg.repository?.url,
+              homepage: appPkg.homepage,
+              description: appPkg.description,
+              screenshot: resolveScreenshot(defaultAppPath),
+              buildId,
+            },
+            null,
+            2,
+          );
+        },
       },
-    },
-    // use package-lock json as buildInfo
-    fs.existsSync(workspaceBuildInfoFile) && {
-      from: workspaceBuildInfoFile,
-      to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
-    },
-  ].filter(Boolean));
+      // use package-lock json as buildInfo
+      fs.existsSync(workspaceBuildInfoFile) && {
+        from: workspaceBuildInfoFile,
+        to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
+      },
+    ].filter(Boolean),
+  );
 
   // Merge app and workspace properties
   const mergedRegistry = {
-    ...registry,
+    ...(registry || {}),
     ...workspaceRegistry,
+  };
+
+  // Check if Tailwind config exists
+  const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
+
+  // common function to get style loaders
+  const getStyleLoaders = (cssOptions, preProcessor) => {
+    const loaders = [
+      isEnvDevelopment && require.resolve('style-loader'),
+      isEnvProduction && {
+        loader: MiniCssExtractPlugin.loader,
+        // css is located in `static/css`, use '../../' to locate index.html folder
+        // in production `paths.publicUrlOrPath` can be a relative path
+        // options: paths.publicUrlOrPath.startsWith('.')
+        //  ? { publicPath: '../../' }
+        //  : {},
+      },
+      {
+        loader: require.resolve('css-loader'),
+        options: cssOptions,
+      },
+      {
+        // Options for PostCSS as we reference these options twice
+        // Adds vendor prefixing based on your specified browser support in
+        // package.json
+        loader: require.resolve('postcss-loader'),
+        options: {
+          postcssOptions: {
+            // Necessary for external CSS imports to work
+            // https://github.com/facebook/create-react-app/issues/2677
+            ident: 'postcss',
+            config: false,
+            plugins: !useTailwind
+              ? [
+                'postcss-flexbugs-fixes',
+                [
+                  'postcss-preset-env',
+                  {
+                    autoprefixer: {
+                      flexbox: 'no-2009',
+                    },
+                    stage: 3,
+                  },
+                ],
+                // Adds PostCSS Normalize as the reset css with default options,
+                // so that it honors browserslist config in package.json
+                // which in turn let's users customize the target behavior as per their needs.
+                'postcss-normalize',
+              ]
+              : [
+                'tailwindcss',
+                'postcss-flexbugs-fixes',
+                [
+                  'postcss-preset-env',
+                  {
+                    autoprefixer: {
+                      flexbox: 'no-2009',
+                    },
+                    stage: 3,
+                  },
+                ],
+              ],
+          },
+          sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+        },
+      },
+    ].filter(Boolean);
+    if (preProcessor) {
+      loaders.push(
+        {
+          loader: require.resolve('resolve-url-loader'),
+          options: {
+            sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+            // root: paths.appSrc,
+          },
+        },
+        {
+          loader: require.resolve(preProcessor),
+          options: {
+            sourceMap: true,
+          },
+        },
+      );
+    }
+    return loaders;
   };
 
   return {
@@ -281,7 +371,7 @@ module.exports = (env, argv) => {
       alias: Object.assign(
         {},
         // Add aliases for all the workspace repos
-        ...workspaceRepos.map((repo) => ({
+        ...(!isSingleRepoMode ? workspaceRepos.map((repo) => ({
           // Add a direct reference to the phovea_registry.js as it is outside of the src/ folder
           [`${repo}/phovea_registry.js$`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js'),
           // Rewrite all '<repo>/dist' imports to '<repo>/src'
@@ -289,7 +379,7 @@ module.exports = (env, argv) => {
           // Rewrite all '<repo>' imports to '<repo>/src'
           // instead of the '<repo>/dist' default defined in the package.json
           [`${repo}`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
-        })),
+        })) : []),
       ),
       modules: [path.join(workspacePath, 'node_modules')],
     },
@@ -297,11 +387,11 @@ module.exports = (env, argv) => {
       strictExportPresence: true,
       rules: [
         // Handle node_modules packages that contain sourcemaps
-        {
+        shouldUseSourceMap && {
           enforce: 'pre',
           exclude: /@babel(?:\/|\\{1,2})runtime/,
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-          loader: 'source-map-loader',
+          loader: require.resolve('source-map-loader'),
         },
         {
           // "oneOf" will traverse all following loaders until one will
@@ -367,24 +457,87 @@ module.exports = (env, argv) => {
                 compact: isEnvProduction,
               },
             },
+            // "postcss" loader applies autoprefixer to our CSS.
+            // "css" loader resolves paths in CSS and adds assets as dependencies.
+            // "style" loader turns CSS into JS modules that inject <style> tags.
+            // In production, we use MiniCSSExtractPlugin to extract that CSS
+            // to a file, but in development "style" loader enables hot editing
+            // of CSS.
+            // By default we support CSS Modules with the extension .module.css
             {
-              test: /\.s[ac]ss$/i,
-              use: [
-                // In production, we use MiniCSSExtractPlugin to extract that CSS
-                // to a file, but in development "style" loader enables hot editing of CSS.
-                isEnvProduction && MiniCssExtractPlugin.loader,
-                // "style" loader turns CSS into JS modules that inject <style> tags.
-                isEnvDevelopment && 'style-loader',
-                // "css" loader resolves paths in CSS and adds assets as dependencies.
-                'css-loader',
-                // Compiles Sass to CSS
-                'sass-loader',
-              ].filter(Boolean),
+              test: cssRegex,
+              exclude: cssModuleRegex,
+              use: getStyleLoaders({
+                importLoaders: 1,
+                sourceMap: isEnvProduction
+                  ? shouldUseSourceMap
+                  : isEnvDevelopment,
+                modules: {
+                  mode: 'icss',
+                },
+              }),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
               // Remove this when webpack adds a warning or an error for this.
               // See https://github.com/webpack/webpack/issues/6571
               sideEffects: true,
+            },
+            // Adds support for CSS Modules (https://github.com/css-modules/css-modules)
+            // using the extension .module.css
+            {
+              test: cssModuleRegex,
+              use: getStyleLoaders({
+                importLoaders: 1,
+                sourceMap: isEnvProduction
+                  ? shouldUseSourceMap
+                  : isEnvDevelopment,
+                modules: {
+                  mode: 'local',
+                  getLocalIdent: getCSSModuleLocalIdent,
+                },
+              }),
+            },
+            // Opt-in support for SASS (using .scss or .sass extensions).
+            // By default we support SASS Modules with the
+            // extensions .module.scss or .module.sass
+            {
+              test: sassRegex,
+              exclude: sassModuleRegex,
+              use: getStyleLoaders(
+                {
+                  importLoaders: 3,
+                  sourceMap: isEnvProduction
+                    ? shouldUseSourceMap
+                    : isEnvDevelopment,
+                  modules: {
+                    mode: 'icss',
+                  },
+                },
+                'sass-loader',
+              ),
+              // Don't consider CSS imports dead code even if the
+              // containing package claims to have no side effects.
+              // Remove this when webpack adds a warning or an error for this.
+              // See https://github.com/webpack/webpack/issues/6571
+              sideEffects: true,
+            },
+            // Adds support for CSS Modules, but using SASS
+            // using the extension .module.scss or .module.sass
+            {
+              test: sassModuleRegex,
+              use: getStyleLoaders(
+                {
+                  importLoaders: 3,
+                  sourceMap: isEnvProduction
+                    ? shouldUseSourceMap
+                    : isEnvDevelopment,
+                  modules: {
+                    mode: 'local',
+                    getLocalIdent: getCSSModuleLocalIdent,
+                  },
+                },
+                'sass-loader',
+              ),
             },
             // TODO: This is legacy stuff, should it be included as well?
             {
@@ -494,11 +647,13 @@ module.exports = (env, argv) => {
         silent: true, // hide any errors
         defaults: false, // load '.env.defaults' as the default values if empty.
       }),
-      copyPluginPatterns.length > 0 && new CopyPlugin({
-        patterns: copyPluginPatterns,
-      }),
+      copyPluginPatterns.length > 0
+        && new CopyPlugin({
+          patterns: copyPluginPatterns,
+        }),
       // For each workspace repo, create an instance of the TS checker to typecheck.
-      isEnvDevelopment
+      ...workspaceRepos.map(
+        (repo) => isEnvDevelopment
         && new ForkTsCheckerWebpackPlugin({
           async: isEnvDevelopment,
           typescript: {
@@ -507,28 +662,35 @@ module.exports = (env, argv) => {
               syntactic: true,
             },
             // Build the repo and type-check
-            build: true,
+            build: false,
             // Recommended for use with babel-loader
             mode: 'write-references',
             // Use the corresponding config file of the repo folder
-            configFile: path.join(workspacePath, 'tsconfig.json'),
+            configFile: path.join(workspacePath, repo, 'tsconfig.json'),
             // TODO: Add explanation
             configOverwrite: {
               compilerOptions: {
                 // Similarly to the webpack-alias definition, we need to define the same alias for typescript
                 baseUrl: '.',
+                sourceMap: true,
+                skipLibCheck: true,
+                inlineSourceMap: false,
+                declarationMap: false,
+                noEmit: true,
+                incremental: true,
                 paths: Object.assign(
                   {},
-                  ...workspaceRepos.map((repo) => ({
-                    [`${repo}/phovea_registry.js`]: [path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js')],
-                    [`${repo}/dist`]: [path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src/*')],
-                    [repo]: [path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src/index.ts')],
-                  })),
+                  ...(!isSingleRepoMode ? workspaceRepos.map((r) => ({
+                    [`${r}/phovea_registry.js`]: [path.join(workspacePath, r, 'phovea_registry.js')],
+                    [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                    [r]: [path.join(workspacePath, r, 'src/index.ts')],
+                  })) : []),
                 ),
               },
             },
           },
         }),
+      ),
       /*
       // For each workspace repo, create an instance of the ESLint plugin
       ...workspaceRepos.map(
@@ -549,10 +711,9 @@ module.exports = (env, argv) => {
       */
       isEnvProduction
         && new webpack.BannerPlugin({
-          banner:
-            `/*! ${appPkg.title || appPkg.name} - v${appPkg.version} - ${year}\n${appPkg.homepage ? `* ${appPkg.homepage}\n` : ''}* Copyright (c) ${year} ${
-              appPkg.author?.name
-            }; Licensed ${appPkg.license}*/\n`,
+          banner: `/*! ${appPkg.title || appPkg.name} - v${appPkg.version} - ${year}\n${
+            appPkg.homepage ? `* ${appPkg.homepage}\n` : ''
+          }* Copyright (c) ${year} ${appPkg.author?.name}; Licensed ${appPkg.license}*/\n`,
           raw: true,
         }),
       // For debugging issues
