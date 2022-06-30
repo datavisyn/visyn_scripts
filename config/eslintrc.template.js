@@ -51,7 +51,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
     'max-classes-per-file': 'off',
-    'no-param-reassign': 'warn',
+    'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'import/no-extraneous-dependencies': 'off',
     // Disable the following 2 lines because to allow webpack file-loaders syntax
     'import/no-webpack-loader-syntax': 'off',
