@@ -258,6 +258,8 @@ module.exports = (env, argv) => {
         compress: true,
         host: 'localhost',
         open: true,
+        // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
+        historyApiFallback: true,
         proxy: {
           // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
@@ -302,7 +304,7 @@ module.exports = (env, argv) => {
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
-      publicPath: '',
+      publicPath: '/',
     },
     cache: {
       type: 'filesystem',
