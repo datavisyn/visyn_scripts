@@ -50,6 +50,11 @@ module.exports = ({ tsconfigRootDir }) => ({
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
+    '@typescript-eslint/no-unused-expressions': ['error', {
+      allowShortCircuit: true,
+      allowTernary: true,
+      allowTaggedTemplates: true,
+    }],
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'import/no-extraneous-dependencies': 'off',
