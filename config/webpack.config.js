@@ -257,7 +257,7 @@ module.exports = (env, argv) => {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
         host: 'localhost',
-        open: false,
+        open: true,
         proxy: {
           // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
