@@ -39,7 +39,7 @@ module.exports = (env, argv) => {
   const now = new Date();
   const year = now.getFullYear();
   // workspace constants
-  const workspacePath = process.cwd(); // TODO: Add , '../') if you move this file in a subdirectory
+  const workspacePath = fs.realpathSync(process.cwd()); // TODO: Add , '../') if you move this file in a subdirectory
   /* {
     workspaceAliases: { [key: string]: string };
     registry: any;
@@ -58,11 +58,10 @@ module.exports = (env, argv) => {
   const workspaceRegistryFile = path.join(workspacePath, 'phovea_registry.js');
   const workspaceRegistry = workspaceYoRcFile.registry || [];
   const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
-  const workspaceRepos = isSingleRepoMode ? ['./'] : (workspaceYoRcFile.frontendRepos || []);
+  const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
 
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
-
   const defaultAppPath = path.join(workspacePath, defaultApp);
   // eslint-disable-next-line global-require,import/no-dynamic-require
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
@@ -373,15 +372,17 @@ module.exports = (env, argv) => {
       alias: Object.assign(
         {},
         // Add aliases for all the workspace repos
-        ...(!isSingleRepoMode ? workspaceRepos.map((repo) => ({
-          // Add a direct reference to the phovea_registry.js as it is outside of the src/ folder
-          [`${repo}/phovea_registry.js$`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js'),
-          // Rewrite all '<repo>/dist' imports to '<repo>/src'
-          [`${repo}/dist`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
-          // Rewrite all '<repo>' imports to '<repo>/src'
-          // instead of the '<repo>/dist' default defined in the package.json
-          [`${repo}`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
-        })) : []),
+        ...(!isSingleRepoMode
+          ? workspaceRepos.map((repo) => ({
+            // Add a direct reference to the phovea_registry.js as it is outside of the src/ folder
+            [`${repo}/phovea_registry.js$`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js'),
+            // Rewrite all '<repo>/dist' imports to '<repo>/src'
+            [`${repo}/dist`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
+            // Rewrite all '<repo>' imports to '<repo>/src'
+            // instead of the '<repo>/dist' default defined in the package.json
+            [`${repo}`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
+          }))
+          : []),
       ),
       modules: [path.join(workspacePath, 'node_modules')],
     },
@@ -471,9 +472,7 @@ module.exports = (env, argv) => {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
                 modules: {
                   mode: 'icss',
                 },
@@ -490,9 +489,7 @@ module.exports = (env, argv) => {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction
-                  ? shouldUseSourceMap
-                  : isEnvDevelopment,
+                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
                 modules: {
                   mode: 'local',
                   getLocalIdent: getCSSModuleLocalIdent,
@@ -508,9 +505,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction
-                    ? shouldUseSourceMap
-                    : isEnvDevelopment,
+                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
                   modules: {
                     mode: 'icss',
                   },
@@ -530,9 +525,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction
-                    ? shouldUseSourceMap
-                    : isEnvDevelopment,
+                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
                   modules: {
                     mode: 'local',
                     getLocalIdent: getCSSModuleLocalIdent,
@@ -656,42 +649,44 @@ module.exports = (env, argv) => {
       // For each workspace repo, create an instance of the TS checker to typecheck.
       ...workspaceRepos.map(
         (repo) => isEnvDevelopment
-        && new ForkTsCheckerWebpackPlugin({
-          async: isEnvDevelopment,
-          typescript: {
-            diagnosticOptions: {
-              semantic: true,
-              syntactic: true,
-            },
-            // Build the repo and type-check
-            build: false,
-            // Recommended for use with babel-loader
-            mode: 'write-references',
-            // Use the corresponding config file of the repo folder
-            configFile: path.join(workspacePath, repo, 'tsconfig.json'),
-            // TODO: Add explanation
-            configOverwrite: {
-              compilerOptions: {
-                // Similarly to the webpack-alias definition, we need to define the same alias for typescript
-                baseUrl: '.',
-                sourceMap: true,
-                skipLibCheck: true,
-                inlineSourceMap: false,
-                declarationMap: false,
-                noEmit: true,
-                incremental: true,
-                paths: Object.assign(
-                  {},
-                  ...(!isSingleRepoMode ? workspaceRepos.map((r) => ({
-                    [`${r}/phovea_registry.js`]: [path.join(workspacePath, r, 'phovea_registry.js')],
-                    [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                    [r]: [path.join(workspacePath, r, 'src/index.ts')],
-                  })) : []),
-                ),
+          && new ForkTsCheckerWebpackPlugin({
+            async: isEnvDevelopment,
+            typescript: {
+              diagnosticOptions: {
+                semantic: true,
+                syntactic: true,
+              },
+              // Build the repo and type-check
+              build: false,
+              // Recommended for use with babel-loader
+              mode: 'write-references',
+              // Use the corresponding config file of the repo folder
+              configFile: path.join(workspacePath, repo, 'tsconfig.json'),
+              // TODO: Add explanation
+              configOverwrite: {
+                compilerOptions: {
+                  // Similarly to the webpack-alias definition, we need to define the same alias for typescript
+                  baseUrl: '.',
+                  sourceMap: true,
+                  skipLibCheck: true,
+                  inlineSourceMap: false,
+                  declarationMap: false,
+                  noEmit: true,
+                  incremental: true,
+                  paths: Object.assign(
+                    {},
+                    ...(!isSingleRepoMode
+                      ? workspaceRepos.map((r) => ({
+                        [`${r}/phovea_registry.js`]: [path.join(workspacePath, r, 'phovea_registry.js')],
+                        [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                        [r]: [path.join(workspacePath, r, 'src/index.ts')],
+                      }))
+                      : []),
+                  ),
+                },
               },
             },
-          },
-        }),
+          }),
       ),
       /*
       // For each workspace repo, create an instance of the ESLint plugin

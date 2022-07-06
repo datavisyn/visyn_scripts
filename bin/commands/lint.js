@@ -8,6 +8,6 @@ module.exports = {
     type: 'boolean',
   }),
   handler: (args) => {
-    call(`eslint ${args.cache ? '--cache' : ''} ${(args.strings || []).join(' ')} src/**/*.ts{,x} tests/**/*.ts{,x}`);
+    call(`eslint ${args.cache ? '--cache' : ''} ${(args.strings || []).join(' ')} "src/**/*.ts{,x}" "tests/**/*.ts{,x}"`);
   },
 };
