@@ -378,6 +378,7 @@ module.exports = (env, argv) => {
             [`${repo}/phovea_registry.js$`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js'),
             // Rewrite all '<repo>/dist' imports to '<repo>/src'
             [`${repo}/dist`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
+            [`${repo}/src`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
             // Rewrite all '<repo>' imports to '<repo>/src'
             // instead of the '<repo>/dist' default defined in the package.json
             [`${repo}`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
