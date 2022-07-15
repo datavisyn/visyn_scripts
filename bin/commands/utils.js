@@ -5,8 +5,8 @@ const call = (command) => {
     execSync(command, {
       stdio: 'inherit',
       env: {
-        // Avoid out of memory errors when building
-        NODE_OPTIONS: '--max_old_space_size=4096',
+        // TODO: Avoid out of memory errors when building
+        // NODE_OPTIONS: '--max_old_space_size=4096',
         ...process.env,
       },
       // TODO: How should we handle if webpack 4 is on top-level, and webpack 5 is locally scoped within visyn_scripts?
