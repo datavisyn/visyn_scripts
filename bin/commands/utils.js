@@ -2,6 +2,7 @@ const { execSync } = require('child_process');
 
 const call = (command, options = {}) => {
   try {
+    console.log(`Calling '${command}' with options '${options}'`);
     execSync(command, {
       ...options,
       stdio: 'inherit',

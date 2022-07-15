@@ -60,6 +60,7 @@ describe('cli', () => {
       expect.stringMatching(
         /(?=.*webpack)(?=.*webpack\.config\.js)/,
       ),
+      expect.anything(),
     );
   });
 
@@ -70,6 +71,7 @@ describe('cli', () => {
       expect.stringMatching(
         /(?=.*webpack)(?=.*--mode development)(?=.*webpack\.config\.js)/,
       ),
+      expect.anything(),
     );
   });
 });
