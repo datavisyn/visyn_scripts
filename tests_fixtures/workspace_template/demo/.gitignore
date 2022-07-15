@@ -4,7 +4,6 @@
 /.idea
 /build/
 /dist/
-/storybook-static/
 /dist/tsBuildInfoFile
 /dist_python/
 /lib/

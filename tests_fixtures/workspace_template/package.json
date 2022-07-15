@@ -8,7 +8,7 @@
     "url": "https://www.datavisyn.io"
   },
   "scripts": {
-    "build": "visyn_scripts build",
+    "build": "visyn_scripts build --mode production",
     "build:demo": "cd demo && npm run build",
     "copy:demo": "cd demo && npm run copy"
   },

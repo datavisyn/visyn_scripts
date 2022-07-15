@@ -9,7 +9,9 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 'latest',
   },
-  rules: {},
+  rules: {
+    'max-len': 'off',
+  },
   overrides: [
     {
       files: ['tests/**/*.test.js'],

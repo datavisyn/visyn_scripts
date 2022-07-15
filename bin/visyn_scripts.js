@@ -15,6 +15,7 @@ process.on('unhandledRejection', (err) => {
 yargs(hideBin(process.argv))
   .parserConfiguration({ 'unknown-options-as-args': true })
   .usage('$0 <command>')
+  .command(require('./commands/start'))
   .command(require('./commands/build'))
   .command(require('./commands/copy'))
   .command(require('./commands/compile'))
