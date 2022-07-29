@@ -67,25 +67,34 @@ module.exports = (env, argv) => {
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
   const libName = appPkg.name;
   const libDesc = appPkg.description;
-  /* {
-    entries: {
-      [chunkName: string]: {
-        js: string;
-        html: string;
-        template: string;
-        excludeChunks: string[];
-        scss?: string;
-      };
-    };
-    registry: any;
-    copyFiles?: string[];
-  } */
+
+  if (!appPkg.visyn) {
+    throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
+  }
+
+  /**
+   * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
+   *
+   * {
+   *   entries: {
+   *     [chunkName: string]: {
+   *       js: string;
+   *       html: string;
+   *       template: string;
+   *       excludeChunks: string[];
+   *       scss?: string;
+   *     };
+   *   };
+   *   registry: any;
+   *   copyFiles?: string[];
+   * }
+   */
   const {
     entries,
     registry,
     copyFiles,
-    // eslint-disable-next-line global-require,import/no-dynamic-require
-  } = require(path.join(defaultAppPath, '.yo-rc.json'))['generator-phovea'];
+  } = appPkg.visyn;
+
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
