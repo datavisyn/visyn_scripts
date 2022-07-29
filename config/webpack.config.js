@@ -78,25 +78,14 @@ module.exports = (env, argv) => {
       };
     };
     registry: any;
-    // TODO: This is not required anymore, because we let webpack split chunks?
-    vendors: { [key: string]: string };
-    libraryAliases: { [key: string]: string };
-    filesToLoad: any;
     copyFiles?: string[];
   } */
   const {
     entries,
     registry,
-    // eslint-disable-next-line no-unused-vars
-    filesToLoad,
     copyFiles,
     // eslint-disable-next-line global-require,import/no-dynamic-require
   } = require(path.join(defaultAppPath, '.yo-rc.json'))['generator-phovea'];
-  // TODO: This is not required anymore, or is it?
-  // const fileLoaderRegex =
-  //   filesToLoad && filesToLoad["file-loader"]
-  //     ? RegExp(String.raw`(.*)\/(${filesToLoad["file-loader"]})\.(html|txt)$`)
-  //     : RegExp(/^$/);
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
