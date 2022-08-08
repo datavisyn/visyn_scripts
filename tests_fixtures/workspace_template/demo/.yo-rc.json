@@ -1,14 +1,5 @@
 {
   "generator-phovea": {
-    "type": "app-slib",
-    "entries": {
-      "app": {
-        "js": "dist/index.initialize.js",
-        "html": "index.html",
-        "template": "dist/index.template.ejs",
-        "chunkName": "app",
-        "excludeChunks": []
-      }
-    }
+    "type": "app-slib"
   }
 }

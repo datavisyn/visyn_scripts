@@ -30,9 +30,19 @@
     "test": "visyn_scripts test"
   },
   "dependencies": {
-    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
-  },
-  "devDependencies": {
+    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop",
     "visyn_scripts": "git+ssh://git@github.com:datavisyn/visyn_scripts#develop"
+  },
+  "devDependencies": {},
+  "visyn": {
+    "entries": {
+      "app": {
+        "js": "dist/index.initialize.js",
+        "html": "index.html",
+        "template": "dist/index.template.ejs",
+        "chunkName": "app",
+        "excludeChunks": []
+      }
+    }
   }
 }
