@@ -55,7 +55,8 @@ module.exports = (env, argv) => {
   const workspacePkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
-  const workspaceRegistryFile = path.join(workspacePath, 'phovea_registry.js');
+  // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
+  const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
   const workspaceRegistry = workspaceYoRcFile.registry || [];
   const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
@@ -89,11 +90,7 @@ module.exports = (env, argv) => {
    *   copyFiles?: string[];
    * }
    */
-  const {
-    entries,
-    registry,
-    copyFiles,
-  } = appPkg.visyn;
+  const { entries, registry, copyFiles } = appPkg.visyn;
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
