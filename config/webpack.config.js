@@ -369,8 +369,6 @@ module.exports = (env, argv) => {
         // Add aliases for all the workspace repos
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
-            // Add a direct reference to the phovea_registry.js as it is outside of the src/ folder
-            [`${repo}/phovea_registry.js$`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'phovea_registry.js'),
             // Rewrite all '<repo>/dist' imports to '<repo>/src'
             [`${repo}/dist`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
             [`${repo}/src`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
@@ -653,7 +651,7 @@ module.exports = (env, argv) => {
                 syntactic: true,
               },
               // Build the repo and type-check
-              build: false,
+              build: true,
               // Recommended for use with babel-loader
               mode: 'write-references',
               // Use the corresponding config file of the repo folder
@@ -667,13 +665,12 @@ module.exports = (env, argv) => {
                   skipLibCheck: true,
                   inlineSourceMap: false,
                   declarationMap: false,
-                  noEmit: true,
+                  noEmit: false,
                   incremental: true,
                   paths: Object.assign(
                     {},
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
-                        [`${r}/phovea_registry.js`]: [path.join(workspacePath, r, 'phovea_registry.js')],
                         [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
                         [r]: [path.join(workspacePath, r, 'src/index.ts')],
                       }))
