@@ -8,6 +8,6 @@ module.exports = {
     type: 'boolean',
   }),
   handler: (args) => {
-    call(`jest ${args.passWithNoTests ? '--passWithNoTests' : ''} ${(args.strings || []).join(' ')}`);
+    call('jest', `${args.passWithNoTests ? '--passWithNoTests' : ''} ${(args.strings || []).join(' ')}`);
   },
 };

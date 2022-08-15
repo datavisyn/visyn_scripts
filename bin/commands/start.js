@@ -6,6 +6,6 @@ module.exports = {
   describe: 'Start webpack serve',
   handler: (args) => {
     const configPath = resolve(__dirname, '../../config/webpack.config.js');
-    call(`webpack serve --mode development --config ${configPath} --progress ${(args.strings || []).join(' ')}`);
+    call('webpack', `serve --mode development --config ${configPath} --progress ${(args.strings || []).join(' ')}`);
   },
 };
