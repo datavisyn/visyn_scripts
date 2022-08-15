@@ -1,16 +1,3 @@
 {
-    "modules": [],
-    "defaultApp": "demo",
-    "frontendRepos": [
-      "demo"
-    ],
-    "partlyRepos": [],
-    "maxChunkSize": 5000000,
-    "workspaceAliases": [],
-    "registry": [],
-    "vendors": [],
-    "devRepos": [
-      "demo"
-    ]
-  }
-  
+  "defaultApp": "demo"
+}
