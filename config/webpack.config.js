@@ -347,7 +347,7 @@ module.exports = (env, argv) => {
             },
             // Added for profiling in devtools
             keep_classnames: true,
-            keep_fnames: true,
+            keep_fnames: false,
             output: {
               ecma: 5,
               comments: false,
