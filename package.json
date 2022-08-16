@@ -55,7 +55,7 @@
     "case-sensitive-paths-webpack-plugin": "^2.4.0",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^10.2.4",
-    "core-js": "^3.23.3",
+    "core-js": "^2.6.5",
     "cross-spawn": "^7.0.3",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.2.0",
@@ -122,6 +122,7 @@
     "typedoc": "~0.22.13",
     "typescript": "~4.6.2",
     "url-loader": "~4.1.1",
+    "util": "^0.12.4",
     "webpack": "^5.64.4",
     "webpack-bundle-analyzer": "^4.5.0",
     "webpack-cli": "^4.9.2",
@@ -144,5 +145,6 @@
     "testPathIgnorePatterns": [
       "/node_modules/|/bin/|/tests_fixtures/"
     ]
-  }
+  },
+  "packageManager": "yarn@3.2.2"
 }

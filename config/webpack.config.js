@@ -379,6 +379,9 @@ module.exports = (env, argv) => {
           : []),
       ),
       modules: [path.join(workspacePath, 'node_modules')],
+      fallback: {
+        util: require.resolve('util/'),
+      },
     },
     module: {
       strictExportPresence: true,
