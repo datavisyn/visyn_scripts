@@ -365,7 +365,12 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       alias: Object.assign(
-        {},
+        {
+          // Alias to jsx-runtime required as only React@18 has this export, otherwise it fails with "The request 'react/jsx-runtime' failed to resolve only because it was resolved as fully specified".
+          // See https://github.com/facebook/react/issues/20235 for details.
+          'react/jsx-runtime': 'react/jsx-runtime.js',
+          'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
+        },
         // Add aliases for all the workspace repos
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
