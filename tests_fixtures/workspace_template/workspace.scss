@@ -1,31 +1,24 @@
-// TODO: Without this, we get "Can't resolve './node_modules/lineupengine/src/styles/lineupengine/src/assets/loading.svg' in '.../workspaces/aelixir'"
-// Why do I need to do this? Probably because lineupjs defines $engine_assets and it is resolving it relatively?
-$engine_assets: '../../../lineupengine/src/assets';
-$engine_loading_image: url('#{$engine_assets}/loading.svg') !default;
-$engine_loading_static_image: url('#{$engine_assets}/loading_s.svg') !default;
-
 // Import custom theme variables and bootstrap variables overrides
-@import "~tdp_core/dist/scss/themes/phovea";
-@import "~tdp_core/dist/scss/themes/datavisyn";
+@import '~tdp_core/dist/scss/themes/phovea';
+@import '~tdp_core/dist/scss/themes/datavisyn';
 
 // Include remainder of required Bootstrap stylesheets
-@import "~tdp_core/dist/scss/vendors/bootstrap/1_variables_mixins_utilities";
+@import '~tdp_core/dist/scss/vendors/bootstrap/1_variables_mixins_utilities';
 
 // map-merge my theme-colors
-@import "~demo/dist/scss/vendors/bootstrap_modify_maps";
+@import '~demo/dist/scss/vendors/bootstrap_modify_maps';
 
 // Include all Bootstrap components as needed
-@import "~tdp_core/dist/scss/vendors/bootstrap/2_components";
+@import '~tdp_core/dist/scss/vendors/bootstrap/2_components';
 
 //default app
-@import "~demo/dist/scss/abstracts/variables";
+@import '~demo/dist/scss/abstracts/variables';
 //dependency tree up
-@import "~tdp_core/dist/scss/abstracts/variables";
-@import "~@fortawesome/fontawesome-free/scss/variables";
+@import '~tdp_core/dist/scss/abstracts/variables';
+@import '~tdp_core/dist/scss/fontawesome';
 // import mixins
-@import "~@fortawesome/fontawesome-free/scss/mixins";
-@import "~tdp_core/dist/scss/abstracts/mixins";
-@import "~demo/dist/scss/abstracts/mixins";
+@import '~tdp_core/dist/scss/abstracts/mixins';
+@import '~demo/dist/scss/abstracts/mixins';
 //main scss dependency tree down
-@import "~tdp_core/dist/scss/main";
-@import "~demo/dist/scss/main";
+@import '~tdp_core/dist/scss/main';
+@import '~demo/dist/scss/main';

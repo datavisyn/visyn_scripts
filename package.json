@@ -27,7 +27,8 @@
     "lint": "eslint bin/**/*.js config/**/*.js tests/**/*.js",
     "lint:fix": "eslint --fix bin/**/*.js config/**/*.js tests/**/*.js",
     "test": "jest -w 1",
-    "test:watch": "jest -w 1 --watch"
+    "test:watch": "jest -w 1 --watch",
+    "dist": "npm run lint && npm run test"
   },
   "dependencies": {
     "@babel/core": "^7.16.0",
