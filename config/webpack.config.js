@@ -316,7 +316,7 @@ module.exports = (env, argv) => {
     },
     optimization: {
       nodeEnv: false, // will be set by DefinePlugin
-      minimize: isEnvProduction,
+      minimize: false, // TODO: This causes "Killed" in CI because of the memory consumption. Set to isEnvProduction otherwise.
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
