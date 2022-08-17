@@ -30,8 +30,6 @@ const call = (command, args, options = {}) => {
       ...options,
       stdio: 'inherit',
       env: {
-        // TODO: Avoid out of memory errors when building
-        // NODE_OPTIONS: '--max_old_space_size=4096',
         NODE_PATH: nodePath,
         ...(options.env || {}),
         ...process.env,
