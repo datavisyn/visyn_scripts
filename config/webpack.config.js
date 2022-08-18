@@ -387,6 +387,7 @@ module.exports = (env, argv) => {
       // Disable unsafeCache as it causes incorrectly resolved packages when using d3 aliases for example. I.e. adding d3v5 will potentionally hoist d3-array in a conflicting version with d3v3, however the aggressive caching will not notice this difference.
       // See https://webpack.js.org/configuration/resolve/#resolveunsafecache for details.
       unsafeCache: false,
+      cacheWithContext: false,
       fallback: {
         util: require.resolve('util/'),
       },
