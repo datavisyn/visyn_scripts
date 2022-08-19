@@ -478,6 +478,7 @@ class Generator extends BasePhoveaGenerator {
     // save config
     this.fs.extendJSON(this.destinationPath('.yo-rc-workspace.json'), {
       defaultApp: this.props.defaultApp,
+      frontendRepos: plugins,
       devServerProxy: this.props.devServerProxy || {},
       registry: this.props.registry || [],
     });
