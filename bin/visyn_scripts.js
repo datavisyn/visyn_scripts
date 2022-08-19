@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-'use strict';
 
 const yargs = require('yargs');
 const { hideBin } = require('yargs/helpers');
@@ -23,6 +22,8 @@ yargs(hideBin(process.argv))
   .command(require('./commands/lint'))
   .command(require('./commands/start'))
   .command(require('./commands/test'))
+  .command(require('./commands/workspace-clone'))
+  .command(require('./commands/workspace-update'))
   .demandCommand(1, 'must provide a valid command')
   .showHelpOnFail(true)
   .parse();
