@@ -117,7 +117,7 @@ class Generator extends BasePhoveaGenerator {
       {
         type: 'list',
         name: 'defaultApp',
-        message: 'Default application to launch using `npm start`?',
+        message: 'Default application to launch using `yarn start`?',
         choices: apps,
         default: apps[0],
         when: apps.length > 1 && !this.props.defaultApp,

@@ -293,7 +293,7 @@ class Generator extends Base {
     this.log(chalk.green(`${stepCounter++}. Open IDE (PyCharm or Visual Studio Code, Atom) and select:`), this.destinationPath(this.cwd));
     this.log(chalk.green('   In case of Visual Studio Code, the following should also work: '), chalk.yellow('code .'));
     this.log(chalk.green(`${stepCounter++}. Start server docker container in the background (-d): `), chalk.yellow('docker compose up -d'));
-    this.log(chalk.green(`${stepCounter++}. Start client application in the foreground: `), chalk.yellow('npm start'));
+    this.log(chalk.green(`${stepCounter++}. Start client application in the foreground: `), chalk.yellow('yarn start'));
     this.log(chalk.green(`${stepCounter++}. Open web browser and navigate to`), chalk.yellow('http://localhost:8080'));
 
     this.log('\n\nUseful commands: ');
