@@ -20,7 +20,10 @@
     "bin",
     "config"
   ],
-  "bin": "./bin/visyn_scripts.js",
+  "bin": {
+    "visyn_scripts": "./bin/visyn_scripts.js",
+    "visyn": "./bin/visyn_scripts.js"
+  },
   "scripts": {
     "lint": "eslint bin/**/*.js config/**/*.js tests/**/*.js",
     "lint:fix": "eslint --fix bin/**/*.js config/**/*.js tests/**/*.js",
