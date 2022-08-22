@@ -15,31 +15,37 @@
     "url": "git@github.com:datavisyn/visyn_scripts.git"
   },
   "scripts": {
-    "build": "npm run clean && npm run compile",
-    "clean": "rimraf build dist lib",
+    "all": "yarn run lint:fix && yarn run test && yarn run build && yarn run dist",
+    "build": "yarn run clean && yarn run compile && yarn run copy",
+    "clean": "visyn_scripts clean build dist lib",
     "compile:watch": "visyn_scripts compile --watch",
     "compile": "visyn_scripts compile",
     "copy": "visyn_scripts copy",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "delete-dependencies": "visyn_scripts clean node_modules",
+    "predist": "yarn run lint && yarn run test && yarn run build",
+    "dist": "mkdir lib && cd dist && tar cvzf ../lib/marketplace360.tar.gz *",
     "docs": "visyn_scripts docs",
     "lint:fix": "visyn_scripts lint --fix",
     "lint": "visyn_scripts lint",
-    "postcompile": "npm run copy",
-    "posttest": "npm run lint",
-    "prebuild": "npm run test",
-    "test:watch": "visyn_scripts test --watch",
-    "test": "visyn_scripts test"
+    "prepack": "yarn run build",
+    "start": "visyn_scripts start --env workspace_mode=single",
+    "storybook:build": "NODE_OPTIONS=--max_old_space_size=4096 build-storybook",
+    "storybook": "NODE_OPTIONS=--max_old_space_size=4096 start-storybook -p 6006",
+    "test": "visyn_scripts test",
+    "webpack:dev": "visyn_scripts build --mode development --env workspace_mode=single",
+    "webpack:prod": "visyn_scripts build --mode production --env workspace_mode=single"
   },
   "dependencies": {
-    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#visyn_scripts",
-    "visyn_scripts": "git+ssh://git@github.com:datavisyn/visyn_scripts#develop"
+    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
   },
-  "devDependencies": {},
   "visyn": {
     "entries": {
       "app": {
-        "js": "dist/index.initialize.js",
+        "js": "src/index.initialize.tsx",
         "html": "index.html",
-        "template": "dist/index.template.ejs",
+        "template": "src/index.template.ejs",
         "chunkName": "app",
         "excludeChunks": []
       }
