@@ -375,13 +375,18 @@ module.exports = (env, argv) => {
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
             // Rewrite all '<repo>/dist' imports to '<repo>/src'
-            [`${repo}/dist`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
-            [`${repo}/src`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
-            // Rewrite all '<repo>' imports to '<repo>/src'
-            // instead of the '<repo>/dist' default defined in the package.json
-            [`${repo}`]: path.join(workspacePath, isSingleRepoMode ? './' : repo, 'src'),
+            [`${repo}/dist`]: path.join(workspacePath, repo, 'src'),
+            [`${repo}/src`]: path.join(workspacePath, repo, 'src'),
+            [`${repo}`]: path.join(workspacePath, repo, 'src'),
           }))
-          : []),
+          : [
+            {
+              // In single repo mode, also rewrite all '<repo>/dist' imports to '<repo>/src'
+              [`${libName}/dist`]: path.join(workspacePath, 'src'),
+              [`${libName}/src`]: path.join(workspacePath, 'src'),
+              [`${libName}`]: path.join(workspacePath, 'src'),
+            },
+          ]),
       ),
       fallback: {
         util: require.resolve('util/'),
@@ -681,7 +686,12 @@ module.exports = (env, argv) => {
                         [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
                         [r]: [path.join(workspacePath, r, 'src/index.ts')],
                       }))
-                      : []),
+                      : [
+                        {
+                          [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
+                          [libName]: path.join(workspacePath, 'src/index.ts'),
+                        },
+                      ]),
                   ),
                 },
               },
