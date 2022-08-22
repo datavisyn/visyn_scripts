@@ -732,5 +732,7 @@ module.exports = (env, argv) => {
           statsOptions: { source: false },
         }),
     ].filter(Boolean),
+    // Ignore some warnings, like failing to parse source maps
+    ignoreWarnings: [/Failed to parse source map/],
   };
 };
