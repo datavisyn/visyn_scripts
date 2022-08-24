@@ -19,11 +19,11 @@ describe('workspace', () => {
   };
 
   beforeAll(() => {
-    // Install dependencies via install-local-dependencies as npm does not install transitive deps properly if it is a relative path: https://github.com/pnpm/pnpm/issues/3102
+    // Install dependencies
     if (!fs.existsSync(resolve(templateDir, 'node_modules'))) {
       // eslint-disable-next-line no-console
       console.log('Installing local dependencies in the template folder');
-      execSync('install-local-dependencies', {
+      execSync('yarn install', {
         cwd: templateDir,
         stdio: 'inherit',
       });
