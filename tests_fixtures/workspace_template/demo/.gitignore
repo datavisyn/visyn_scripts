@@ -17,7 +17,6 @@ __pycache__/
 *.pot
 *.pyc
 *.swp
-*.lock
 # due to using tox and pytest
 .tox
 .cache
@@ -27,7 +26,6 @@ node_modules/
 /src/**/*.map
 /tests/**/*.map 
 *.css
-package-lock.json
 
 
 # yarn

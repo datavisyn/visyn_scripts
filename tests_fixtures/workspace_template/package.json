@@ -18,10 +18,10 @@
     "webpack:prod": "visyn_scripts build --mode production"
   },
   "dependencies": {
-    "demo": "file:./demo"
+    "demo": "portal:./demo"
   },
   "devDependencies": {
     "npm-run-all": "^4.1.5",
-    "visyn_scripts": "file:../../"
+    "visyn_scripts": "portal:../../"
   }
 }

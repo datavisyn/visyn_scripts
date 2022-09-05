@@ -1,6 +1,5 @@
 node_modules/
 bundles/
-package-lock.json
 
 # yarn
 .pnp.*
