@@ -30,7 +30,7 @@
     "test": "visyn_scripts test"
   },
   "dependencies": {
-    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#visyn_scripts",
+    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop",
     "visyn_scripts": "git+ssh://git@github.com:datavisyn/visyn_scripts#develop"
   },
   "devDependencies": {},
