@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -146,8 +146,7 @@
     "yeoman-generator": "4"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.10",
-    "install-local-dependencies": "^0.2.3"
+    "@types/yargs": "^17.0.10"
   },
   "peerDependencies": {
     "@types/react": "^16.9.23",

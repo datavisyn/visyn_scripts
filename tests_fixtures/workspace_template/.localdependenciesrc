@@ -1,7 +1,0 @@
-{
-  "manager": "npm",
-  "modules_dir": "node_modules", 
-  "install_args": "",
-  "types": ["devDependencies"],
-  "ignored_packages": []
-}

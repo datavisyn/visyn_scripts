@@ -25,19 +25,13 @@
                 "port": 9222,
                 "request": "attach",
                 "type": "chrome",
-                "urlFilter": "http://localhost/*",
-                "sourceMapPathOverrides": {
-                    "webpack://<%- workspace %>/*": "${workspaceFolder}/*"
-                }
+                "urlFilter": "http://localhost/*"
           },
           {
                 "name": "Launch Chrome",
                 "request": "launch",
                 "type": "chrome",
-                "url": "http://localhost:8080",
-                "sourceMapPathOverrides": {
-                    "webpack://<%- workspace %>/*": "${workspaceFolder}/*"
-                }
+                "url": "http://localhost:8080"
           }
         ]
     }

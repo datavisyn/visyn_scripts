@@ -407,6 +407,13 @@ module.exports = (env, argv) => {
           // match the requirements. When no loader matches it will fall
           // back to the "file" loader at the end of the loader list.
           oneOf: [
+            // Add ability to inline assets (like .md files) directly into the bundle.
+            // This is done by adding ?raw to the import, like import Content from './content.md?raw';
+            // See https://webpack.js.org/guides/asset-modules/#replacing-inline-loader-syntax for more details.
+            {
+              resourceQuery: /raw/,
+              type: 'asset/source',
+            },
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
@@ -732,5 +739,7 @@ module.exports = (env, argv) => {
           statsOptions: { source: false },
         }),
     ].filter(Boolean),
+    // Ignore some warnings, like failing to parse source maps
+    ignoreWarnings: [/Failed to parse source map/],
   };
 };

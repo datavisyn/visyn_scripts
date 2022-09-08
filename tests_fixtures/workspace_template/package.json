@@ -8,14 +8,20 @@
     "url": "https://www.datavisyn.io"
   },
   "scripts": {
-    "build": "visyn_scripts build --mode production",
     "build:demo": "cd demo && npm run build",
-    "copy:demo": "cd demo && npm run copy"
+    "copy:demo": "cd demo && npm run copy",
+    "delete-dependencies:demo": "cd demo && npm run delete-dependencies",
+    "postinstall": "npm-run-all --parallel 'delete-dependencies:*'",
+    "start": "visyn_scripts start",
+    "build": "npm run webpack:prod",
+    "webpack:dev": "visyn_scripts build --mode development",
+    "webpack:prod": "visyn_scripts build --mode production"
   },
   "dependencies": {
-    "demo": "file:./demo"
+    "demo": "portal:./demo"
   },
   "devDependencies": {
-    "visyn_scripts": "file:../../"
+    "npm-run-all": "^4.1.5",
+    "visyn_scripts": "portal:../../"
   }
 }
