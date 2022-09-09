@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-dynamic-require */
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
@@ -49,9 +51,7 @@ module.exports = (env, argv) => {
     vendors: any;
     devServerProxy: any;
   } */
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const workspacePkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
@@ -62,9 +62,10 @@ module.exports = (env, argv) => {
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
 
+  const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
+
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
   const defaultAppPath = path.join(workspacePath, defaultApp);
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
   const libName = appPkg.name;
   const libDesc = appPkg.description;
@@ -375,9 +376,9 @@ module.exports = (env, argv) => {
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
             // Rewrite all '<repo>/dist' imports to '<repo>/src'
-            [`${repo}/dist`]: path.join(workspacePath, repo, 'src'),
-            [`${repo}/src`]: path.join(workspacePath, repo, 'src'),
-            [`${repo}`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
           }))
           : [
             {
@@ -690,8 +691,8 @@ module.exports = (env, argv) => {
                     {},
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
-                        [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                        [r]: [path.join(workspacePath, r, 'src/index.ts')],
+                        [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                        [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
                       }))
                       : [
                         {
