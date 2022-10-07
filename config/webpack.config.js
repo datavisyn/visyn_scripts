@@ -61,6 +61,10 @@ module.exports = (env, argv) => {
   const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
+  const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
+  const customResolveAliases = Object.keys(resolveAliases);
+
+  const customResolveAliasRegex = customResolveAliases.length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${customResolveAliases.join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
 
   const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
 
@@ -363,14 +367,28 @@ module.exports = (env, argv) => {
         // new CssMinimizerPlugin(),
       ],
     },
+    snapshot: {
+      managedPaths: customResolveAliasRegex ? [
+        customResolveAliasRegex,
+      ] : undefined,
+    },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
+      // By default, always search for modules in the relative node_modules. However,
+      // if the package can not be found, fall back to the workspace node_modules. This is
+      // useful when using the resolveAliases to resolve a package to somewhere else.
+      modules: ['node_modules', path.join(workspacePath, 'node_modules')],
+      // Do not follow symlinks as this breaks custom resolve aliases, i.e.:
+      // When you have a link from ./node_modules/packageA to /tmp/packageA, you probably don't want it
+      // to resolve missing dependencies in the /tmp/node_modules folder, but rather in the ./node_modules folder.
+      symlinks: false,
       alias: Object.assign(
         {
           // Alias to jsx-runtime required as only React@18 has this export, otherwise it fails with "The request 'react/jsx-runtime' failed to resolve only because it was resolved as fully specified".
           // See https://github.com/facebook/react/issues/20235 for details.
           'react/jsx-runtime': 'react/jsx-runtime.js',
           'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
+          ...resolveAliases,
         },
         // Add aliases for all the workspace repos
         ...(!isSingleRepoMode
@@ -399,7 +417,7 @@ module.exports = (env, argv) => {
         // Handle node_modules packages that contain sourcemaps
         shouldUseSourceMap && {
           enforce: 'pre',
-          exclude: /@babel(?:\/|\\{1,2})runtime/,
+          exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
           loader: require.resolve('source-map-loader'),
         },
@@ -445,7 +463,7 @@ module.exports = (env, argv) => {
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              exclude: /node_modules/,
+              exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
               loader: 'babel-loader',
               options: {
                 presets: [['@babel/preset-env', { targets: { browsers: 'last 2 Chrome versions' } }], '@babel/preset-typescript', '@babel/preset-react'],
@@ -689,6 +707,7 @@ module.exports = (env, argv) => {
                   incremental: true,
                   paths: Object.assign(
                     {},
+                    resolveAliases,
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
                         [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
