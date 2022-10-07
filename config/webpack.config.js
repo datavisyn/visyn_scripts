@@ -62,9 +62,9 @@ module.exports = (env, argv) => {
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
   const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
-  const customResolveAliases = Object.keys(resolveAliases);
-
-  const customResolveAliasRegex = customResolveAliases.length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${customResolveAliases.join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
+  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
 
   const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
 
@@ -378,10 +378,6 @@ module.exports = (env, argv) => {
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
       modules: ['node_modules', path.join(workspacePath, 'node_modules')],
-      // Do not follow symlinks as this breaks custom resolve aliases, i.e.:
-      // When you have a link from ./node_modules/packageA to /tmp/packageA, you probably don't want it
-      // to resolve missing dependencies in the /tmp/node_modules folder, but rather in the ./node_modules folder.
-      symlinks: false,
       alias: Object.assign(
         {
           // Alias to jsx-runtime required as only React@18 has this export, otherwise it fails with "The request 'react/jsx-runtime' failed to resolve only because it was resolved as fully specified".

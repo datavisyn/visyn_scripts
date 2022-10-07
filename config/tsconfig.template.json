@@ -15,7 +15,6 @@
     "esModuleInterop": false,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "preserveWatchOutput": true,
-    "preserveSymlinks": true,
+    "preserveWatchOutput": true
   }
 }
