@@ -148,7 +148,6 @@ class Generator extends BasePhoveaGenerator {
       cwd: this.destinationPath(),
     });
     const plugins = files.map(path.dirname);
-    const repoDependencies = Object.assign({}, ...plugins.map((plugin) => ({ [plugin]: `link:./${plugin}` })));
 
     const integrateMulti = (target, source) => {
       Object.keys(source || {}).forEach((key) => {
@@ -166,11 +165,16 @@ class Generator extends BasePhoveaGenerator {
     const devDependencies = {};
     const overrides = {};
     const scripts = {};
+    const pluginToName = {};
+    const repoDependencies = {};
     plugins.forEach((p) => {
       const pkg = this.fs.readJSON(this.destinationPath(`${p}/package.json`));
       integrateMulti(dependencies, pkg.dependencies);
       integrateMulti(devDependencies, pkg.devDependencies);
       integrateMulti(overrides, pkg.overrides);
+
+      pluginToName[p] = pkg.name;
+      repoDependencies[pkg.name] = `link:./${p}`;
 
       // no pre post test tasks
       Object.keys(pkg.scripts)
@@ -233,6 +237,7 @@ class Generator extends BasePhoveaGenerator {
 
     return {
       plugins,
+      pluginToName,
       dependencies: Object.assign(Object.assign(dependencies, extraDependencies), this.options.addWorkspaceRepos ? repoDependencies : {}),
       devDependencies: Object.assign(devDependencies, extraDevDependencies),
       overrides: Object.assign(overrides, extraOverrides),
@@ -460,7 +465,7 @@ class Generator extends BasePhoveaGenerator {
 
   writing() {
     const {
-      plugins, dependencies, devDependencies, overrides, resolutions, scripts,
+      plugins, pluginToName, dependencies, devDependencies, overrides, resolutions, scripts,
     } = this._generateWebDependencies();
     const sdeps = this._generateServerDependencies();
     const dockerWebHint = '  # Uncomment the following lines for testing the web production build\n'
@@ -495,7 +500,7 @@ class Generator extends BasePhoveaGenerator {
     const config = {};
     config.workspace = path.basename(this.destinationPath());
     config.modules = _.union(plugins, sdeps.plugins);
-    config.webmodules = plugins.filter((d) => fs.existsSync(this.destinationPath(`${d}/src/phovea_registry.ts`)));
+    config.webmodules = plugins.filter((d) => fs.existsSync(this.destinationPath(`${d}/src/phovea_registry.ts`))).map((d) => pluginToName[d]);
     config.servermodules = sdeps.plugins;
     config.dockerCompose = path.resolve(this.destinationPath('docker-compose.yml'));
     config.wsName = this.options.wsName;

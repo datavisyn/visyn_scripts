@@ -1,3 +1,5 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-dynamic-require */
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
@@ -49,9 +51,7 @@ module.exports = (env, argv) => {
     vendors: any;
     devServerProxy: any;
   } */
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const workspacePkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
@@ -61,10 +61,15 @@ module.exports = (env, argv) => {
   const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
+  const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
+  // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
+  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
+
+  const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
 
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
   const defaultAppPath = path.join(workspacePath, defaultApp);
-  // eslint-disable-next-line global-require,import/no-dynamic-require
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
   const libName = appPkg.name;
   const libDesc = appPkg.description;
@@ -362,22 +367,32 @@ module.exports = (env, argv) => {
         // new CssMinimizerPlugin(),
       ],
     },
+    snapshot: {
+      managedPaths: customResolveAliasRegex ? [
+        customResolveAliasRegex,
+      ] : undefined,
+    },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
+      // By default, always search for modules in the relative node_modules. However,
+      // if the package can not be found, fall back to the workspace node_modules. This is
+      // useful when using the resolveAliases to resolve a package to somewhere else.
+      modules: ['node_modules', path.join(workspacePath, 'node_modules')],
       alias: Object.assign(
         {
           // Alias to jsx-runtime required as only React@18 has this export, otherwise it fails with "The request 'react/jsx-runtime' failed to resolve only because it was resolved as fully specified".
           // See https://github.com/facebook/react/issues/20235 for details.
           'react/jsx-runtime': 'react/jsx-runtime.js',
           'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
+          ...resolveAliases,
         },
         // Add aliases for all the workspace repos
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
             // Rewrite all '<repo>/dist' imports to '<repo>/src'
-            [`${repo}/dist`]: path.join(workspacePath, repo, 'src'),
-            [`${repo}/src`]: path.join(workspacePath, repo, 'src'),
-            [`${repo}`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
           }))
           : [
             {
@@ -398,7 +413,7 @@ module.exports = (env, argv) => {
         // Handle node_modules packages that contain sourcemaps
         shouldUseSourceMap && {
           enforce: 'pre',
-          exclude: /@babel(?:\/|\\{1,2})runtime/,
+          exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
           loader: require.resolve('source-map-loader'),
         },
@@ -444,7 +459,7 @@ module.exports = (env, argv) => {
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              exclude: /node_modules/,
+              exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
               loader: 'babel-loader',
               options: {
                 presets: [['@babel/preset-env', { targets: { browsers: 'last 2 Chrome versions' } }], '@babel/preset-typescript', '@babel/preset-react'],
@@ -688,10 +703,11 @@ module.exports = (env, argv) => {
                   incremental: true,
                   paths: Object.assign(
                     {},
+                    resolveAliases,
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
-                        [`${r}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                        [r]: [path.join(workspacePath, r, 'src/index.ts')],
+                        [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                        [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
                       }))
                       : [
                         {
