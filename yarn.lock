@@ -6481,6 +6481,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eslint-plugin-chai-friendly@npm:^0.7.2":
+  version: 0.7.2
+  resolution: "eslint-plugin-chai-friendly@npm:0.7.2"
+  peerDependencies:
+    eslint: ">=3.0.0"
+  checksum: a9c70da37361b54d9cdd4f7c26a3d83caed106a239d21268b8fdaa6b30c0a097dab6ff76a320e40325fd6d27f395eb5cf914c56f5aaf5215d5614f515bbfc975
+  languageName: node
+  linkType: hard
+
+"eslint-plugin-cypress@npm:^2.12.1":
+  version: 2.12.1
+  resolution: "eslint-plugin-cypress@npm:2.12.1"
+  dependencies:
+    globals: ^11.12.0
+  peerDependencies:
+    eslint: ">= 3.2.1"
+  checksum: 1f1c36e149304e9a6f58e2292a761abad58274da33b3a48b24ad55ad20cbce3ac7467321f2b6fcb052f9563c89f67004de4766eba2e2bdbcb010a6a0666989cf
+  languageName: node
+  linkType: hard
+
 "eslint-plugin-flowtype@npm:^8.0.3":
   version: 8.0.3
   resolution: "eslint-plugin-flowtype@npm:8.0.3"
@@ -7640,7 +7660,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"globals@npm:^11.1.0":
+"globals@npm:^11.1.0, globals@npm:^11.12.0":
   version: 11.12.0
   resolution: "globals@npm:11.12.0"
   checksum: 67051a45eca3db904aee189dfc7cd53c20c7d881679c93f6146ddd4c9f4ab2268e68a919df740d39c71f4445d2b38ee360fc234428baea1dbdfe68bbcb46979e
@@ -15213,6 +15233,8 @@ __metadata:
     eslint-config-airbnb-typescript: ^16.1.0
     eslint-config-prettier: ^8.3.0
     eslint-config-react-app: ^7.0.1
+    eslint-plugin-chai-friendly: ^0.7.2
+    eslint-plugin-cypress: ^2.12.1
     eslint-plugin-import: ^2.25.4
     eslint-plugin-jest: ^25.3.4
     eslint-plugin-jsx-a11y: ^6.5.1

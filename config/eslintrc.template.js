@@ -32,13 +32,10 @@ module.exports = ({ tsconfigRootDir }) => ({
   rules: {
     // Disables jsx-a11y https://github.com/import-js/eslint-plugin-import/blob/v2.25.4/docs/rules/no-webpack-loader-syntax.md
     // eslint-disable-next-line global-require
-    ...Object.keys(require('eslint-plugin-jsx-a11y').rules).reduce(
-      (acc, rule) => {
-        acc[`jsx-a11y/${rule}`] = 'off';
-        return acc;
-      },
-      {},
-    ),
+    ...Object.keys(require('eslint-plugin-jsx-a11y').rules).reduce((acc, rule) => {
+      acc[`jsx-a11y/${rule}`] = 'off';
+      return acc;
+    }, {}),
     'class-methods-use-this': 'off',
     'linebreak-style': 'off',
     'no-continue': 'off',
@@ -50,11 +47,14 @@ module.exports = ({ tsconfigRootDir }) => ({
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
-    '@typescript-eslint/no-unused-expressions': ['error', {
-      allowShortCircuit: true,
-      allowTernary: true,
-      allowTaggedTemplates: true,
-    }],
+    '@typescript-eslint/no-unused-expressions': [
+      'error',
+      {
+        allowShortCircuit: true,
+        allowTernary: true,
+        allowTaggedTemplates: true,
+      },
+    ],
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'import/no-extraneous-dependencies': 'off',
@@ -86,80 +86,13 @@ module.exports = ({ tsconfigRootDir }) => ({
   overrides: [
     {
       files: ['cypress/**/*'],
-      extends: [
-        'plugin:cypress/recommended',
-        'plugin:chai-friendly/recommended',
-      ],
+      extends: ['plugin:cypress/recommended', 'plugin:chai-friendly/recommended'],
       plugins: ['cypress', 'chai-friendly'],
-      rules: {
-        // NOTE: dv-usama-ansari: All the rules currently warn about the statements - modify them as needed in the further commits
-        'cypress/no-assigning-return-values': 'warn',
-        'cypress/no-unnecessary-waiting': 'warn',
-        'cypress/no-async-tests': 'warn',
-        'cypress/no-force': 'warn',
-        'cypress/assertion-before-screenshot': 'warn',
-        'cypress/require-data-selectors': 'warn',
-        'cypress/no-pause': 'warn',
-      },
     },
     {
       files: ['{src|tests}/**/*.{test|spec}.ts'],
       extends: ['plugin:jest/recommended'],
       plugins: ['jest'],
-      rules: {
-        // NOTE: dv-usama-ansari: All the rules currently warn about the statements - modify them as needed in the further commits
-        'jest/consistent-test-it': 'warn',
-        'jest/expect-expect': 'warn',
-        'jest/max-expects': 'warn',
-        'jest/max-nested-describe': 'warn',
-        'jest/no-alias-methods': 'warn',
-        'jest/no-commented-out-tests': 'warn',
-        'jest/no-conditional-expect': 'warn',
-        'jest/no-conditional-in-test': 'warn',
-        'jest/no-deprecated-functions': 'warn',
-        'jest/no-disabled-tests': 'warn',
-        'jest/no-done-callback': 'warn',
-        'jest/no-duplicate-hooks': 'warn',
-        'jest/no-export': 'warn',
-        'jest/no-focused-tests': 'warn',
-        'jest/no-hooks': 'warn',
-        'jest/no-identical-title': 'warn',
-        'jest/no-if': 'warn',
-        'jest/no-interpolation-in-snapshots': 'warn',
-        'jest/no-jasmine-globals': 'warn',
-        'jest/no-large-snapshots': 'warn',
-        'jest/no-mocks-import': 'warn',
-        'jest/no-restricted-jest-methods': 'warn',
-        'jest/no-restricted-matchers': 'warn',
-        'jest/no-standalone-expect': 'warn',
-        'jest/no-test-prefixes': 'warn',
-        'jest/no-test-return-statement': 'warn',
-        'jest/prefer-called-with': 'warn',
-        'jest/prefer-comparison-matcher': 'warn',
-        'jest/prefer-each': 'warn',
-        'jest/prefer-equality-matcher': 'warn',
-        'jest/prefer-expect-assertions': 'warn',
-        'jest/prefer-expect-resolves': 'warn',
-        'jest/prefer-hooks-in-order': 'warn',
-        'jest/prefer-hooks-on-top': 'warn',
-        'jest/prefer-lowercase-title': 'warn',
-        'jest/prefer-mock-promise-shorthand': 'warn',
-        'jest/prefer-snapshot-hint': 'warn',
-        'jest/prefer-spy-on': 'warn',
-        'jest/prefer-strict-equal': 'warn',
-        'jest/prefer-to-be': 'warn',
-        'jest/prefer-to-contain': 'warn',
-        'jest/prefer-to-have-length': 'warn',
-        'jest/prefer-todo': 'warn',
-        'jest/require-hook': 'warn',
-        'jest/require-to-throw-message': 'warn',
-        'jest/require-top-level-describe': 'warn',
-        'jest/valid-describe-callback': 'warn',
-        'jest/valid-expect': 'warn',
-        'jest/valid-expect-in-promise': 'warn',
-        'jest/valid-title': 'warn',
-        'jest/unbound-method': 'warn',
-      },
     },
   ],
 });
