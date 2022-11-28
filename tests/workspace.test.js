@@ -21,14 +21,12 @@ describe('workspace', () => {
   beforeAll(() => {
     // Install dependencies
     if (!fs.existsSync(resolve(templateDir, 'node_modules'))) {
-      // eslint-disable-next-line no-console
       console.log('Installing local dependencies in the template folder');
-      execSync('yarn install', {
+      execSync('yarn install --no-immutable --inline-builds', {
         cwd: templateDir,
         stdio: 'inherit',
       });
     } else {
-      // eslint-disable-next-line no-console
       console.log('Skipping install of local dependencies as node_modules already exists, remove it to force reinstall.');
     }
   });
@@ -49,12 +47,8 @@ describe('workspace', () => {
       stdio: 'inherit',
     });
     // Expect some dist files to exist after the build
-    expect(
-      fs.existsSync(resolve(testDir, 'demo/dist/index.js')),
-    ).toBe(true);
-    expect(
-      fs.existsSync(resolve(testDir, 'demo/dist/index.template.ejs')),
-    ).toBe(true);
+    expect(fs.existsSync(resolve(testDir, 'demo/dist/index.js'))).toBe(true);
+    expect(fs.existsSync(resolve(testDir, 'demo/dist/index.template.ejs'))).toBe(true);
 
     // Execute the build script of the workspace
     execSync('npm run build', {
@@ -62,8 +56,6 @@ describe('workspace', () => {
       stdio: 'inherit',
     });
     // Expect some bundle files to exist after the build
-    expect(fs.existsSync(resolve(testDir, 'bundles/phoveaMetaData.json'))).toBe(
-      true,
-    );
+    expect(fs.existsSync(resolve(testDir, 'bundles/phoveaMetaData.json'))).toBe(true);
   });
 });
