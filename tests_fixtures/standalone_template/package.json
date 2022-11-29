@@ -22,7 +22,7 @@
     "compile": "visyn_scripts compile",
     "copy": "visyn_scripts copy",
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run --e2e && cypress run --component",
     "delete-dependencies": "visyn_scripts clean node_modules",
     "predist": "yarn run lint && yarn run test && yarn run build",
     "dist": "mkdir lib && cd dist && tar cvzf ../lib/marketplace360.tar.gz *",
@@ -38,10 +38,17 @@
     "webpack:prod": "visyn_scripts build --mode production --env workspace_mode=single"
   },
   "dependencies": {
-    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
+    "cypress": "^11.2.0",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "visyn_scripts": "portal:../../"
   },
   "devDependencies": {
-    "cypress": "^11.2.0"
+    "@types/react": "^16.9.23",
+    "@types/react-dom": "^16.9.5"
+  },
+  "resolutions": {
+    "visyn_scripts": "portal:../../"
   },
   "visyn": {
     "entries": {
