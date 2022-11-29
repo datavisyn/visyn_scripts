@@ -10,6 +10,8 @@
   "scripts": {
     "build:demo": "cd demo && npm run build",
     "copy:demo": "cd demo && npm run copy",
+    "cy:open:demo": "cd demo && npm run cy:open",
+    "cy:run:demo": "cd demo && npm run cy:run",
     "delete-dependencies:demo": "cd demo && npm run delete-dependencies",
     "postinstall": "npm-run-all --parallel 'delete-dependencies:*'",
     "start": "visyn_scripts start",

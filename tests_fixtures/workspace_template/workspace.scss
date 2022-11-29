@@ -1,3 +1,4 @@
+/* Disable all to improve build speed. We are not actually using/testing any styles yet.
 // Import custom theme variables and bootstrap variables overrides
 @import '~tdp_core/dist/scss/themes/phovea';
 @import '~tdp_core/dist/scss/themes/datavisyn';
@@ -22,3 +23,4 @@
 //main scss dependency tree down
 @import '~tdp_core/dist/scss/main';
 @import '~demo/dist/scss/main';
+*/

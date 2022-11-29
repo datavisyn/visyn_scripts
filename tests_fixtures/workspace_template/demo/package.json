@@ -40,6 +40,9 @@
   "dependencies": {
     "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
   },
+  "devDependencies": {
+    "cypress": "^11.2.0"
+  },
   "visyn": {
     "entries": {
       "app": {
