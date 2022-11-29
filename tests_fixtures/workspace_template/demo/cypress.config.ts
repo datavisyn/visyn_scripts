@@ -7,14 +7,12 @@ export default defineConfig({
   defaultCommandTimeout: 10000,
   e2e: {
     baseUrl: 'http://localhost:8080',
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setupNodeEvents(on, config) {},
   },
   component: {
     devServer: {
       framework: 'react',
       bundler: 'webpack',
-      webpackConfig: webpackConfig({ workspace_mode: 'single' }, { mode: 'development' }),
+      webpackConfig: webpackConfig({ workspace_mode: 'single' }, { mode: 'production' }),
     },
   },
 });
