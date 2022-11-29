@@ -148,7 +148,10 @@
     "yeoman-generator": "4"
   },
   "devDependencies": {
-    "@types/yargs": "^17.0.10"
+    "@types/yargs": "^17.0.10",
+    "cypress": "^11.2.0",
+    "http-server": "^14.1.1",
+    "jest-dev-server": "^6.1.1"
   },
   "peerDependencies": {
     "@types/react": "^16.9.23",

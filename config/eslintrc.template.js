@@ -43,6 +43,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'no-multi-assign': 'warn',
     'no-nested-ternary': 'off',
     'no-return-assign': 'warn',
+    'no-restricted-exports': 'off',
     'no-restricted-syntax': 'off',
     'no-plusplus': 'off',
     'no-prototype-builtins': 'warn',
