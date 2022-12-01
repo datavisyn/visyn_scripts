@@ -102,6 +102,9 @@ module.exports = (env, argv) => {
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
 
+  const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
+  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
+
   const copyPluginPatterns = copyAppFiles.concat(
     [
       fs.existsSync(workspaceMetaDataFile) && {
@@ -117,11 +120,6 @@ module.exports = (env, argv) => {
             const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
             return `data:image/png;base64,${buffer}`;
           }
-
-          const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-          const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
-            now.getUTCMinutes(),
-          )}${prefix(now.getUTCSeconds())}`;
 
           return JSON.stringify(
             {
@@ -657,7 +655,7 @@ module.exports = (env, argv) => {
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
-        // 'process.env.__BUILD_ID__': JSON.stringify(buildId),
+        'process.env.__BUILD_DATE__': JSON.stringify(buildId),
         'process.env.__APP_CONTEXT__': JSON.stringify('/'),
         'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
         // TODO: Add others..., or even better: env.stringified from https://github.com/facebook/create-react-app/blob/main/packages/react-scripts/config/webpack.config.js#L653
