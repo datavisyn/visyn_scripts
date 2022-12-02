@@ -403,6 +403,10 @@ module.exports = (env, argv) => {
       ),
       fallback: {
         util: require.resolve('util/'),
+        // Disable polyfills, if required add them via require.resolve("crypto-browserify")
+        crypto: false,
+        path: false,
+        fs: false,
       },
     },
     module: {
