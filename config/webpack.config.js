@@ -34,7 +34,13 @@ module.exports = (env, argv) => {
   /**
    * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
    */
-  const isSingleRepoMode = env.workspace_mode === 'single';
+  const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
+  const isFastMode = env.fast?.toLowerCase() === 'true';
+
+  if (isFastMode) {
+    console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
+  }
+
   // Source maps are resource heavy and can cause out of memory issue for large source files.
   const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
@@ -153,6 +159,7 @@ module.exports = (env, argv) => {
 
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
+  const sourceMap = !isFastMode && (isEnvProduction ? shouldUseSourceMap : isEnvDevelopment);
 
   // common function to get style loaders
   const getStyleLoaders = (cssOptions, preProcessor) => {
@@ -212,7 +219,7 @@ module.exports = (env, argv) => {
                 ],
               ],
           },
-          sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+          sourceMap,
         },
       },
     ].filter(Boolean);
@@ -221,7 +228,7 @@ module.exports = (env, argv) => {
         {
           loader: require.resolve('resolve-url-loader'),
           options: {
-            sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+            sourceMap,
             // root: paths.appSrc,
           },
         },
@@ -240,7 +247,8 @@ module.exports = (env, argv) => {
     mode,
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
-    devtool: isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
+    // eslint-disable-next-line no-nested-ternary
+    devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -413,7 +421,7 @@ module.exports = (env, argv) => {
       strictExportPresence: true,
       rules: [
         // Handle node_modules packages that contain sourcemaps
-        shouldUseSourceMap && {
+        !isFastMode && shouldUseSourceMap && {
           enforce: 'pre',
           exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
@@ -502,7 +510,7 @@ module.exports = (env, argv) => {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap,
                 modules: {
                   mode: 'icss',
                 },
@@ -519,7 +527,7 @@ module.exports = (env, argv) => {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap,
                 modules: {
                   mode: 'local',
                   getLocalIdent: getCSSModuleLocalIdent,
@@ -535,7 +543,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                  sourceMap,
                   modules: {
                     mode: 'icss',
                   },
@@ -555,7 +563,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                  sourceMap,
                   modules: {
                     mode: 'local',
                     getLocalIdent: getCSSModuleLocalIdent,
@@ -612,7 +620,7 @@ module.exports = (env, argv) => {
             // Make sure to add the new loader(s) before the "file" loader.
           ],
         },
-      ],
+      ].filter(Boolean),
     },
     plugins: [
       new CleanWebpackPlugin(),
@@ -678,7 +686,7 @@ module.exports = (env, argv) => {
         }),
       // For each workspace repo, create an instance of the TS checker to typecheck.
       ...workspaceRepos.map(
-        (repo) => isEnvDevelopment
+        (repo) => !isFastMode && isEnvDevelopment
           && new ForkTsCheckerWebpackPlugin({
             async: isEnvDevelopment,
             typescript: {
