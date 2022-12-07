@@ -64,7 +64,6 @@ module.exports = (env, argv) => {
   // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
   const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
   const workspaceRegistry = workspaceYoRcFile.registry || [];
-  const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
   const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
@@ -83,6 +82,9 @@ module.exports = (env, argv) => {
   if (!appPkg.visyn) {
     throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
   }
+
+  // Extract workspace proxy configuration from .yo-rc-workspace.json and package.json
+  const workspaceProxy = { ...(appPkg.visyn.devServerProxy || {}), ...(workspaceYoRcFile.devServerProxy || {}) };
 
   /**
    * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
