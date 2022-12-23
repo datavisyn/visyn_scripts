@@ -6540,10 +6540,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv-expand@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "dotenv-expand@npm:5.1.0"
-  checksum: 8017675b7f254384915d55f9eb6388e577cf0a1231a28d54b0ca03b782be9501b0ac90ac57338636d395fa59051e6209e9b44b8ddf169ce6076dffb5dea227d3
+"dotenv-expand@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "dotenv-expand@npm:10.0.0"
+  checksum: 2a38b470efe0abcb1ac8490421a55e1d764dc9440fd220942bce40965074f3fb00b585f4346020cb0f0f219966ee6b4ee5023458b3e2953fe5b3214de1b314ee
   languageName: node
   linkType: hard
 
@@ -16539,7 +16539,7 @@ __metadata:
     css-minimizer-webpack-plugin: ^3.2.0
     cypress: ^11.2.0
     dotenv: ^10.0.0
-    dotenv-expand: ^5.1.0
+    dotenv-expand: ^10.0.0
     dotenv-webpack: ^7.1.0
     eslint: ^8.3.0
     eslint-config-airbnb: ^19.0.4

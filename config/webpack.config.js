@@ -17,7 +17,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
 // const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
+
+// Load the current .env and expand it
+const parsedEnv = dotenvExpand.expand(dotenv.config());
 
 // style files regexes
 const cssRegex = /\.css$/;
@@ -25,7 +30,11 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
-module.exports = (env, argv) => {
+module.exports = (webpackEnv, argv) => {
+  const env = {
+    ...(parsedEnv.parsed || {}),
+    ...(webpackEnv || {}),
+  };
   const { mode } = argv;
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
@@ -104,7 +113,19 @@ module.exports = (env, argv) => {
    *   copyFiles?: string[];
    * }
    */
-  const { entries, registry, copyFiles } = appPkg.visyn;
+
+  try {
+    // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
+    const visynWebpackOverride = require(path.join(defaultAppPath, 'visynWebpackOverride.js'))({ env }) || {};
+    console.log('Using visynWebpackOverride.js file to override visyn configuration.');
+    Object.assign(appPkg.visyn, visynWebpackOverride);
+  } catch (e) {
+    // ignore if file does not exist
+  }
+
+  const {
+    entries, registry, copyFiles, historyApiFallback, disableCleanWebpackPlugin,
+  } = appPkg.visyn;
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
@@ -268,7 +289,7 @@ module.exports = (env, argv) => {
         host: 'localhost',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: true,
+        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: {
           // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
@@ -578,18 +599,19 @@ module.exports = (env, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      new CleanWebpackPlugin(),
+      !disableCleanWebpackPlugin && new CleanWebpackPlugin(),
       isEnvDevelopment
         && new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
-      ...Object.values(entries).map(
-        (entry) => new HtmlWebpackPlugin({
+      ...Object.entries(entries).map(
+        ([chunkName, entry]) => new HtmlWebpackPlugin({
           inject: true,
           template: path.join(defaultAppPath, entry.template),
           filename: entry.html,
           title: libName,
-          excludeChunks: entry.excludeChunks,
+          // By default, exclude all other chunks
+          excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
           meta: {
             description: libDesc,
           },
