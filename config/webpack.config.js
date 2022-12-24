@@ -46,6 +46,7 @@ module.exports = (webpackEnv, argv) => {
    */
   const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
   const isFastMode = env.fast?.toLowerCase() === 'true';
+  const devServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
     console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
@@ -123,9 +124,15 @@ module.exports = (webpackEnv, argv) => {
     // ignore if file does not exist
   }
 
-  const {
-    entries, registry, copyFiles, historyApiFallback, disableCleanWebpackPlugin,
+  let {
+    // eslint-disable-next-line prefer-const
+    entries, registry, copyFiles, historyApiFallback,
   } = appPkg.visyn;
+
+  if (devServerOnly) {
+    // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
+    entries = {};
+  }
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
@@ -599,7 +606,7 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      !disableCleanWebpackPlugin && new CleanWebpackPlugin(),
+      !devServerOnly && new CleanWebpackPlugin(),
       isEnvDevelopment
         && new ReactRefreshWebpackPlugin({
           overlay: false,
