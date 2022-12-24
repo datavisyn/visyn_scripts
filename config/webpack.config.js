@@ -36,6 +36,7 @@ module.exports = (env, argv) => {
    */
   const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
   const isFastMode = env.fast?.toLowerCase() === 'true';
+  const devServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
     console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
@@ -103,7 +104,16 @@ module.exports = (env, argv) => {
    *   copyFiles?: string[];
    * }
    */
-  const { entries, registry, copyFiles } = appPkg.visyn;
+
+  let {
+    // eslint-disable-next-line prefer-const
+    entries, registry, copyFiles, historyApiFallback,
+  } = appPkg.visyn;
+
+  if (devServerOnly) {
+    // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
+    entries = {};
+  }
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
@@ -266,7 +276,7 @@ module.exports = (env, argv) => {
         host: 'localhost',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: true,
+        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: {
           // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
@@ -625,7 +635,7 @@ module.exports = (env, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      new CleanWebpackPlugin(),
+      !devServerOnly && new CleanWebpackPlugin(),
       isEnvDevelopment
         && new ReactRefreshWebpackPlugin({
           overlay: false,
