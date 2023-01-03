@@ -679,8 +679,7 @@ module.exports = (webpackEnv, argv) => {
                 syntactic: true,
               },
               // Build the repo and type-check
-              build: true,
-              // Recommended for use with babel-loader
+              build: Object.keys(resolveAliases).length === 0,
               mode: 'write-references',
               // Use the corresponding config file of the repo folder
               configFile: path.join(workspacePath, repo, 'tsconfig.json'),
@@ -697,7 +696,8 @@ module.exports = (webpackEnv, argv) => {
                   incremental: true,
                   paths: Object.assign(
                     {},
-                    resolveAliases,
+                    // Map the aliases to the same path, but within an array like tsc requires it
+                    Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
                         [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
