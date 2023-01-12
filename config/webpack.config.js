@@ -17,6 +17,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+// const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
+
+// Load the current .env and expand it
+const parsedEnv = dotenvExpand.expand(dotenv.config());
 
 // style files regexes
 const cssRegex = /\.css$/;
@@ -24,7 +30,11 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
-module.exports = (env, argv) => {
+module.exports = (webpackEnv, argv) => {
+  const env = {
+    ...(parsedEnv.parsed || {}),
+    ...(webpackEnv || {}),
+  };
   const { mode } = argv;
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
@@ -104,6 +114,15 @@ module.exports = (env, argv) => {
    *   copyFiles?: string[];
    * }
    */
+
+  try {
+    // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
+    const visynWebpackOverride = require(path.join(defaultAppPath, 'visynWebpackOverride.js'))({ env }) || {};
+    console.log('Using visynWebpackOverride.js file to override visyn configuration.');
+    Object.assign(appPkg.visyn, visynWebpackOverride);
+  } catch (e) {
+    // ignore if file does not exist
+  }
 
   let {
     // eslint-disable-next-line prefer-const
@@ -255,6 +274,7 @@ module.exports = (env, argv) => {
     return loaders;
   };
 
+  // Use TimeAnalyticsPlugin.wrap to anaylze the build time
   return {
     mode,
     // Webpack noise constrained to errors and warnings
@@ -343,42 +363,11 @@ module.exports = (env, argv) => {
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
-          terserOptions: {
-            parse: {
-              // We want terser to parse ecma 8 code. However, we don't want it
-              // to apply any minification steps that turns valid ecma 5 code
-              // into invalid ecma 5 code. This is why the 'compress' and 'output'
-              // sections only apply transformations that are ecma 5 safe
-              // https://github.com/facebook/create-react-app/pull/4234
-              // ecma: 8, TODO:
-            },
-            compress: {
-              ecma: 5,
-              // Disabled because of an issue with Uglify breaking seemingly valid code:
-              // https://github.com/facebook/create-react-app/issues/2376
-              // Pending further investigation:
-              // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false,
-              // Disabled because of an issue with Terser breaking valid code:
-              // https://github.com/facebook/create-react-app/issues/5250
-              // Pending further investigation:
-              // https://github.com/terser-js/terser/issues/120
-              inline: 2,
-            },
-            mangle: {
-              safari10: true,
-            },
-            // Added for profiling in devtools
-            keep_classnames: true,
-            keep_fnames: false,
-            output: {
-              ecma: 5,
-              comments: false,
-              // Turned on because emoji and regex is not minified properly using default
-              // https://github.com/facebook/create-react-app/issues/2488
-              ascii_only: true,
-            },
-          },
+          // Use swcMinify instead of terser: https://webpack.js.org/plugins/terser-webpack-plugin/#swc
+          minify: TerserPlugin.swcMinify,
+          // `terserOptions` options will be passed to `swc` (`@swc/core`)
+          // Link to options - https://swc.rs/docs/config-js-minify
+          terserOptions: {},
         }),
         // This is only used in production mode
         // TODO: Somehow this breaks with lineup: /media/LineUpJS.d518227895a66b92cfd7.css:1:1: Unknown word [media/LineUpJS.d518227895a66b92cfd7.css:1,1]
@@ -477,37 +466,19 @@ module.exports = (env, argv) => {
                 esModule: false,
               },
             },
-            // Process application JS with Babel.
-            // The preset includes JSX, Flow, TypeScript, and some ESnext features.
+            // Process application JS with swc-loader as it is much faster than babel.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
-              loader: 'babel-loader',
+              loader: 'swc-loader',
               options: {
-                presets: [['@babel/preset-env', { targets: { browsers: 'last 2 Chrome versions' } }], '@babel/preset-typescript', '@babel/preset-react'],
-                plugins: [
-                  // https://exerror.com/babel-referenceerror-regeneratorruntime-is-not-defined/#Solution_3_For_Babel_7_User
-                  [
-                    '@babel/transform-runtime',
-                    {
-                      regenerator: true,
-                    },
-                  ],
-                  // plugin-proposal-decorators is only needed if you're using experimental decorators in TypeScript
-                  ['@babel/plugin-proposal-decorators', { legacy: true }],
-                  // ["@babel/plugin-proposal-class-properties", { loose: false }],
-                  // Enable hmr for react components in dev mode
-                  isEnvDevelopment && 'react-refresh/babel',
-                ].filter(Boolean),
-                babelrc: false,
-                configFile: false,
-                // This is a feature of `babel-loader` for webpack (not Babel itself).
-                // It enables caching results in ./node_modules/.cache/babel-loader/
-                // directory for faster rebuilds.
-                cacheDirectory: true,
-                // See create-react-app#6846 for context on why cacheCompression is disabled
-                cacheCompression: false,
-                compact: isEnvProduction,
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    decorators: true,
+                    // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+                  },
+                },
               },
             },
             // "postcss" loader applies autoprefixer to our CSS.
@@ -640,13 +611,14 @@ module.exports = (env, argv) => {
         && new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
-      ...Object.values(entries).map(
-        (entry) => new HtmlWebpackPlugin({
+      ...Object.entries(entries).map(
+        ([chunkName, entry]) => new HtmlWebpackPlugin({
           inject: true,
           template: path.join(defaultAppPath, entry.template),
           filename: entry.html,
           title: libName,
-          excludeChunks: entry.excludeChunks,
+          // By default, exclude all other chunks
+          excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
           meta: {
             description: libDesc,
           },
@@ -707,8 +679,7 @@ module.exports = (env, argv) => {
                 syntactic: true,
               },
               // Build the repo and type-check
-              build: true,
-              // Recommended for use with babel-loader
+              build: Object.keys(resolveAliases).length === 0,
               mode: 'write-references',
               // Use the corresponding config file of the repo folder
               configFile: path.join(workspacePath, repo, 'tsconfig.json'),
@@ -725,7 +696,8 @@ module.exports = (env, argv) => {
                   incremental: true,
                   paths: Object.assign(
                     {},
-                    resolveAliases,
+                    // Map the aliases to the same path, but within an array like tsc requires it
+                    Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
                         [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],

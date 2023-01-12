@@ -60,16 +60,15 @@ module.exports = ({ tsconfigRootDir }) => ({
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'import/no-extraneous-dependencies': 'off',
-    // Disable the following 2 lines because to allow webpack file-loaders syntax
-    'import/no-webpack-loader-syntax': 'off',
-    'import/no-unresolved': 'off',
+    'import/no-webpack-loader-syntax': 'off', // Disable to allow webpack file-loaders syntax
+    'import/no-unresolved': 'off', // Disable to allow webpack file-loaders syntax
     'import/prefer-default-export': 'off',
     'import/order': 'error',
     'prefer-destructuring': ['warn', { object: true, array: false }],
     'prefer-promise-reject-errors': 'warn',
     'prefer-spread': 'warn',
     '@typescript-eslint/ban-ts-comment': 'warn',
-    'react/destructuring-assignment': 'warn',
+    'react/destructuring-assignment': 'off',
     'react/jsx-props-no-spreading': 'off',
     'react/no-unused-class-component-methods': 'warn',
     'react/prop-types': 'off',

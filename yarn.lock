@@ -2528,6 +2528,117 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@swc/core-darwin-arm64@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-darwin-arm64@npm:1.3.23"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@swc/core-darwin-x64@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-darwin-x64@npm:1.3.23"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-arm-gnueabihf@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-linux-arm-gnueabihf@npm:1.3.23"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-arm64-gnu@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-linux-arm64-gnu@npm:1.3.23"
+  conditions: os=linux & cpu=arm64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-arm64-musl@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-linux-arm64-musl@npm:1.3.23"
+  conditions: os=linux & cpu=arm64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-x64-gnu@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-linux-x64-gnu@npm:1.3.23"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"@swc/core-linux-x64-musl@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-linux-x64-musl@npm:1.3.23"
+  conditions: os=linux & cpu=x64 & libc=musl
+  languageName: node
+  linkType: hard
+
+"@swc/core-win32-arm64-msvc@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-win32-arm64-msvc@npm:1.3.23"
+  conditions: os=win32 & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"@swc/core-win32-ia32-msvc@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-win32-ia32-msvc@npm:1.3.23"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"@swc/core-win32-x64-msvc@npm:1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core-win32-x64-msvc@npm:1.3.23"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"@swc/core@npm:^1.3.23":
+  version: 1.3.23
+  resolution: "@swc/core@npm:1.3.23"
+  dependencies:
+    "@swc/core-darwin-arm64": 1.3.23
+    "@swc/core-darwin-x64": 1.3.23
+    "@swc/core-linux-arm-gnueabihf": 1.3.23
+    "@swc/core-linux-arm64-gnu": 1.3.23
+    "@swc/core-linux-arm64-musl": 1.3.23
+    "@swc/core-linux-x64-gnu": 1.3.23
+    "@swc/core-linux-x64-musl": 1.3.23
+    "@swc/core-win32-arm64-msvc": 1.3.23
+    "@swc/core-win32-ia32-msvc": 1.3.23
+    "@swc/core-win32-x64-msvc": 1.3.23
+  dependenciesMeta:
+    "@swc/core-darwin-arm64":
+      optional: true
+    "@swc/core-darwin-x64":
+      optional: true
+    "@swc/core-linux-arm-gnueabihf":
+      optional: true
+    "@swc/core-linux-arm64-gnu":
+      optional: true
+    "@swc/core-linux-arm64-musl":
+      optional: true
+    "@swc/core-linux-x64-gnu":
+      optional: true
+    "@swc/core-linux-x64-musl":
+      optional: true
+    "@swc/core-win32-arm64-msvc":
+      optional: true
+    "@swc/core-win32-ia32-msvc":
+      optional: true
+    "@swc/core-win32-x64-msvc":
+      optional: true
+  bin:
+    swcx: run_swcx.js
+  checksum: 2a92949c33f292a369f4a750a8a9759f88f6f399bc0beef54768fce3d1af5cf0c33a4c8f3c2478020ae95e99d99b7c17f301b79163cdbcdf533b91675f1d2e8d
+  languageName: node
+  linkType: hard
+
 "@tootallnate/once@npm:1":
   version: 1.1.2
   resolution: "@tootallnate/once@npm:1.1.2"
@@ -4730,6 +4841,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"buffer-builder@npm:^0.2.0":
+  version: 0.2.0
+  resolution: "buffer-builder@npm:0.2.0"
+  checksum: 4d8215a03dbb193a3417bcd6057e324d4b7accabb6d3db5f9b3047fd4dd314814d8e7d026a0eebac7dc3cf24420f024e545f2d3932fdf32373af27b5f03b8e5b
+  languageName: node
+  linkType: hard
+
 "buffer-crc32@npm:~0.2.3":
   version: 0.2.13
   resolution: "buffer-crc32@npm:0.2.13"
@@ -4987,7 +5105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chokidar@npm:>=3.0.0 <4.0.0, chokidar@npm:^3.4.2, chokidar@npm:^3.5.2, chokidar@npm:^3.5.3":
+"chokidar@npm:^3.4.2, chokidar@npm:^3.5.2, chokidar@npm:^3.5.3":
   version: 3.5.3
   resolution: "chokidar@npm:3.5.3"
   dependencies:
@@ -6422,10 +6540,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dotenv-expand@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "dotenv-expand@npm:5.1.0"
-  checksum: 8017675b7f254384915d55f9eb6388e577cf0a1231a28d54b0ca03b782be9501b0ac90ac57338636d395fa59051e6209e9b44b8ddf169ce6076dffb5dea227d3
+"dotenv-expand@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "dotenv-expand@npm:10.0.0"
+  checksum: 2a38b470efe0abcb1ac8490421a55e1d764dc9440fd220942bce40965074f3fb00b585f4346020cb0f0f219966ee6b4ee5023458b3e2953fe5b3214de1b314ee
   languageName: node
   linkType: hard
 
@@ -8333,6 +8451,13 @@ __metadata:
     pify: ^4.0.1
     slash: ^2.0.0
   checksum: 9b4cb70aa0b43bf89b18cf0e543695185e16d8dd99c17bdc6a1df0a9f88ff9dc8d2467aebace54c3842fc451a564882948c87a3b4fbdb1cacf3e05fd54b6ac5d
+  languageName: node
+  linkType: hard
+
+"google-protobuf@npm:^3.11.4":
+  version: 3.21.2
+  resolution: "google-protobuf@npm:3.21.2"
+  checksum: 3caa2e1e2654714cc1a201ac5e5faabcaa48f5fba3d8ff9b64ca66fe19e4e0506b94053f32eddc77bf3a7a47ac1660315c6744185c1e2bb27654fd76fe91b988
   languageName: node
   linkType: hard
 
@@ -13404,6 +13529,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ramda@npm:^0.28.0":
+  version: 0.28.0
+  resolution: "ramda@npm:0.28.0"
+  checksum: 44ea6e5010bba70151b6a92d8114a91915e8b5a16105cce65fae58c9d7386b812c429645e35f21141d7087568550ce383bc10ee1a65cdec951f4b69ea457e6a4
+  languageName: node
+  linkType: hard
+
 "randombytes@npm:^2.1.0":
   version: 2.1.0
   resolution: "randombytes@npm:2.1.0"
@@ -14065,6 +14197,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rxjs@npm:^7.4.0":
+  version: 7.8.0
+  resolution: "rxjs@npm:7.8.0"
+  dependencies:
+    tslib: ^2.1.0
+  checksum: 61b4d4fd323c1043d8d6ceb91f24183b28bcf5def4f01ca111511d5c6b66755bc5578587fe714ef5d67cf4c9f2e26f4490d4e1d8cabf9bd5967687835e9866a2
+  languageName: node
+  linkType: hard
+
 "safe-buffer@npm:5.1.2, safe-buffer@npm:~5.1.0, safe-buffer@npm:~5.1.1":
   version: 5.1.2
   resolution: "safe-buffer@npm:5.1.2"
@@ -14113,6 +14254,100 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sass-embedded-darwin-arm64@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-darwin-arm64@npm:1.56.2"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"sass-embedded-darwin-x64@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-darwin-x64@npm:1.56.2"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"sass-embedded-linux-arm64@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-linux-arm64@npm:1.56.2"
+  conditions: os=linux & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"sass-embedded-linux-arm@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-linux-arm@npm:1.56.2"
+  conditions: os=linux & cpu=arm
+  languageName: node
+  linkType: hard
+
+"sass-embedded-linux-ia32@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-linux-ia32@npm:1.56.2"
+  conditions: os=linux & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"sass-embedded-linux-x64@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-linux-x64@npm:1.56.2"
+  conditions: os=linux & cpu=x64
+  languageName: node
+  linkType: hard
+
+"sass-embedded-win32-ia32@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-win32-ia32@npm:1.56.2"
+  conditions: os=win32 & cpu=ia32
+  languageName: node
+  linkType: hard
+
+"sass-embedded-win32-x64@npm:1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded-win32-x64@npm:1.56.2"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
+"sass-embedded@npm:^1.56.2":
+  version: 1.56.2
+  resolution: "sass-embedded@npm:1.56.2"
+  dependencies:
+    buffer-builder: ^0.2.0
+    google-protobuf: ^3.11.4
+    immutable: ^4.0.0
+    rxjs: ^7.4.0
+    sass-embedded-darwin-arm64: 1.56.2
+    sass-embedded-darwin-x64: 1.56.2
+    sass-embedded-linux-arm: 1.56.2
+    sass-embedded-linux-arm64: 1.56.2
+    sass-embedded-linux-ia32: 1.56.2
+    sass-embedded-linux-x64: 1.56.2
+    sass-embedded-win32-ia32: 1.56.2
+    sass-embedded-win32-x64: 1.56.2
+    supports-color: ^8.1.1
+  dependenciesMeta:
+    sass-embedded-darwin-arm64:
+      optional: true
+    sass-embedded-darwin-x64:
+      optional: true
+    sass-embedded-linux-arm:
+      optional: true
+    sass-embedded-linux-arm64:
+      optional: true
+    sass-embedded-linux-ia32:
+      optional: true
+    sass-embedded-linux-x64:
+      optional: true
+    sass-embedded-win32-ia32:
+      optional: true
+    sass-embedded-win32-x64:
+      optional: true
+  checksum: 2860901081705b7c4372bbfa8207f9c63f5ea22c3b86a3a6f3b6317839c29395c18383fd7d38a2b6d43d327a66bd0af43e116030fcda1d251619f80ea6e18db0
+  languageName: node
+  linkType: hard
+
 "sass-loader@npm:^12.3.0":
   version: 12.6.0
   resolution: "sass-loader@npm:12.6.0"
@@ -14135,19 +14370,6 @@ __metadata:
     sass-embedded:
       optional: true
   checksum: 5d73a428588150f704016aa27397941bb9246cecd2ee083b573e95d969fc080ac6a16f2fe1cc64aca08f6e70da6f3c586ee68f0efc9f527fecc360e5f1c299ec
-  languageName: node
-  linkType: hard
-
-"sass@npm:^1.50.0":
-  version: 1.56.1
-  resolution: "sass@npm:1.56.1"
-  dependencies:
-    chokidar: ">=3.0.0 <4.0.0"
-    immutable: ^4.0.0
-    source-map-js: ">=0.6.2 <2.0.0"
-  bin:
-    sass: sass.js
-  checksum: 78e693e5992b149574c95d5adfe39ca3e5b97d80befa11191a20d1daa41fe201a98ac099beab726cd3095e2d2e7991a2c408ba0fcc3fa9f525879de7eee18dad
   languageName: node
   linkType: hard
 
@@ -14658,7 +14880,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.0.1, source-map-js@npm:^1.0.2":
+"source-map-js@npm:^1.0.1, source-map-js@npm:^1.0.2":
   version: 1.0.2
   resolution: "source-map-js@npm:1.0.2"
   checksum: c049a7fc4deb9a7e9b481ae3d424cc793cb4845daa690bc5a05d428bf41bf231ced49b4cf0c9e77f9d42fdb3d20d6187619fc586605f5eabe995a316da8d377c
@@ -15246,6 +15468,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"swc-loader@npm:^0.2.3":
+  version: 0.2.3
+  resolution: "swc-loader@npm:0.2.3"
+  peerDependencies:
+    "@swc/core": ^1.2.147
+    webpack: ">=2"
+  checksum: 010d84d399525c0185d36d62c86c55ae017e7a90046bc8a39be4b7e07526924037868049f6037bc966da98151cb2600934b96a66279b742d3c413a718b427251
+  languageName: node
+  linkType: hard
+
 "symbol-tree@npm:^3.2.4":
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
@@ -15464,6 +15696,18 @@ __metadata:
   version: 1.1.0
   resolution: "thunky@npm:1.1.0"
   checksum: 993096c472b6b8f30e29dc777a8d17720e4cab448375041f20c0cb802a09a7fb2217f2a3e8cdc11851faa71c957e2db309357367fc9d7af3cb7a4d00f4b66034
+  languageName: node
+  linkType: hard
+
+"time-analytics-webpack-plugin@npm:^0.1.19":
+  version: 0.1.19
+  resolution: "time-analytics-webpack-plugin@npm:0.1.19"
+  dependencies:
+    chalk: ^4.1.2
+    ramda: ^0.28.0
+  peerDependencies:
+    webpack: ^5
+  checksum: 8d40de0a3f43dd40fcfcaa797a53e52be57112419c31a297df143048b5e3a384affd8bd007535c3ef4d2f2c843bb7f0547596afa96819a810c16bf407fe5b71c
   languageName: node
   linkType: hard
 
@@ -16266,6 +16510,7 @@ __metadata:
     "@babel/preset-typescript": ^7.6.0
     "@pmmmwh/react-refresh-webpack-plugin": ^0.5.3
     "@svgr/webpack": ^5.5.0
+    "@swc/core": ^1.3.23
     "@types/jest": ~27.4.1
     "@types/jquery": ^3.5.5
     "@types/node": ^17.0.24
@@ -16294,7 +16539,7 @@ __metadata:
     css-minimizer-webpack-plugin: ^3.2.0
     cypress: ^11.2.0
     dotenv: ^10.0.0
-    dotenv-expand: ^5.1.0
+    dotenv-expand: ^10.0.0
     dotenv-webpack: ^7.1.0
     eslint: ^8.3.0
     eslint-config-airbnb: ^19.0.4
@@ -16347,7 +16592,7 @@ __metadata:
     resolve: ^1.20.0
     resolve-url-loader: ^4.0.0
     rimraf: ~3.0.2
-    sass: ^1.50.0
+    sass-embedded: ^1.56.2
     sass-loader: ^12.3.0
     semver: ^7.3.7
     semver-intersect: ^1.4.0
@@ -16355,8 +16600,10 @@ __metadata:
     source-map-loader: ^3.0.0
     speed-measure-webpack-plugin: ~1.5.0
     style-loader: ^3.3.1
+    swc-loader: ^0.2.3
     tailwindcss: ^3.0.2
     terser-webpack-plugin: ^5.2.5
+    time-analytics-webpack-plugin: ^0.1.19
     ts-jest: ~27.1.3
     ts-node: ^10.7.0
     tslib: ~2.3.1
