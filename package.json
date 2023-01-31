@@ -2,6 +2,7 @@
   "name": "visyn_scripts",
   "description": "",
   "version": "1.1.2-SNAPSHOT",
+  "type": "module",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",

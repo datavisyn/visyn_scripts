@@ -1,6 +1,6 @@
-const GeneratorUtils = require('./generator/utils/GeneratorUtils');
+import GeneratorUtils from "./generator/utils/GeneratorUtils";
 
-module.exports = {
+export default {
   command: 'workspace-update',
   aliases: ['w:u'],
   describe: 'Updates a workspace',

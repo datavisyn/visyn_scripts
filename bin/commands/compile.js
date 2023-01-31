@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'compile [strings...]',
   describe: 'Build a repository using typescript',
   handler: (args) => {

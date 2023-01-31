@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'docs [strings...]',
   describe: 'Generate docs of a repository using typedoc',
   handler: (args) => {

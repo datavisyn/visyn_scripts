@@ -1,6 +1,10 @@
-const { execSync } = require('child_process');
-const { resolve, join } = require('path');
-const fs = require('fs');
+import { execSync } from "child_process";
+import { resolve, join } from "path";
+import fs from "fs";
+import {fileURLToPath } from 'url';
+// __dirname is not defined in ESM, such that we use this directory as base
+export const dirname = fileURLToPath(new URL('.', import.meta.url));
+
 
 /**
  * Wraps `execSync` with options and error handling.
@@ -9,13 +13,13 @@ const fs = require('fs');
  * @param {string} args Arbitrary arguments to the bin script, or if command is empty a normal shell command
  * @param {object} options
  */
-const call = (command, args, options = {}) => {
+export const call = (command, args, options = {}) => {
   try {
     console.log(`Calling '${command}' with args and options`, args, options);
 
     // Resolve the node_path relative to the installed script,
     // as otherwise "local" scripts (installed in node_modules/visyn_scripts/node_modules) can't be resolved.
-    const nodePath = resolve(__dirname, '../../node_modules');
+    const nodePath = resolve(dirname, '../../node_modules');
 
     // yarn v2 has started to limit the acess to bin scripts, as only bin scripts are available from packages which are also in the package.json.
     // This however breaks the purpose of this repository (defining deps only at one place), such that we need to call the bin dir directly.
@@ -39,8 +43,4 @@ const call = (command, args, options = {}) => {
     console.error(e);
     process.exit(1);
   }
-};
-
-module.exports = {
-  call,
 };

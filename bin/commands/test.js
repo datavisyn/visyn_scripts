@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'test [strings...]',
   describe: 'Test a repository using Jest',
   builder: (yargs) => yargs.option('passWithNoTests', {

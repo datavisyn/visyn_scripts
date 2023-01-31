@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-const yargs = require('yargs');
-const { hideBin } = require('yargs/helpers');
+import yargs from 'yargs';
+import { hideBin } from "yargs/helpers";
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
@@ -10,21 +10,22 @@ process.on('unhandledRejection', (err) => {
   throw err;
 });
 
+
 // Use yargs as command parser by adding subcommands
 yargs(hideBin(process.argv))
   .parserConfiguration({ 'unknown-options-as-args': true })
   .usage('$0 <command>')
-  .command(require('./commands/build'))
-  .command(require('./commands/clean'))
-  .command(require('./commands/compile'))
-  .command(require('./commands/copy'))
-  .command(require('./commands/docs'))
-  .command(require('./commands/lint'))
-  .command(require('./commands/product-build'))
-  .command(require('./commands/start'))
-  .command(require('./commands/test'))
-  .command(require('./commands/workspace-clone'))
-  .command(require('./commands/workspace-update'))
+  .command((await import('./commands/build.js')).default)
+  .command((await import('./commands/clean.js')).default)
+  .command((await import('./commands/compile.js')).default)
+  .command((await import('./commands/copy.js')).default)
+  .command((await import('./commands/docs.js')).default)
+  .command((await import('./commands/lint.js')).default)
+  // .command((await import('./commands/product-build.cjs')).default)
+  .command((await import('./commands/start.js')).default)
+  .command((await import('./commands/test.js')).default)
+  // .command((await import('./commands/workspace-clone.js')).default)
+  // .command((await import('./commands/workspace-update.js')).default)
   .demandCommand(1, 'must provide a valid command')
   .showHelpOnFail(true)
   .parse();

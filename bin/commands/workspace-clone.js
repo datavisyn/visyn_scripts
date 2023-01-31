@@ -1,6 +1,6 @@
-const GeneratorUtils = require('./generator/utils/GeneratorUtils');
+import GeneratorUtils from "./generator/utils/GeneratorUtils";
 
-module.exports = {
+export default {
   command: 'workspace-clone <product>',
   aliases: ['w:c'],
   describe: 'Sets up a workspace using a product repository',

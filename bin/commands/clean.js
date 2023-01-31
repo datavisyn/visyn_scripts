@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'clean [strings...]',
   describe: 'Clean files and folders using rimraf',
   handler: (args) => {

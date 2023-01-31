@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'copy',
   describe: 'Copy assets, styles, and static files to the dist folder',
   handler: () => {

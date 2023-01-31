@@ -1,6 +1,6 @@
-const { call } = require('./utils');
+import { call } from "./utils.js";
 
-module.exports = {
+export default {
   command: 'lint [strings...]',
   describe: 'Lint a repository using ESLint',
   builder: (yargs) => yargs.option('cache', {
