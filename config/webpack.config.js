@@ -359,7 +359,6 @@ module.exports = (webpackEnv, argv) => {
     },
     optimization: {
       nodeEnv: false, // will be set by DefinePlugin
-      minimize: false, // TODO: This causes "Killed" in CI because of the memory consumption. Set to isEnvProduction otherwise.
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
