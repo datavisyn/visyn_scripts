@@ -380,6 +380,12 @@ module.exports = (webpackEnv, argv) => {
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
+      // This is required to enable TS moduleResolution: node16, as there we have to add .js extensions which are actually .ts files.
+      extensionAlias: {
+        '.js': ['.tsx', '.ts', '.js'],
+        '.cjs': ['.cts', '.cjs'],
+        '.mjs': ['.mts', '.mjs'],
+      },
       // By default, always search for modules in the relative node_modules. However,
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
