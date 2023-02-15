@@ -3,9 +3,10 @@ let pluginsToTransform = [
   // datavisyn
   'tdp_*',
   'phovea_*',
+  'visyn_*',
   'lineupjs',
   // d3
-  'd3-*',
+  'd3*',
   'internmap',
   'delaunator',
   'robust-predicates',
@@ -26,22 +27,17 @@ if (pluginsToTransform.length > 0) {
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.(js|ts|tsx)$': 'ts-jest',
+    '^.+\\.(js|ts|tsx)$': '@swc/jest',
     '\\.xml$': 'jest-raw-loader',
   },
   testRegex: '(.*(test|spec))\\.(tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
+  resolver: 'visyn_scripts/config/jest_export_maps_resolver.js',
   transformIgnorePatterns: [`../node_modules/${pluginsToTransform}`, `node_modules/${pluginsToTransform}`],
   globals: {
     __VERSION__: 'TEST_VERSION',
     __APP_CONTEXT__: 'TEST_CONTEXT',
-    'ts-jest': {
-      // has to be set to true, otherwise i18n import fails
-      tsconfig: {
-        esModuleInterop: true,
-      },
-    },
   },
   moduleNameMapper: {
     '^.+\\.(css|less|scss|sass|png|jpg|gif|svg|html)$': 'identity-obj-proxy',
