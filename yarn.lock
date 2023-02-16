@@ -8285,6 +8285,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"get-tsconfig@npm:^4.4.0":
+  version: 4.4.0
+  resolution: "get-tsconfig@npm:4.4.0"
+  checksum: e193558b4f0c84c81ae9688cf5b9950dc0b341e44f91b002713fd0c37cfb73108e1cd9998ed540bcc423f193fde32cc58a15e99dd469f5158a2eb4a148611176
+  languageName: node
+  linkType: hard
+
 "get-value@npm:^2.0.3, get-value@npm:^2.0.6":
   version: 2.0.6
   resolution: "get-value@npm:2.0.6"
@@ -16706,6 +16713,7 @@ __metadata:
     file-loader: ^6.2.0
     fork-ts-checker-webpack-plugin: ^7.2.6
     fs-extra: ^10.0.0
+    get-tsconfig: ^4.4.0
     glob: ^8.0.3
     html-loader: ~1.3.2
     html-webpack-plugin: ^5.5.0

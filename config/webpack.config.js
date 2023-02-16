@@ -19,6 +19,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
+const { parseTsconfig } = require('get-tsconfig');
 // const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
 
 // Load the current .env and expand it
@@ -134,7 +135,7 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
-  const tsconfigJson = require(path.join(workspacePath, 'tsconfig.json'));
+  const tsconfigJson = parseTsconfig(path.join(workspacePath, 'tsconfig.json'));
   const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
   if (isLegacyModuleResolution) {
     console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
