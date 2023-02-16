@@ -134,6 +134,12 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
+  const tsconfigJson = require(path.join(workspacePath, 'tsconfig.json'));
+  const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
+  if (isLegacyModuleResolution) {
+    console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
+  }
+
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
@@ -381,7 +387,7 @@ module.exports = (webpackEnv, argv) => {
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
       // This is required to enable TS moduleResolution: node16, as there we have to add .js extensions which are actually .ts files.
-      extensionAlias: {
+      extensionAlias: isLegacyModuleResolution ? undefined : {
         '.js': ['.tsx', '.ts', '.js'],
         '.cjs': ['.cts', '.cjs'],
         '.mjs': ['.mts', '.mjs'],
