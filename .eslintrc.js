@@ -10,6 +10,7 @@ module.exports = {
     ecmaVersion: 'latest',
   },
   rules: {
+    'no-console': 'off',
     'max-len': 'off',
   },
   overrides: [

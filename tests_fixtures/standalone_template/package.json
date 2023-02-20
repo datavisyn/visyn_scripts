@@ -14,6 +14,17 @@
     "type": "git",
     "url": "git@github.com:datavisyn/visyn_scripts.git"
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "src",
+    "dist",
+    "cypress"
+  ],
+  "engines": {
+    "npm": ">=8",
+    "node": ">=16"
+  },
   "scripts": {
     "all": "yarn run lint:fix && yarn run test && yarn run build && yarn run dist",
     "build": "yarn run clean && yarn run compile && yarn run copy",
@@ -22,7 +33,7 @@
     "compile": "visyn_scripts compile",
     "copy": "visyn_scripts copy",
     "cy:open": "cypress open",
-    "cy:run": "cypress run",
+    "cy:run": "cypress run --e2e && cypress run --component",
     "delete-dependencies": "visyn_scripts clean node_modules",
     "predist": "yarn run lint && yarn run test && yarn run build",
     "dist": "mkdir lib && cd dist && tar cvzf ../lib/marketplace360.tar.gz *",
@@ -31,6 +42,7 @@
     "lint": "visyn_scripts lint",
     "prepack": "yarn run build",
     "start": "visyn_scripts start --env workspace_mode=single",
+    "start:fast": "visyn_scripts start --env workspace_mode=single fast=true",
     "storybook:build": "NODE_OPTIONS=--max_old_space_size=4096 build-storybook",
     "storybook": "NODE_OPTIONS=--max_old_space_size=4096 start-storybook -p 6006",
     "test": "visyn_scripts test",
@@ -38,7 +50,17 @@
     "webpack:prod": "visyn_scripts build --mode production --env workspace_mode=single"
   },
   "dependencies": {
-    "tdp_core": "git+ssh://git@github.com:datavisyn/tdp_core#develop"
+    "cypress": "^11.2.0",
+    "react": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "visyn_scripts": "portal:../../"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.23",
+    "@types/react-dom": "^16.9.5"
+  },
+  "resolutions": {
+    "visyn_scripts": "portal:../../"
   },
   "visyn": {
     "entries": {

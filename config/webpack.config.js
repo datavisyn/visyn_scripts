@@ -17,6 +17,12 @@ const CopyPlugin = require('copy-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+// const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
+
+// Load the current .env and expand it
+const parsedEnv = dotenvExpand.expand(dotenv.config());
 
 // style files regexes
 const cssRegex = /\.css$/;
@@ -24,7 +30,11 @@ const cssModuleRegex = /\.module\.css$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
-module.exports = (env, argv) => {
+module.exports = (webpackEnv, argv) => {
+  const env = {
+    ...(parsedEnv.parsed || {}),
+    ...(webpackEnv || {}),
+  };
   const { mode } = argv;
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
@@ -34,7 +44,14 @@ module.exports = (env, argv) => {
   /**
    * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
    */
-  const isSingleRepoMode = env.workspace_mode === 'single';
+  const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
+  const isFastMode = env.fast?.toLowerCase() === 'true';
+  const devServerOnly = env.dev_server_only?.toLowerCase() === 'true';
+
+  if (isFastMode) {
+    console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
+  }
+
   // Source maps are resource heavy and can cause out of memory issue for large source files.
   const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false';
 
@@ -58,7 +75,6 @@ module.exports = (env, argv) => {
   // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
   const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
   const workspaceRegistry = workspaceYoRcFile.registry || [];
-  const workspaceProxy = workspaceYoRcFile.devServerProxy || {};
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
   const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
@@ -78,6 +94,9 @@ module.exports = (env, argv) => {
     throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
   }
 
+  // Extract workspace proxy configuration from .yo-rc-workspace.json and package.json
+  const workspaceProxy = { ...(appPkg.visyn.devServerProxy || {}), ...(workspaceYoRcFile.devServerProxy || {}) };
+
   /**
    * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
    *
@@ -95,12 +114,33 @@ module.exports = (env, argv) => {
    *   copyFiles?: string[];
    * }
    */
-  const { entries, registry, copyFiles } = appPkg.visyn;
+
+  try {
+    // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
+    const visynWebpackOverride = require(path.join(defaultAppPath, 'visynWebpackOverride.js'))({ env }) || {};
+    console.log('Using visynWebpackOverride.js file to override visyn configuration.');
+    Object.assign(appPkg.visyn, visynWebpackOverride);
+  } catch (e) {
+    // ignore if file does not exist
+  }
+
+  let {
+    // eslint-disable-next-line prefer-const
+    entries, registry, copyFiles, historyApiFallback,
+  } = appPkg.visyn;
+
+  if (devServerOnly) {
+    // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
+    entries = {};
+  }
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
+
+  const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
+  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
 
   const copyPluginPatterns = copyAppFiles.concat(
     [
@@ -117,11 +157,6 @@ module.exports = (env, argv) => {
             const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
             return `data:image/png;base64,${buffer}`;
           }
-
-          const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-          const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
-            now.getUTCMinutes(),
-          )}${prefix(now.getUTCSeconds())}`;
 
           return JSON.stringify(
             {
@@ -155,6 +190,7 @@ module.exports = (env, argv) => {
 
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
+  const sourceMap = !isFastMode && (isEnvProduction ? shouldUseSourceMap : isEnvDevelopment);
 
   // common function to get style loaders
   const getStyleLoaders = (cssOptions, preProcessor) => {
@@ -214,7 +250,7 @@ module.exports = (env, argv) => {
                 ],
               ],
           },
-          sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+          sourceMap,
         },
       },
     ].filter(Boolean);
@@ -223,7 +259,7 @@ module.exports = (env, argv) => {
         {
           loader: require.resolve('resolve-url-loader'),
           options: {
-            sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+            sourceMap,
             // root: paths.appSrc,
           },
         },
@@ -238,11 +274,13 @@ module.exports = (env, argv) => {
     return loaders;
   };
 
+  // Use TimeAnalyticsPlugin.wrap to anaylze the build time
   return {
     mode,
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
-    devtool: isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
+    // eslint-disable-next-line no-nested-ternary
+    devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -258,7 +296,7 @@ module.exports = (env, argv) => {
         host: 'localhost',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: true,
+        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: {
           // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
@@ -321,46 +359,14 @@ module.exports = (env, argv) => {
     },
     optimization: {
       nodeEnv: false, // will be set by DefinePlugin
-      minimize: false, // TODO: This causes "Killed" in CI because of the memory consumption. Set to isEnvProduction otherwise.
       minimizer: [
         // This is only used in production mode
         new TerserPlugin({
-          terserOptions: {
-            parse: {
-              // We want terser to parse ecma 8 code. However, we don't want it
-              // to apply any minification steps that turns valid ecma 5 code
-              // into invalid ecma 5 code. This is why the 'compress' and 'output'
-              // sections only apply transformations that are ecma 5 safe
-              // https://github.com/facebook/create-react-app/pull/4234
-              // ecma: 8, TODO:
-            },
-            compress: {
-              ecma: 5,
-              // Disabled because of an issue with Uglify breaking seemingly valid code:
-              // https://github.com/facebook/create-react-app/issues/2376
-              // Pending further investigation:
-              // https://github.com/mishoo/UglifyJS2/issues/2011
-              comparisons: false,
-              // Disabled because of an issue with Terser breaking valid code:
-              // https://github.com/facebook/create-react-app/issues/5250
-              // Pending further investigation:
-              // https://github.com/terser-js/terser/issues/120
-              inline: 2,
-            },
-            mangle: {
-              safari10: true,
-            },
-            // Added for profiling in devtools
-            keep_classnames: true,
-            keep_fnames: false,
-            output: {
-              ecma: 5,
-              comments: false,
-              // Turned on because emoji and regex is not minified properly using default
-              // https://github.com/facebook/create-react-app/issues/2488
-              ascii_only: true,
-            },
-          },
+          // Use swcMinify instead of terser: https://webpack.js.org/plugins/terser-webpack-plugin/#swc
+          minify: TerserPlugin.swcMinify,
+          // `terserOptions` options will be passed to `swc` (`@swc/core`)
+          // Link to options - https://swc.rs/docs/config-js-minify
+          terserOptions: {},
         }),
         // This is only used in production mode
         // TODO: Somehow this breaks with lineup: /media/LineUpJS.d518227895a66b92cfd7.css:1:1: Unknown word [media/LineUpJS.d518227895a66b92cfd7.css:1,1]
@@ -405,13 +411,17 @@ module.exports = (env, argv) => {
       ),
       fallback: {
         util: require.resolve('util/'),
+        // Disable polyfills, if required add them via require.resolve("crypto-browserify")
+        crypto: false,
+        path: false,
+        fs: false,
       },
     },
     module: {
       strictExportPresence: true,
       rules: [
         // Handle node_modules packages that contain sourcemaps
-        shouldUseSourceMap && {
+        !isFastMode && shouldUseSourceMap && {
           enforce: 'pre',
           exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
           test: /\.(js|mjs|jsx|ts|tsx|css)$/,
@@ -455,37 +465,19 @@ module.exports = (env, argv) => {
                 esModule: false,
               },
             },
-            // Process application JS with Babel.
-            // The preset includes JSX, Flow, TypeScript, and some ESnext features.
+            // Process application JS with swc-loader as it is much faster than babel.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
               exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
-              loader: 'babel-loader',
+              loader: 'swc-loader',
               options: {
-                presets: [['@babel/preset-env', { targets: { browsers: 'last 2 Chrome versions' } }], '@babel/preset-typescript', '@babel/preset-react'],
-                plugins: [
-                  // https://exerror.com/babel-referenceerror-regeneratorruntime-is-not-defined/#Solution_3_For_Babel_7_User
-                  [
-                    '@babel/transform-runtime',
-                    {
-                      regenerator: true,
-                    },
-                  ],
-                  // plugin-proposal-decorators is only needed if you're using experimental decorators in TypeScript
-                  ['@babel/plugin-proposal-decorators', { legacy: true }],
-                  // ["@babel/plugin-proposal-class-properties", { loose: false }],
-                  // Enable hmr for react components in dev mode
-                  isEnvDevelopment && 'react-refresh/babel',
-                ].filter(Boolean),
-                babelrc: false,
-                configFile: false,
-                // This is a feature of `babel-loader` for webpack (not Babel itself).
-                // It enables caching results in ./node_modules/.cache/babel-loader/
-                // directory for faster rebuilds.
-                cacheDirectory: true,
-                // See create-react-app#6846 for context on why cacheCompression is disabled
-                cacheCompression: false,
-                compact: isEnvProduction,
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    decorators: true,
+                    // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+                  },
+                },
               },
             },
             // "postcss" loader applies autoprefixer to our CSS.
@@ -500,7 +492,7 @@ module.exports = (env, argv) => {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap,
                 modules: {
                   mode: 'icss',
                 },
@@ -517,7 +509,7 @@ module.exports = (env, argv) => {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                sourceMap,
                 modules: {
                   mode: 'local',
                   getLocalIdent: getCSSModuleLocalIdent,
@@ -533,7 +525,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                  sourceMap,
                   modules: {
                     mode: 'icss',
                   },
@@ -553,7 +545,7 @@ module.exports = (env, argv) => {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: isEnvProduction ? shouldUseSourceMap : isEnvDevelopment,
+                  sourceMap,
                   modules: {
                     mode: 'local',
                     getLocalIdent: getCSSModuleLocalIdent,
@@ -610,21 +602,22 @@ module.exports = (env, argv) => {
             // Make sure to add the new loader(s) before the "file" loader.
           ],
         },
-      ],
+      ].filter(Boolean),
     },
     plugins: [
-      new CleanWebpackPlugin(),
+      !devServerOnly && new CleanWebpackPlugin(),
       isEnvDevelopment
         && new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
-      ...Object.values(entries).map(
-        (entry) => new HtmlWebpackPlugin({
+      ...Object.entries(entries).map(
+        ([chunkName, entry]) => new HtmlWebpackPlugin({
           inject: true,
           template: path.join(defaultAppPath, entry.template),
           filename: entry.html,
           title: libName,
-          excludeChunks: entry.excludeChunks,
+          // By default, exclude all other chunks
+          excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
           meta: {
             description: libDesc,
           },
@@ -657,7 +650,7 @@ module.exports = (env, argv) => {
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
-        // 'process.env.__BUILD_ID__': JSON.stringify(buildId),
+        'process.env.__BUILD_DATE__': JSON.stringify(buildId),
         'process.env.__APP_CONTEXT__': JSON.stringify('/'),
         'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
         // TODO: Add others..., or even better: env.stringified from https://github.com/facebook/create-react-app/blob/main/packages/react-scripts/config/webpack.config.js#L653
@@ -676,7 +669,7 @@ module.exports = (env, argv) => {
         }),
       // For each workspace repo, create an instance of the TS checker to typecheck.
       ...workspaceRepos.map(
-        (repo) => isEnvDevelopment
+        (repo) => !isFastMode && isEnvDevelopment
           && new ForkTsCheckerWebpackPlugin({
             async: isEnvDevelopment,
             typescript: {
@@ -685,8 +678,7 @@ module.exports = (env, argv) => {
                 syntactic: true,
               },
               // Build the repo and type-check
-              build: true,
-              // Recommended for use with babel-loader
+              build: Object.keys(resolveAliases).length === 0,
               mode: 'write-references',
               // Use the corresponding config file of the repo folder
               configFile: path.join(workspacePath, repo, 'tsconfig.json'),
@@ -703,7 +695,8 @@ module.exports = (env, argv) => {
                   incremental: true,
                   paths: Object.assign(
                     {},
-                    resolveAliases,
+                    // Map the aliases to the same path, but within an array like tsc requires it
+                    Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
                         [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
