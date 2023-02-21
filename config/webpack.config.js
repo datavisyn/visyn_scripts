@@ -293,7 +293,7 @@ module.exports = (webpackEnv, argv) => {
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'],
+        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
     devServer: isEnvDevelopment
