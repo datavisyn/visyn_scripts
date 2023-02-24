@@ -5,6 +5,4 @@ const resolver = require('enhanced-resolve').create.sync({
   extensions: ['.js', '.json', '.node', '.ts', '.tsx'],
 });
 
-module.exports = function (request, options) {
-  return resolver(options.basedir, request);
-};
+module.exports = (request, options) => resolver(options.basedir, request);

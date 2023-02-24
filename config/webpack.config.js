@@ -20,6 +20,14 @@ const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent')
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
 const { parseTsconfig } = require('get-tsconfig');
+
+let jquery = null;
+try {
+  jquery = require.resolve('jquery');
+} catch {
+  // pass
+}
+
 // const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
 
 // Load the current .env and expand it
@@ -591,13 +599,13 @@ module.exports = (webpackEnv, argv) => {
               ],
             },
             // TODO: Is this legacy stuff, should it be included as well?
-            {
-              test: require.resolve('jquery'),
+            jquery ? {
+              test: jquery,
               loader: 'expose-loader',
               options: {
                 exposes: ['window.jQuery', '$'],
               },
-            },
+            } : null,
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -613,7 +621,7 @@ module.exports = (webpackEnv, argv) => {
             },
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before the "file" loader.
-          ],
+          ].filter(Boolean),
         },
       ].filter(Boolean),
     },
