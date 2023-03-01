@@ -1,23 +1,7 @@
-// test dependencies that require transformation
-let pluginsToTransform = [
-  // datavisyn
-  'tdp_*',
-  'phovea_*',
-  'lineupjs',
-  // d3
-  'd3-*',
-  'internmap',
-  'delaunator',
-  'robust-predicates',
+const pluginsNotToTransform = [
+  // Disable the transform for d3v3, as it otherwise leads to "Cannot read property 'document' of undefined": https://stackoverflow.com/a/35560440
+  'd3v3',
 ].join('|');
-
-if (pluginsToTransform.length > 0) {
-  /**  Attention: Negative Lookahead! This regex adds the specified repos to a
-   * whitelist that holds plugins that are excluded from the transformIgnorePatterns.
-   * This means that pluginsToTransform should contain all repos that export ts files.
-   * They can only be handled by the transformation. */
-  pluginsToTransform = `(?!${pluginsToTransform})`;
-}
 
 /**
  * TODO check if we can process inline webpack loaders (e.g. as found in https://github.com/phovea/phovea_ui/blob/master/src/_bootstrap.ts)
@@ -26,22 +10,25 @@ if (pluginsToTransform.length > 0) {
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.(js|ts|tsx)$': 'ts-jest',
+    '^.+\\.(js|ts|tsx|mjs|mts)$': ['@swc/jest', {
+      // Exactly the same configuration as in the webpack.config.js
+      jsc: {
+        parser: {
+          syntax: 'typescript',
+          decorators: true,
+        },
+      },
+    }],
     '\\.xml$': 'jest-raw-loader',
   },
   testRegex: '(.*(test|spec))\\.(tsx?)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
-  transformIgnorePatterns: [`../node_modules/${pluginsToTransform}`, `node_modules/${pluginsToTransform}`],
+  resolver: 'visyn_scripts/config/jest_export_maps_resolver.js',
+  transformIgnorePatterns: [`../node_modules/${pluginsNotToTransform}`, `node_modules/${pluginsNotToTransform}`],
   globals: {
     __VERSION__: 'TEST_VERSION',
     __APP_CONTEXT__: 'TEST_CONTEXT',
-    'ts-jest': {
-      // has to be set to true, otherwise i18n import fails
-      tsconfig: {
-        esModuleInterop: true,
-      },
-    },
   },
   moduleNameMapper: {
     '^.+\\.(css|less|scss|sass|png|jpg|gif|svg|html)$': 'identity-obj-proxy',
