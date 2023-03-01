@@ -19,6 +19,15 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const dotenv = require('dotenv');
 const dotenvExpand = require('dotenv-expand');
+const { parseTsconfig } = require('get-tsconfig');
+
+let jquery = null;
+try {
+  jquery = require.resolve('jquery');
+} catch {
+  // pass
+}
+
 // const { TimeAnalyticsPlugin } = require('time-analytics-webpack-plugin');
 
 // Load the current .env and expand it
@@ -132,6 +141,12 @@ module.exports = (webpackEnv, argv) => {
   if (devServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
     entries = {};
+  }
+
+  const tsconfigJson = isSingleRepoMode ? parseTsconfig(path.join(workspacePath, 'tsconfig.json')) : null;
+  const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
+  if (isLegacyModuleResolution) {
+    console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
   }
 
   const copyAppFiles = copyFiles?.map((file) => ({
@@ -286,7 +301,7 @@ module.exports = (webpackEnv, argv) => {
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'],
+        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
     devServer: isEnvDevelopment
@@ -380,6 +395,12 @@ module.exports = (webpackEnv, argv) => {
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
+      // This is required to enable TS moduleResolution: node16, as there we have to add .js extensions which are actually .ts files.
+      extensionAlias: isLegacyModuleResolution ? undefined : {
+        '.js': ['.tsx', '.ts', '.js'],
+        '.cjs': ['.cts', '.cjs'],
+        '.mjs': ['.mts', '.mjs'],
+      },
       // By default, always search for modules in the relative node_modules. However,
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
@@ -578,13 +599,13 @@ module.exports = (webpackEnv, argv) => {
               ],
             },
             // TODO: Is this legacy stuff, should it be included as well?
-            {
-              test: require.resolve('jquery'),
+            jquery ? {
+              test: jquery,
               loader: 'expose-loader',
               options: {
                 exposes: ['window.jQuery', '$'],
               },
-            },
+            } : null,
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -600,7 +621,7 @@ module.exports = (webpackEnv, argv) => {
             },
             // ** STOP ** Are you adding a new loader?
             // Make sure to add the new loader(s) before the "file" loader.
-          ],
+          ].filter(Boolean),
         },
       ].filter(Boolean),
     },
