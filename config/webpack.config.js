@@ -143,7 +143,7 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
-  const tsconfigJson = parseTsconfig(path.join(workspacePath, 'tsconfig.json'));
+  const tsconfigJson = isSingleRepoMode ? parseTsconfig(path.join(workspacePath, 'tsconfig.json')) : null;
   const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
   if (isLegacyModuleResolution) {
     console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
