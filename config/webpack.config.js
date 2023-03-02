@@ -113,9 +113,9 @@ module.exports = (webpackEnv, argv) => {
    *   entries: {
    *     [chunkName: string]: {
    *       js: string;
-   *       html: string;
-   *       template: string;
-   *       excludeChunks: string[];
+   *       html?: string;
+   *       template?: string;
+   *       excludeChunks?: string[];
    *       scss?: string;
    *     };
    *   };
@@ -634,8 +634,8 @@ module.exports = (webpackEnv, argv) => {
       ...Object.entries(entries).map(
         ([chunkName, entry]) => new HtmlWebpackPlugin({
           inject: true,
-          template: path.join(defaultAppPath, entry.template),
-          filename: entry.html,
+          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
+          filename: entry.html || `${chunkName}.html`,
           title: libName,
           // By default, exclude all other chunks
           excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
