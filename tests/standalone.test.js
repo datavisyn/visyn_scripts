@@ -23,6 +23,8 @@ describe('standalone', () => {
     // Install dependencies
     if (!fs.existsSync(resolve(templateDir, 'node_modules'))) {
       console.log('Installing local dependencies in the template folder');
+      // Clear the yarn.lock to ensure it is found as module, but completely reinstalls.
+      fs.writeFileSync(resolve(templateDir, 'yarn.lock'), '');
       execSync('yarn install --no-immutable --inline-builds', {
         cwd: templateDir,
         stdio: 'inherit',
