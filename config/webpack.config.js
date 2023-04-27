@@ -710,7 +710,6 @@ module.exports = (webpackEnv, argv) => {
                   baseUrl: '.',
                   sourceMap: true,
                   skipLibCheck: true,
-                  inlineSourceMap: false,
                   declarationMap: false,
                   noEmit: false,
                   incremental: true,

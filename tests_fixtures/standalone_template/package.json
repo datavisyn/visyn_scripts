@@ -50,7 +50,7 @@
     "webpack:prod": "visyn_scripts build --mode production --env workspace_mode=single"
   },
   "dependencies": {
-    "cypress": "^11.2.0",
+    "cypress": "^12.0.0",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "visyn_scripts": "portal:../../"
@@ -72,5 +72,6 @@
         "excludeChunks": []
       }
     }
-  }
+  },
+  "packageManager": "yarn@3.2.2"
 }
