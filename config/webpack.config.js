@@ -395,22 +395,12 @@ module.exports = (webpackEnv, argv) => {
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
-      // This is required to enable TS moduleResolution: node16, as there we have to add .js extensions which are actually .ts files.
-      extensionAlias: isLegacyModuleResolution ? undefined : {
-        '.js': ['.tsx', '.ts', '.js'],
-        '.cjs': ['.cts', '.cjs'],
-        '.mjs': ['.mts', '.mjs'],
-      },
       // By default, always search for modules in the relative node_modules. However,
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
       modules: ['node_modules', path.join(workspacePath, 'node_modules')],
       alias: Object.assign(
         {
-          // Alias to jsx-runtime required as only React@18 has this export, otherwise it fails with "The request 'react/jsx-runtime' failed to resolve only because it was resolved as fully specified".
-          // See https://github.com/facebook/react/issues/20235 for details.
-          'react/jsx-runtime': 'react/jsx-runtime.js',
-          'react/jsx-dev-runtime': 'react/jsx-dev-runtime.js',
           ...resolveAliases,
         },
         // Add aliases for all the workspace repos
@@ -710,7 +700,6 @@ module.exports = (webpackEnv, argv) => {
                   baseUrl: '.',
                   sourceMap: true,
                   skipLibCheck: true,
-                  inlineSourceMap: false,
                   declarationMap: false,
                   noEmit: false,
                   incremental: true,
