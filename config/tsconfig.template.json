@@ -1,12 +1,12 @@
 {
   "compilerOptions": {
-    "module": "ESNext",
+    "module": "ES2022",
     "target": "ES2021",
     "importHelpers": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "moduleResolution": "node16",
+    "moduleResolution": "bundler",
     "jsx": "react",
     "allowJs": true,
     "experimentalDecorators": true,
@@ -16,5 +16,12 @@
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "preserveWatchOutput": true
-  }
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "es2022",
+      "moduleResolution": "node16",
+      "sourceMap": false,
+    }
+  },
 }

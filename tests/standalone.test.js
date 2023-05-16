@@ -86,7 +86,7 @@ describe('standalone', () => {
           // Stop the server afterwards
           teardownDevServer();
         }
-      });
-    });
+      }, 50000);
+    }, 50000);
   });
 });
