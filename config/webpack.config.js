@@ -320,6 +320,10 @@ module.exports = (webpackEnv, argv) => {
               target: 'http://localhost:9000',
               secure: false,
               ws: true,
+              // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
+              onProxyReq: (proxyReq, req, res) => {
+                res.on('close', () => proxyReq.destroy());
+              },
             },
             '/login': {
               target: 'http://localhost:9000',
