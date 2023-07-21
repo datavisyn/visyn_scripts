@@ -70,6 +70,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'prefer-spread': 'warn',
     '@typescript-eslint/ban-ts-comment': 'warn',
     'react/destructuring-assignment': 'off',
+    'react/jsx-curly-brace-presence': 'warn',
     'react/jsx-props-no-spreading': 'off',
     'react/no-unused-class-component-methods': 'warn',
     'react/prop-types': 'off',
