@@ -5,11 +5,11 @@
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-underscore-dangle */
 const path = require('path');
+const fs = require('fs');
 const glob = require('glob').sync;
 const chalk = require('chalk');
 const { extend } = require('lodash');
 const _ = require('lodash');
-const fs = require('fs');
 const yaml = require('yamljs');
 const NpmUtils = require('../utils/NpmUtils');
 const PipUtils = require('../utils/PipUtils');
