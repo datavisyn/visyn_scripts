@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
+const path = require('path');
 const Generator = require('yeoman-generator');
 const { merge, template } = require('lodash');
-const path = require('path');
 const glob = require('glob').sync;
 const fs = require('fs-extra');
 const GeneratorUtils = require('./utils/GeneratorUtils');

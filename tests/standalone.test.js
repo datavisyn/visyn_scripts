@@ -1,7 +1,7 @@
-const fse = require('fs-extra');
 const fs = require('fs');
 const { resolve } = require('path');
 const { execSync } = require('child_process');
+const fse = require('fs-extra');
 const { setup: setupDevServer, teardown: teardownDevServer } = require('jest-dev-server');
 
 // Mock setup of yargs inspired by https://www.kgajera.com/blog/how-to-test-yargs-cli-with-jest/
