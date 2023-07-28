@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
+const fs = require('fs');
 const chalk = require('chalk');
 const Base = require('yeoman-generator');
-const fs = require('fs');
 
 function extractFromReadme(content) {
   const safe = (p) => (p ? p[1] : '');

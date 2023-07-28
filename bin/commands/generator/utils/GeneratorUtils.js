@@ -1,9 +1,9 @@
 /* eslint-disable global-require */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-promise-executor-return */
+const path = require('path');
 const fs = require('fs-extra');
 const yeoman = require('yeoman-environment');
-const path = require('path');
 const { isError } = require('lodash');
 
 module.exports = class GeneratorUtils {
