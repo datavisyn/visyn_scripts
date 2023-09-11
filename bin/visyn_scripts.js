@@ -14,6 +14,7 @@ process.on('unhandledRejection', (err) => {
 yargs(hideBin(process.argv))
   .parserConfiguration({ 'unknown-options-as-args': true })
   .usage('$0 <command>')
+  .command(require('./commands/rspack'))
   .command(require('./commands/build'))
   .command(require('./commands/clean'))
   .command(require('./commands/compile'))
