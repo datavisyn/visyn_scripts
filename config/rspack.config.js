@@ -1,10 +1,15 @@
 const path = require('path');
 const fs = require('fs');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const dotenv = require('dotenv');
+const CopyPlugin = require('copy-webpack-plugin');
+const Dotenv = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const parsedEnv = dotenvExpand.expand(dotenv.config());
+
 
 module.exports = (webpackEnv, argv) => {
     const env = {
@@ -20,7 +25,8 @@ module.exports = (webpackEnv, argv) => {
     const year = now.getFullYear();
     const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
     const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
-    
+
+
     const isEnvDevelopment = mode === 'development';
     const isEnvProduction = mode === 'production';
     const isFastMode = env.fast?.toLowerCase() === 'true';
@@ -37,8 +43,15 @@ module.exports = (webpackEnv, argv) => {
     const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
 
     const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
-
+    const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
     const workspaceMaxChunkSize = 5000000;
+    const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
+    const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
+    
+    let {
+      // eslint-disable-next-line prefer-const
+      entries, registry, copyFiles, historyApiFallback,
+    } = appPkg.visyn;
 
     const resolveAliases = Object.fromEntries(Object.entries({}).map(([key, p]) => [key, path.join(workspacePath, p)]));
     // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
@@ -50,93 +63,56 @@ module.exports = (webpackEnv, argv) => {
     const libDesc = appPkg.description;
 
     const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
-    const sourceMap = !isFastMode && (isEnvProduction ? shouldUseSourceMap : isEnvDevelopment);
+    const sourceMap = !isFastMode && (isEnvProduction ? true : isEnvDevelopment);
 
-    const getStyleLoaders = (cssOptions, preProcessor) => {
-        const loaders = [
-          isEnvDevelopment && require.resolve('style-loader'),
-          isEnvProduction && {
-            loader: MiniCssExtractPlugin.loader,
-            // css is located in `static/css`, use '../../' to locate index.html folder
-            // in production `paths.publicUrlOrPath` can be a relative path
-            // options: paths.publicUrlOrPath.startsWith('.')
-            //  ? { publicPath: '../../' }
-            //  : {},
-          },
-          {
-            loader: require.resolve('css-loader'),
-            options: cssOptions,
-          },
-          {
-            // Options for PostCSS as we reference these options twice
-            // Adds vendor prefixing based on your specified browser support in
-            // package.json
-            loader: require.resolve('postcss-loader'),
-            options: {
-              postcssOptions: {
-                // Necessary for external CSS imports to work
-                // https://github.com/facebook/create-react-app/issues/2677
-                ident: 'postcss',
-                config: false,
-                plugins: !useTailwind
-                  ? [
-                    'postcss-flexbugs-fixes',
-                    [
-                      'postcss-preset-env',
-                      {
-                        autoprefixer: {
-                          flexbox: 'no-2009',
-                        },
-                        stage: 3,
-                      },
-                    ],
-                    // Adds PostCSS Normalize as the reset css with default options,
-                    // so that it honors browserslist config in package.json
-                    // which in turn let's users customize the target behavior as per their needs.
-                    'postcss-normalize',
-                  ]
-                  : [
-                    'tailwindcss',
-                    'postcss-flexbugs-fixes',
-                    [
-                      'postcss-preset-env',
-                      {
-                        autoprefixer: {
-                          flexbox: 'no-2009',
-                        },
-                        stage: 3,
-                      },
-                    ],
-                  ],
-              },
-              sourceMap,
-            },
-          },
-        ].filter(Boolean);
-        if (preProcessor) {
-          loaders.push(
-            {
-              loader: require.resolve('resolve-url-loader'),
-              options: {
-                sourceMap,
-                // root: paths.appSrc,
-              },
-            },
-            {
-              loader: require.resolve(preProcessor),
-              options: {
-                sourceMap: true,
-              },
-            },
-          );
-        }
-        return loaders;
-      };
+    const copyAppFiles = copyFiles?.map((file) => ({
+      from: path.join(defaultAppPath, file),
+      to: path.join(workspacePath, 'bundles', path.basename(file)),
+    })) || [];
 
-    let {
-        // eslint-disable-next-line prefer-const
-        entries, registry, copyFiles, historyApiFallback,
-      } = appPkg.visyn;
+    const copyPluginPatterns = copyAppFiles.concat(
+      [
+        fs.existsSync(workspaceMetaDataFile) && {
+          from: workspaceMetaDataFile,
+          to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
+          // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+          transform: () => {
+            function resolveScreenshot(appDirectory) {
+              const f = path.join(appDirectory, './media/screenshot.png');
+              if (!fs.existsSync(f)) {
+                return null;
+              }
+              const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
+              return `data:image/png;base64,${buffer}`;
+            }
+  
+            return JSON.stringify(
+              {
+                name: appPkg.name,
+                displayName: appPkg.displayName || appPkg.name,
+                version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
+                repository: appPkg.repository?.url,
+                homepage: appPkg.homepage,
+                description: appPkg.description,
+                screenshot: resolveScreenshot(defaultAppPath),
+                buildId,
+              },
+              null,
+              2,
+            );
+          },
+        },
+        // use package-lock json as buildInfo
+        fs.existsSync(workspaceBuildInfoFile) && {
+          from: workspaceBuildInfoFile,
+          to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
+        },
+      ].filter(Boolean),
+    );
+
+  
+
+
 
 
       console.log(Object.fromEntries(
@@ -146,6 +122,16 @@ module.exports = (webpackEnv, argv) => {
         ]),
     ));
 
+
+    console.log(new Dotenv({
+      path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
+      safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
+      allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
+      systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
+      silent: true, // hide any errors
+      defaults: false, // load '.env.defaults' as the default values if empty.
+    }));
+
       return {
         entry: Object.fromEntries(
             Object.entries(entries).map(([key, entry]) => [
@@ -153,10 +139,82 @@ module.exports = (webpackEnv, argv) => {
               [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
             ]),
         ),
+        cache: true,
         output: {
-            filename: 'main.js',
-            path: path.join(workspacePath, 'bundles'),
+          // The build folder.
+          path: path.join(workspacePath, 'bundles'),
+          // Add /* filename */ comments to generated require()s in the output.
+          pathinfo: isEnvDevelopment,
+          // There will be one main bundle, and one file per asynchronous chunk.
+          filename: '[name].[contenthash:8].js',
+          // There are also additional JS chunk files if you use code splitting.
+          chunkFilename: '[name].[contenthash:8].chunk.js',
+          assetModuleFilename: 'assets/[name].[hash][ext]',
+          // webpack uses `publicPath` to determine where the app is being served from.
+          // It requires a trailing slash, or the file assets will get an incorrect path.
+          // We inferred the "public path" (such as / or /my-project) from homepage.
+          publicPath: '/',
         },
+        plugins: [
+          new Dotenv({
+            path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
+            safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
+            allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
+            systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
+            silent: true, // hide any errors
+            defaults: false, // load '.env.defaults' as the default values if empty.
+          }),
+          copyPluginPatterns.length > 0
+            && new CopyPlugin({
+              patterns: copyPluginPatterns,
+            }),
+          // For each workspace repo, create an instance of the TS checker to typecheck.
+          ...workspaceRepos.map(
+            (repo) => !isFastMode && isEnvDevelopment
+              && new ForkTsCheckerWebpackPlugin({
+                async: isEnvDevelopment,
+                typescript: {
+                  diagnosticOptions: {
+                    semantic: true,
+                    syntactic: true,
+                  },
+                  // Build the repo and type-check
+                  build: Object.keys(resolveAliases).length === 0,
+                  mode: 'write-references',
+                  // Use the corresponding config file of the repo folder
+                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
+                  // TODO: Add explanation
+                  configOverwrite: {
+                    compilerOptions: {
+                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
+                      baseUrl: '.',
+                      sourceMap: true,
+                      skipLibCheck: true,
+                      declarationMap: false,
+                      noEmit: false,
+                      incremental: true,
+                      paths: Object.assign(
+                        {},
+                        // Map the aliases to the same path, but within an array like tsc requires it
+                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
+                        ...(!isSingleRepoMode
+                          ? workspaceRepos.map((r) => ({
+                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
+                          }))
+                          : [
+                            {
+                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
+                              [libName]: path.join(workspacePath, 'src/index.ts'),
+                            },
+                          ]),
+                      ),
+                    },
+                  },
+                },
+              }),
+          ),
+        ],
         builtins: {
             define: {
                 'process.env.NODE_ENV': JSON.stringify(mode),
@@ -168,17 +226,6 @@ module.exports = (webpackEnv, argv) => {
             },
             html: Object.entries(entries).map(
                 ([chunkName, entry]) => {
-                    console.log({
-                        template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
-                        filename: entry.html || `${chunkName}.html`,
-                        title: libName,
-                        // By default, exclude all other chunks
-                        excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-                        meta: {
-                          description: libDesc,
-                        },
-                        minify: isEnvProduction,
-                      })
                     return {
                   template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
                   filename: entry.html || `${chunkName}.html`,
@@ -250,6 +297,7 @@ module.exports = (webpackEnv, argv) => {
                     resourceQuery: /raw/,
                     type: 'asset/source',
                   },
+
                   // "url" loader works like "file" loader except that it embeds assets
                   // smaller than specified limit in bytes as data URLs to avoid requests.
                   // A missing `test` is equivalent to a match.
@@ -276,55 +324,28 @@ module.exports = (webpackEnv, argv) => {
                       esModule: false,
                     },
                   },
-                  // Process application JS with swc-loader as it is much faster than babel.
                   {
-                    test: /\.(js|mjs|jsx|ts|tsx)$/,
-                    exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
-                    loader: 'swc-loader',
-                    options: {
-                      jsc: {
-                        parser: {
-                          syntax: 'typescript',
-                          decorators: true,
-                          // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
-                        },
-                      },
-                    },
+                    test: /\.css$/i,
+                    type: "css", // this is enabled by default for .css, so you don't need to specify it
                   },
                   {
                     test: sassRegex,
-                    exclude: sassModuleRegex,
-                    use: getStyleLoaders(
+                    use: [
                       {
-                        importLoaders: 3,
-                        sourceMap,
-                        modules: {
-                          mode: 'icss',
+                        loader: require.resolve('resolve-url-loader'),
+                        options: {
+                          sourceMap,
+                          // root: paths.appSrc,
                         },
                       },
-                      'sass-loader',
-                    ),
-                    // Don't consider CSS imports dead code even if the
-                    // containing package claims to have no side effects.
-                    // Remove this when webpack adds a warning or an error for this.
-                    // See https://github.com/webpack/webpack/issues/6571
-                    sideEffects: true,
-                  },
-                  // Adds support for CSS Modules, but using SASS
-                  // using the extension .module.scss or .module.sass
-                  {
-                    test: sassModuleRegex,
-                    use: getStyleLoaders(
                       {
-                        importLoaders: 3,
-                        sourceMap,
-                        modules: {
-                          mode: 'local',
-                          getLocalIdent: getCSSModuleLocalIdent,
+                        loader: 'sass-loader',
+                        options: {
+                          // ...
                         },
                       },
-                      'sass-loader',
-                    ),
+                    ],
+                    type: 'css',
                   },
                   // "file" loader makes sure those assets get served by WebpackDevServer.
                   // When you `import` an asset, you get its (virtual) filename.
