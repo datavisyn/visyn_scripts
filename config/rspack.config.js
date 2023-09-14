@@ -141,6 +141,51 @@ module.exports = (webpackEnv, argv) => {
             silent: true, // hide any errors
             defaults: false, // load '.env.defaults' as the default values if empty.
           }),
+          ...workspaceRepos.map(
+            (repo) => !isFastMode && isEnvDevelopment
+              && new ForkTsCheckerWebpackPlugin({
+                async: isEnvDevelopment,
+                typescript: {
+                  diagnosticOptions: {
+                    semantic: true,
+                    syntactic: true,
+                  },
+                  // Build the repo and type-check
+                  build: Object.keys(resolveAliases).length === 0,
+                  mode: 'write-references',
+                  // Use the corresponding config file of the repo folder
+                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
+                  // TODO: Add explanation
+                  configOverwrite: {
+                    compilerOptions: {
+                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
+                      baseUrl: '.',
+                      sourceMap: true,
+                      skipLibCheck: true,
+                      declarationMap: false,
+                      noEmit: false,
+                      incremental: true,
+                      paths: Object.assign(
+                        {},
+                        // Map the aliases to the same path, but within an array like tsc requires it
+                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
+                        ...(!isSingleRepoMode
+                          ? workspaceRepos.map((r) => ({
+                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
+                          }))
+                          : [
+                            {
+                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
+                              [libName]: path.join(workspacePath, 'src/index.ts'),
+                            },
+                          ]),
+                      ),
+                    },
+                  },
+                },
+              }),
+          ).filter(Boolean),
         ],
         builtins: {
             define: {
