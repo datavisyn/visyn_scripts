@@ -10,7 +10,6 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const parsedEnv = dotenvExpand.expand(dotenv.config());
 
-
 module.exports = (webpackEnv, argv) => {
     const env = {
         ...(parsedEnv.parsed || {}),
@@ -110,28 +109,6 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     );
 
-  
-
-
-
-
-      console.log(Object.fromEntries(
-        Object.entries(entries).map(([key, entry]) => [
-          key,
-          [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
-        ]),
-    ));
-
-
-    console.log(new Dotenv({
-      path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
-      safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
-      allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
-      systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
-      silent: true, // hide any errors
-      defaults: false, // load '.env.defaults' as the default values if empty.
-    }));
-
       return {
         entry: Object.fromEntries(
             Object.entries(entries).map(([key, entry]) => [
@@ -164,56 +141,6 @@ module.exports = (webpackEnv, argv) => {
             silent: true, // hide any errors
             defaults: false, // load '.env.defaults' as the default values if empty.
           }),
-          copyPluginPatterns.length > 0
-            && new CopyPlugin({
-              patterns: copyPluginPatterns,
-            }),
-          // For each workspace repo, create an instance of the TS checker to typecheck.
-          ...workspaceRepos.map(
-            (repo) => !isFastMode && isEnvDevelopment
-              && new ForkTsCheckerWebpackPlugin({
-                async: isEnvDevelopment,
-                typescript: {
-                  diagnosticOptions: {
-                    semantic: true,
-                    syntactic: true,
-                  },
-                  // Build the repo and type-check
-                  build: Object.keys(resolveAliases).length === 0,
-                  mode: 'write-references',
-                  // Use the corresponding config file of the repo folder
-                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
-                  // TODO: Add explanation
-                  configOverwrite: {
-                    compilerOptions: {
-                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
-                      baseUrl: '.',
-                      sourceMap: true,
-                      skipLibCheck: true,
-                      declarationMap: false,
-                      noEmit: false,
-                      incremental: true,
-                      paths: Object.assign(
-                        {},
-                        // Map the aliases to the same path, but within an array like tsc requires it
-                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
-                        ...(!isSingleRepoMode
-                          ? workspaceRepos.map((r) => ({
-                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
-                          }))
-                          : [
-                            {
-                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
-                              [libName]: path.join(workspacePath, 'src/index.ts'),
-                            },
-                          ]),
-                      ),
-                    },
-                  },
-                },
-              }),
-          ),
         ],
         builtins: {
             define: {
@@ -223,6 +150,9 @@ module.exports = (webpackEnv, argv) => {
                 'process.env.__BUILD_ID__': JSON.stringify(buildId),
                 'process.env.__APP_CONTEXT__': JSON.stringify('/'),
                 'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
+            },
+            copy: {
+              patterns: copyPluginPatterns
             },
             html: Object.entries(entries).map(
                 ([chunkName, entry]) => {
