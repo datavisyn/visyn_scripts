@@ -83,6 +83,7 @@
     "imports-loader": "~4.0.1",
     "inquirer": "7",
     "jest": "^29.0.0",
+    "jest-environment-jsdom": "^29.7.0",
     "jest-raw-loader": "~1.0.1",
     "jest-resolve": "^29.0.0",
     "lodash": "^4.17.21",
