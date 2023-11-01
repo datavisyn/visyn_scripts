@@ -6,6 +6,6 @@ module.exports = {
   describe: 'Build a workspace using rspack',
   handler: (args) => {
     const configPath = resolve(__dirname, '../../config/rspack.config.js');
-    call('rspack', `build --c "${configPath}" ${(args.strings || []).join(' ')}`)
+    call('rspack', `build --c "${configPath}" ${(args.strings || []).join(' ')}`);
   },
 };
