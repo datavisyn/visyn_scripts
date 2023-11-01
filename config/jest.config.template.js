@@ -3,10 +3,7 @@ const pluginsNotToTransform = [
   'd3v3',
 ].join('|');
 
-/**
- * TODO check if we can process inline webpack loaders (e.g. as found in https://github.com/phovea/phovea_ui/blob/master/src/_bootstrap.ts)
- * see also https://jestjs.io/docs/en/webpack#mocking-css-modules
- */
+/** @type {import('jest').Config} */
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
@@ -22,6 +19,8 @@ module.exports = {
     '\\.xml$': 'jest-raw-loader',
   },
   testRegex: '(.*(test|spec))\\.(tsx?)$',
+  testPathIgnorePatterns: ['playwright'],
+  coveragePathIgnorePatterns: ['playwright'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
   resolver: 'visyn_scripts/config/jest_export_maps_resolver.js',
