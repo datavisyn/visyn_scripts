@@ -495,6 +495,20 @@ module.exports = (webpackEnv, argv) => {
                 },
               },
             },
+            // Process application TS with swc-loader even if they are coming from node_modules, i.e. from non-built dependencies.
+            {
+              test: /\.(ts|tsx)$/,
+              loader: 'swc-loader',
+              options: {
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    decorators: true,
+                    // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+                  },
+                },
+              },
+            },
             // "postcss" loader applies autoprefixer to our CSS.
             // "css" loader resolves paths in CSS and adds assets as dependencies.
             // "style" loader turns CSS into JS modules that inject <style> tags.
