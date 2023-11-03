@@ -23,6 +23,7 @@ module.exports = {
   coveragePathIgnorePatterns: ['playwright'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
+  resolver: 'visyn_scripts/config/jest_export_maps_resolver.js',
   transformIgnorePatterns: [`../node_modules/${pluginsNotToTransform}`, `node_modules/${pluginsNotToTransform}`],
   globals: {
     __VERSION__: 'TEST_VERSION',
@@ -30,5 +31,7 @@ module.exports = {
   },
   moduleNameMapper: {
     '^.+\\.(css|less|scss|sass|png|jpg|gif|svg|html)$': 'identity-obj-proxy',
+    // Add tslib alias as otherwise we get a TypeError: Cannot destructure property '__extends' of '_tslib.default' as it is undefined.
+    'tslib': 'tslib/tslib.es6.js',
   },
 };
