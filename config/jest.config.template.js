@@ -32,6 +32,6 @@ module.exports = {
   moduleNameMapper: {
     '^.+\\.(css|less|scss|sass|png|jpg|gif|svg|html)$': 'identity-obj-proxy',
     // Add tslib alias as otherwise we get a TypeError: Cannot destructure property '__extends' of '_tslib.default' as it is undefined.
-    'tslib': 'tslib/tslib.es6.js',
+    tslib: 'tslib/tslib.es6.js',
   },
 };
