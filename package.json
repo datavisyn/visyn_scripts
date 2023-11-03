@@ -129,7 +129,7 @@
   "devDependencies": {
     "@types/yargs": "^17.0.22",
     "http-server": "^14.1.1",
-    "jest-dev-server": "^9.0.1"
+    "jest-dev-server": "^6.1.1"
   },
   "peerDependencies": {
     "@types/react": "^18.0.0",
