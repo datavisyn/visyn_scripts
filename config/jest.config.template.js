@@ -23,7 +23,6 @@ module.exports = {
   coveragePathIgnorePatterns: ['playwright'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   modulePaths: ['src'],
-  resolver: 'visyn_scripts/config/jest_export_maps_resolver.js',
   transformIgnorePatterns: [`../node_modules/${pluginsNotToTransform}`, `node_modules/${pluginsNotToTransform}`],
   globals: {
     __VERSION__: 'TEST_VERSION',
