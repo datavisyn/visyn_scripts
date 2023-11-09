@@ -308,7 +308,8 @@ module.exports = (webpackEnv, argv) => {
       ? {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
-        host: 'localhost',
+        // Listen to all interfaces, as Node 18+ resolves IPv6 first: https://github.com/cypress-io/github-action/blob/master/README.md#wait-on-with-nodejs-18
+        host: '0.0.0.0',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
