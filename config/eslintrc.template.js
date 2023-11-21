@@ -49,6 +49,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': [
       'error',
       {
@@ -57,6 +58,7 @@ module.exports = ({ tsconfigRootDir }) => ({
         allowTaggedTemplates: true,
       },
     ],
+    '@typescript-eslint/no-unused-vars': 'warn',
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'cypress/unsafe-to-chain-command': 'off',
