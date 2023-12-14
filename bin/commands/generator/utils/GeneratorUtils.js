@@ -54,15 +54,14 @@ module.exports = class GeneratorUtils {
     const _args = Array.isArray(args) ? args.join(' ') : args || '';
     return new Promise((resolve, reject) => {
       try {
-        env
-          .run(`phovea:${generator} ${_args}`, options || {}, (e) => {
-            if (isError(e)) {
-              reject(e);
-            } else {
-              // wait a second after running yo to commit the files correctly
-              setTimeout(() => resolve(), 500);
-            }
-          });
+        env.run(`phovea:${generator} ${_args}`, options || {}, (e) => {
+          if (isError(e)) {
+            reject(e);
+          } else {
+            // wait a second after running yo to commit the files correctly
+            setTimeout(() => resolve(), 500);
+          }
+        });
       } catch (e) {
         reject(e);
       }

@@ -88,7 +88,10 @@ module.exports = (webpackEnv, argv) => {
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
   const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
   // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
-  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  const customResolveAliasRegex =
+    Object.entries(resolveAliases).length > 0
+      ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`)
+      : null;
   Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
 
   const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
@@ -135,7 +138,10 @@ module.exports = (webpackEnv, argv) => {
 
   let {
     // eslint-disable-next-line prefer-const
-    entries, registry, copyFiles, historyApiFallback,
+    entries,
+    registry,
+    copyFiles,
+    historyApiFallback,
   } = appPkg.visyn;
 
   if (devServerOnly) {
@@ -149,13 +155,16 @@ module.exports = (webpackEnv, argv) => {
     console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
   }
 
-  const copyAppFiles = copyFiles?.map((file) => ({
-    from: path.join(defaultAppPath, file),
-    to: path.join(workspacePath, 'bundles', path.basename(file)),
-  })) || [];
+  const copyAppFiles =
+    copyFiles?.map((file) => ({
+      from: path.join(defaultAppPath, file),
+      to: path.join(workspacePath, 'bundles', path.basename(file)),
+    })) || [];
 
   const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
+  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(
+    now.getUTCMinutes(),
+  )}${prefix(now.getUTCSeconds())}`;
 
   const copyPluginPatterns = copyAppFiles.concat(
     [
@@ -236,34 +245,34 @@ module.exports = (webpackEnv, argv) => {
             config: false,
             plugins: !useTailwind
               ? [
-                'postcss-flexbugs-fixes',
-                [
-                  'postcss-preset-env',
-                  {
-                    autoprefixer: {
-                      flexbox: 'no-2009',
+                  'postcss-flexbugs-fixes',
+                  [
+                    'postcss-preset-env',
+                    {
+                      autoprefixer: {
+                        flexbox: 'no-2009',
+                      },
+                      stage: 3,
                     },
-                    stage: 3,
-                  },
-                ],
-                // Adds PostCSS Normalize as the reset css with default options,
-                // so that it honors browserslist config in package.json
-                // which in turn let's users customize the target behavior as per their needs.
-                'postcss-normalize',
-              ]
+                  ],
+                  // Adds PostCSS Normalize as the reset css with default options,
+                  // so that it honors browserslist config in package.json
+                  // which in turn let's users customize the target behavior as per their needs.
+                  'postcss-normalize',
+                ]
               : [
-                'tailwindcss',
-                'postcss-flexbugs-fixes',
-                [
-                  'postcss-preset-env',
-                  {
-                    autoprefixer: {
-                      flexbox: 'no-2009',
+                  'tailwindcss',
+                  'postcss-flexbugs-fixes',
+                  [
+                    'postcss-preset-env',
+                    {
+                      autoprefixer: {
+                        flexbox: 'no-2009',
+                      },
+                      stage: 3,
                     },
-                    stage: 3,
-                  },
+                  ],
                 ],
-              ],
           },
           sourceMap,
         },
@@ -295,58 +304,60 @@ module.exports = (webpackEnv, argv) => {
     // Webpack noise constrained to errors and warnings
     stats: 'errors-warnings',
     // eslint-disable-next-line no-nested-ternary
-    devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
+    devtool: isFastMode ? false : isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
+        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) =>
+          fs.existsSync(v),
+        ),
       ]),
     ),
     devServer: isEnvDevelopment
       ? {
-        static: path.resolve(workspacePath, 'bundles'),
-        compress: true,
-        // Listen to all interfaces, as Node 18+ resolves IPv6 first: https://github.com/cypress-io/github-action/blob/master/README.md#wait-on-with-nodejs-18
-        host: '0.0.0.0',
-        open: true,
-        // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
-        proxy: {
-          // Append on top to allow overriding /api/v1/ for example
-          ...workspaceProxy,
-          ...{
-            '/api/*': {
-              target: 'http://localhost:9000',
-              secure: false,
-              ws: true,
-              // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
-              onProxyReq: (proxyReq, req, res) => {
-                res.on('close', () => proxyReq.destroy());
-              },
-            },
-            '/login': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/logout': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/loggedinas': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            // Append on bottom to allow override of exact key matches like /api/*
+          static: path.resolve(workspacePath, 'bundles'),
+          compress: true,
+          // Listen to all interfaces, as Node 18+ resolves IPv6 first: https://github.com/cypress-io/github-action/blob/master/README.md#wait-on-with-nodejs-18
+          host: '0.0.0.0',
+          open: true,
+          // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
+          historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
+          proxy: {
+            // Append on top to allow overriding /api/v1/ for example
             ...workspaceProxy,
+            ...{
+              '/api/*': {
+                target: 'http://localhost:9000',
+                secure: false,
+                ws: true,
+                // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
+                onProxyReq: (proxyReq, req, res) => {
+                  res.on('close', () => proxyReq.destroy());
+                },
+              },
+              '/login': {
+                target: 'http://localhost:9000',
+                secure: false,
+              },
+              '/logout': {
+                target: 'http://localhost:9000',
+                secure: false,
+              },
+              '/loggedinas': {
+                target: 'http://localhost:9000',
+                secure: false,
+              },
+              // Append on bottom to allow override of exact key matches like /api/*
+              ...workspaceProxy,
+            },
           },
-        },
-        client: {
-          // Do not show the full-page error overlay
-          overlay: false,
-        },
-      }
+          client: {
+            // Do not show the full-page error overlay
+            overlay: false,
+          },
+        }
       : undefined,
     output: {
       // The build folder.
@@ -394,9 +405,7 @@ module.exports = (webpackEnv, argv) => {
       ],
     },
     snapshot: {
-      managedPaths: customResolveAliasRegex ? [
-        customResolveAliasRegex,
-      ] : undefined,
+      managedPaths: customResolveAliasRegex ? [customResolveAliasRegex] : undefined,
     },
     resolve: {
       extensions: ['.tsx', '.ts', '.js'],
@@ -411,19 +420,19 @@ module.exports = (webpackEnv, argv) => {
         // Add aliases for all the workspace repos
         ...(!isSingleRepoMode
           ? workspaceRepos.map((repo) => ({
-            // Rewrite all '<repo>/dist' imports to '<repo>/src'
-            [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
-            [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
-            [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
-          }))
+              // Rewrite all '<repo>/dist' imports to '<repo>/src'
+              [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
+              [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
+              [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
+            }))
           : [
-            {
-              // In single repo mode, also rewrite all '<repo>/dist' imports to '<repo>/src'
-              [`${libName}/dist`]: path.join(workspacePath, 'src'),
-              [`${libName}/src`]: path.join(workspacePath, 'src'),
-              [`${libName}`]: path.join(workspacePath, 'src'),
-            },
-          ]),
+              {
+                // In single repo mode, also rewrite all '<repo>/dist' imports to '<repo>/src'
+                [`${libName}/dist`]: path.join(workspacePath, 'src'),
+                [`${libName}/src`]: path.join(workspacePath, 'src'),
+                [`${libName}`]: path.join(workspacePath, 'src'),
+              },
+            ]),
       ),
       fallback: {
         util: require.resolve('util/'),
@@ -437,12 +446,13 @@ module.exports = (webpackEnv, argv) => {
       strictExportPresence: true,
       rules: [
         // Handle node_modules packages that contain sourcemaps
-        !isFastMode && shouldUseSourceMap && {
-          enforce: 'pre',
-          exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
-          test: /\.(js|mjs|jsx|ts|tsx|css)$/,
-          loader: require.resolve('source-map-loader'),
-        },
+        !isFastMode &&
+          shouldUseSourceMap && {
+            enforce: 'pre',
+            exclude: [/@babel(?:\/|\\{1,2})runtime/, customResolveAliasRegex].filter(Boolean),
+            test: /\.(js|mjs|jsx|ts|tsx|css)$/,
+            loader: require.resolve('source-map-loader'),
+          },
         {
           // "oneOf" will traverse all following loaders until one will
           // match the requirements. When no loader matches it will fall
@@ -593,28 +603,30 @@ module.exports = (webpackEnv, argv) => {
                   options: {
                     include: mergedRegistry
                       ? (extension, id) => {
-                        const exclude = mergedRegistry.exclude || [];
-                        const include = mergedRegistry.include || [];
-                        if (!exclude && !include) {
-                          return true;
+                          const exclude = mergedRegistry.exclude || [];
+                          const include = mergedRegistry.include || [];
+                          if (!exclude && !include) {
+                            return true;
+                          }
+                          const test = (f) => (Array.isArray(f) ? extension.match(f[0]) && (id || '').match(f[1]) : extension.match(f));
+                          return include.every(test) && !exclude.some(test);
                         }
-                        const test = (f) => (Array.isArray(f) ? extension.match(f[0]) && (id || '').match(f[1]) : extension.match(f));
-                        return include.every(test) && !exclude.some(test);
-                      }
                       : () => true,
-                    ...{ flags: (mergedRegistry || {}).flags || {} },
+                    ...{ flags: mergedRegistry?.flags || {} },
                   },
                 },
               ],
             },
             // TODO: Is this legacy stuff, should it be included as well?
-            jquery ? {
-              test: jquery,
-              loader: 'expose-loader',
-              options: {
-                exposes: ['window.jQuery', '$'],
-              },
-            } : null,
+            jquery
+              ? {
+                  test: jquery,
+                  loader: 'expose-loader',
+                  options: {
+                    exposes: ['window.jQuery', '$'],
+                  },
+                }
+              : null,
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -636,41 +648,42 @@ module.exports = (webpackEnv, argv) => {
     },
     plugins: [
       !devServerOnly && new CleanWebpackPlugin(),
-      isEnvDevelopment
-        && new ReactRefreshWebpackPlugin({
+      isEnvDevelopment &&
+        new ReactRefreshWebpackPlugin({
           overlay: false,
         }),
       ...Object.entries(entries).map(
-        ([chunkName, entry]) => new HtmlWebpackPlugin({
-          inject: true,
-          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
-          filename: entry.html || `${chunkName}.html`,
-          title: libName,
-          // By default, exclude all other chunks
-          excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-          meta: {
-            description: libDesc,
-          },
-          ...(isEnvProduction
-            ? {
-              minify: {
-                removeComments: true,
-                collapseWhitespace: true,
-                removeRedundantAttributes: true,
-                useShortDoctype: true,
-                removeEmptyAttributes: true,
-                removeStyleLinkTypeAttributes: true,
-                keepClosingSlash: true,
-                minifyJS: true,
-                minifyCSS: true,
-                minifyURLs: true,
-              },
-            }
-            : {}),
-        }),
+        ([chunkName, entry]) =>
+          new HtmlWebpackPlugin({
+            inject: true,
+            template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
+            filename: entry.html || `${chunkName}.html`,
+            title: libName,
+            // By default, exclude all other chunks
+            excludeChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
+            meta: {
+              description: libDesc,
+            },
+            ...(isEnvProduction
+              ? {
+                  minify: {
+                    removeComments: true,
+                    collapseWhitespace: true,
+                    removeRedundantAttributes: true,
+                    useShortDoctype: true,
+                    removeEmptyAttributes: true,
+                    removeStyleLinkTypeAttributes: true,
+                    keepClosingSlash: true,
+                    minifyJS: true,
+                    minifyCSS: true,
+                    minifyURLs: true,
+                  },
+                }
+              : {}),
+          }),
       ),
-      isEnvProduction
-        && new MiniCssExtractPlugin({
+      isEnvProduction &&
+        new MiniCssExtractPlugin({
           // Options similar to the same options in webpackOptions.output
           // both options are optional
           // filename: "[name].[contenthash:8].css",
@@ -693,14 +706,16 @@ module.exports = (webpackEnv, argv) => {
         silent: true, // hide any errors
         defaults: false, // load '.env.defaults' as the default values if empty.
       }),
-      copyPluginPatterns.length > 0
-        && new CopyPlugin({
+      copyPluginPatterns.length > 0 &&
+        new CopyPlugin({
           patterns: copyPluginPatterns,
         }),
       // For each workspace repo, create an instance of the TS checker to typecheck.
       ...workspaceRepos.map(
-        (repo) => !isFastMode && isEnvDevelopment
-          && new ForkTsCheckerWebpackPlugin({
+        (repo) =>
+          !isFastMode &&
+          isEnvDevelopment &&
+          new ForkTsCheckerWebpackPlugin({
             async: isEnvDevelopment,
             typescript: {
               diagnosticOptions: {
@@ -728,15 +743,15 @@ module.exports = (webpackEnv, argv) => {
                     Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
                     ...(!isSingleRepoMode
                       ? workspaceRepos.map((r) => ({
-                        [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                        [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
-                      }))
+                          [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                          [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
+                        }))
                       : [
-                        {
-                          [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
-                          [libName]: path.join(workspacePath, 'src/index.ts'),
-                        },
-                      ]),
+                          {
+                            [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
+                            [libName]: path.join(workspacePath, 'src/index.ts'),
+                          },
+                        ]),
                   ),
                 },
               },
@@ -761,16 +776,16 @@ module.exports = (webpackEnv, argv) => {
           })
       ),
       */
-      isEnvProduction
-        && new webpack.BannerPlugin({
+      isEnvProduction &&
+        new webpack.BannerPlugin({
           banner: `/*! ${appPkg.title || appPkg.name} - v${appPkg.version} - ${year}\n${
             appPkg.homepage ? `* ${appPkg.homepage}\n` : ''
           }* Copyright (c) ${year} ${appPkg.author?.name}; Licensed ${appPkg.license}*/\n`,
           raw: true,
         }),
       // For debugging issues
-      false
-        && new BundleAnalyzerPlugin({
+      false &&
+        new BundleAnalyzerPlugin({
           // set to 'server' to start analyzer during build
           analyzerMode: 'disabled',
           generateStatsFile: true,

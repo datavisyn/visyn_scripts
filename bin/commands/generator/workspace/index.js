@@ -38,7 +38,7 @@ function rewriteDockerCompose(compose) {
     return compose;
   }
   const host = services._host;
-  delete services._host;
+  services._host = undefined;
   Object.keys(services).forEach((k) => {
     if (!isHelperContainer(k)) {
       mergeWith(services[k], host);
@@ -203,7 +203,7 @@ class Generator extends BasePhoveaGenerator {
     // remove all plugins that are locally installed
     plugins.forEach((p) => {
       const k = known().plugin.byName(p);
-      if (k && k.dependencies) {
+      if (k?.dependencies) {
         Object.keys(k.dependencies).forEach((pi) => {
           delete dependencies[pi];
         });
@@ -318,7 +318,7 @@ class Generator extends BasePhoveaGenerator {
             delete requirements[pi];
           });
         }
-        if (k.develop && k.develop.requirements) {
+        if (k.develop?.requirements) {
           Object.keys(k.develop.requirements).forEach((pi) => {
             delete requirements[pi];
           });
@@ -367,7 +367,7 @@ class Generator extends BasePhoveaGenerator {
       if (!service.build || !patch.image) {
         return;
       }
-      delete service.image; // delete merged image if used
+      service.image = undefined; // delete merged image if used
       const dockerFile = this.destinationPath(service.build.dockerfile);
       let content = this.fs.read(dockerFile).toString();
       // create a copy of the Dockerfile to avoid git changes
@@ -427,8 +427,8 @@ class Generator extends BasePhoveaGenerator {
       }
       return '';
     };
-    const DEBUG_VARIABLES = '@debug(\'import scss variables\');';
-    const DEBUG_MAIN = '\n@debug(\'import main scss\'); ';
+    const DEBUG_VARIABLES = "@debug('import scss variables');";
+    const DEBUG_MAIN = "\n@debug('import main scss'); ";
     const DEFAULT_APP_MAIN_BEGIN = '// generator-phovea:default-app:main:begin';
     const DEFAULT_APP_MAIN_END = '// generator-phovea:default-app:main:end';
     const DEFAULT_APP_VARIABLES_BEGIN = '// generator-phovea:default-app:variables:begin';
@@ -464,21 +464,20 @@ class Generator extends BasePhoveaGenerator {
   }
 
   writing() {
-    const {
-      plugins, pluginToName, dependencies, devDependencies, overrides, resolutions, scripts,
-    } = this._generateWebDependencies();
+    const { plugins, pluginToName, dependencies, devDependencies, overrides, resolutions, scripts } = this._generateWebDependencies();
     const sdeps = this._generateServerDependencies();
-    const dockerWebHint = '  # Uncomment the following lines for testing the web production build\n'
-      + '  #  web:\n'
-      + '  #    build:\n'
-      + '  #      context: ./deploy/web\n'
-      + '  #      dockerfile: deploy/web/Dockerfile\n'
-      + '  #    ports:\n'
-      + "  #      - '8090:80'\n"
-      + '  #    volumes:\n'
-      + "  #      - './bundles:/usr/share/nginx/html'\n"
-      + '  #    depends_on:\n'
-      + '  #      - api\n';
+    const dockerWebHint =
+      '  # Uncomment the following lines for testing the web production build\n' +
+      '  #  web:\n' +
+      '  #    build:\n' +
+      '  #      context: ./deploy/web\n' +
+      '  #      dockerfile: deploy/web/Dockerfile\n' +
+      '  #    ports:\n' +
+      "  #      - '8090:80'\n" +
+      '  #    volumes:\n' +
+      "  #      - './bundles:/usr/share/nginx/html'\n" +
+      '  #    depends_on:\n' +
+      '  #      - api\n';
 
     // save config
     this.fs.extendJSON(this.destinationPath('.yo-rc-workspace.json'), {
@@ -509,9 +508,18 @@ class Generator extends BasePhoveaGenerator {
 
     this._writeTemplates(config, false);
     // replace the added entries
-    this._patchPackageJSON(config, [], {
-      devDependencies, overrides, resolutions, dependencies, scripts,
-    }, true);
+    this._patchPackageJSON(
+      config,
+      [],
+      {
+        devDependencies,
+        overrides,
+        resolutions,
+        dependencies,
+        scripts,
+      },
+      true,
+    );
 
     if (!fs.existsSync(this.destinationPath('config.json'))) {
       this.fs.copy(this.templatePath('config.tmpl.json'), this.destinationPath('config.json'));

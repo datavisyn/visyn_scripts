@@ -109,10 +109,9 @@ module.exports = class NpmUtils {
     // tilde range can only be greater than caret range when its major is greater, i.e, '~3.5.6' > '^2.9.0'
     if (semver.gt(semver.coerce(parsedTildeRange.major), semver.coerce(parsedCaretRange.major))) {
       return tildeRange;
-    } else {
-      // in any other case the caret range is greater (has a greater upper domain)
-      return caretRange;
     }
+    // in any other case the caret range is greater (has a greater upper domain)
+    return caretRange;
   }
 
   /**

@@ -81,7 +81,7 @@ module.exports = class WorkspaceUtils {
    * @param {string} cwd Where to run the generator
    * @param {boolean} cloneSSH SSH or HTTP url
    */
-  static cloneRepo(repo, branch, extras, dir = '', cwd, cloneSSH = true) {
+  static cloneRepo(repo, branch, extras, dir, cwd, cloneSSH = true) {
     const repoUrl = cloneSSH ? RepoUtils.toSSHRepoUrl(repo) : RepoUtils.toHTTPRepoUrl(repo);
     return GeneratorUtils.yo(
       'clone-repo',
@@ -101,7 +101,7 @@ module.exports = class WorkspaceUtils {
     const addMissing = (p) => {
       const configPath = path.join(destinationPath, `${p}.yo-rc.json`);
       console.log(configPath);
-      const config = this.fs.readJSON(configPath, { 'generator-phovea': {} })['generator-phovea'];
+      const config = WorkspaceUtils.fs.readJSON(configPath, { 'generator-phovea': {} })['generator-phovea'];
       let modules = [].concat(config.modules || [], config.smodules || []);
       console.log(`${p} => ${modules.join(' ')}`);
       if (types && types !== 'both') {

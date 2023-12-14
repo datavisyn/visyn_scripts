@@ -23,13 +23,14 @@ function checkRequiredVersion(versions) {
   }
   versionHasBeenShown = true;
   if (
-    semver.satisfies(semver.coerce(versions.installed.node), versions.required.node)
-    && semver.satisfies(semver.coerce(versions.installed.npm), versions.required.npm)
+    semver.satisfies(semver.coerce(versions.installed.node), versions.required.node) &&
+    semver.satisfies(semver.coerce(versions.installed.npm), versions.required.npm)
   ) {
     return successMessage(versions);
-  } else if (
-    semver.satisfies(semver.coerce(versions.installed.node), `<${versions.required.node}`)
-    || semver.satisfies(semver.coerce(versions.installed.npm), `<${versions.required.npm}`)
+  }
+  if (
+    semver.satisfies(semver.coerce(versions.installed.node), `<${versions.required.node}`) ||
+    semver.satisfies(semver.coerce(versions.installed.npm), `<${versions.required.npm}`)
   ) {
     throw new Error(errorMessage(versions));
   }
@@ -63,13 +64,10 @@ function errorMessage(versions) {
   return (
     `${chalk.red(
       `\nYour Node.js version ${versions.installed.node} (npm: ${versions.installed.npm}) does not match the required Node.js version ${versions.required.node} (npm: ${versions.required.npm}).`,
-    )
-    }\n\nRun the following commands to update your installation:\n\n`
-    + `1. Install Node.js Version Manager (NVM): ${
-      chalk.yellow('https://github.com/nvm-sh/nvm#install--update-script')
-    }\n2. Install Node.js ${versions.required.node} via NVM: ${
-      chalk.yellow(`nvm install ${versions.required.node}`)
-    }\n`
+    )}\n\nRun the following commands to update your installation:\n\n` +
+    `1. Install Node.js Version Manager (NVM): ${chalk.yellow('https://github.com/nvm-sh/nvm#install--update-script')}\n2. Install Node.js ${
+      versions.required.node
+    } via NVM: ${chalk.yellow(`nvm install ${versions.required.node}`)}\n`
   );
 }
 

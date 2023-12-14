@@ -9,6 +9,7 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-restricted-syntax */
 const path = require('path');
+// biome-ignore lint/suspicious/noShadowRestrictedNames:
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require('fs-extra'));
 const chalk = require('chalk');
@@ -17,71 +18,72 @@ const GeneratorUtils = require('./generator/utils/GeneratorUtils');
 module.exports = {
   command: 'product-build [strings...]',
   describe: 'Builds a product',
-  builder: (yargs) => yargs
-    .option('ssh', {
-      default: true,
-      describe: 'clone via ssh instead of https',
-      type: 'boolean',
-    })
-    .option('quiet', {
-      default: false,
-      describe: 'reduce log messages',
-      type: 'boolean',
-    })
-    .option('serial', {
-      default: false,
-      describe: 'build elements sequentially',
-      type: 'boolean',
-    })
-    .option('injectVersion', {
-      default: false,
-      describe: 'injects the product version into the package.json of the built component',
-      type: 'boolean',
-    })
-    .option('pushTo', {
-      describe: 'push docker images to the given registry',
-      type: 'string',
-    })
-    .option('noDefaultTags', {
-      default: false,
-      describe: 'do not push generated default tag :<timestamp>',
-      type: 'boolean',
-    })
-    .option('dryRun', {
-      default: false,
-      describe: 'just compute chain no execution',
-      type: 'boolean',
-    })
-    .option('skipTests', {
-      default: true,
-      describe: 'skip tests: will set the environment variable PHOVEA_SKIP_TESTS',
-      type: 'boolean',
-    })
-    .option('skipCleanUp', {
-      default: false,
-      describe: 'skip cleaning up old docker images',
-      type: 'boolean',
-    })
-    .option('skipSaveImage', {
-      default: false,
-      describe: 'skip saving the generated docker images',
-      type: 'boolean',
-    })
-    .option('forceLabel', {
-      default: false,
-      describe: 'force to use the label even only a single service exists',
-      type: 'boolean',
-    })
-    .option('pushExtra', {
-      describe: 'push additional custom tag: e.g., --pushExtra=develop',
-      type: 'string',
-    })
+  builder: (yargs) =>
+    yargs
+      .option('ssh', {
+        default: true,
+        describe: 'clone via ssh instead of https',
+        type: 'boolean',
+      })
+      .option('quiet', {
+        default: false,
+        describe: 'reduce log messages',
+        type: 'boolean',
+      })
+      .option('serial', {
+        default: false,
+        describe: 'build elements sequentially',
+        type: 'boolean',
+      })
+      .option('injectVersion', {
+        default: false,
+        describe: 'injects the product version into the package.json of the built component',
+        type: 'boolean',
+      })
+      .option('pushTo', {
+        describe: 'push docker images to the given registry',
+        type: 'string',
+      })
+      .option('noDefaultTags', {
+        default: false,
+        describe: 'do not push generated default tag :<timestamp>',
+        type: 'boolean',
+      })
+      .option('dryRun', {
+        default: false,
+        describe: 'just compute chain no execution',
+        type: 'boolean',
+      })
+      .option('skipTests', {
+        default: true,
+        describe: 'skip tests: will set the environment variable PHOVEA_SKIP_TESTS',
+        type: 'boolean',
+      })
+      .option('skipCleanUp', {
+        default: false,
+        describe: 'skip cleaning up old docker images',
+        type: 'boolean',
+      })
+      .option('skipSaveImage', {
+        default: false,
+        describe: 'skip saving the generated docker images',
+        type: 'boolean',
+      })
+      .option('forceLabel', {
+        default: false,
+        describe: 'force to use the label even only a single service exists',
+        type: 'boolean',
+      })
+      .option('pushExtra', {
+        describe: 'push additional custom tag: e.g., --pushExtra=develop',
+        type: 'string',
+      })
 
-  // skipSaveImage --skipTests --noDefaultTags --pushExtra=${awsTag} --pushTo="${AWS_ECR_ACCOUNT_URL}"
-    .option('skip', {
-      default: '',
-      type: 'string',
-    }),
+      // skipSaveImage --skipTests --noDefaultTags --pushExtra=${awsTag} --pushTo="${AWS_ECR_ACCOUNT_URL}"
+      .option('skip', {
+        default: '',
+        type: 'string',
+      }),
   handler: (args) => {
     const pkg = require(path.resolve(process.cwd(), './package.json'));
 
@@ -371,11 +373,11 @@ module.exports = {
 
     function patchComposeFile(p, composeTemplate) {
       const service = {};
-      if (composeTemplate && composeTemplate.services) {
+      if (composeTemplate?.services) {
         const firstService = Object.keys(composeTemplate.services)[0];
         // copy data from first service
         Object.assign(service, composeTemplate.services[firstService]);
-        delete service.build;
+        service.build = undefined;
       }
       service.image = p.image;
       if (p.type === 'web' || p.type === 'static') {
@@ -474,11 +476,13 @@ module.exports = {
 
       // merge a big compose file including all
       return Promise.all(
-        validDescs.map((p) => Promise.all([loadComposeFile(p.tmpDir, p).then(patchComposeFile.bind(null, p))].concat(p.additional.map((pi) => loadComposeFile(p.tmpDir, pi)))).then(
-          (partials) => {
-            p.composePartial = mergeCompose(partials);
-          },
-        )),
+        validDescs.map((p) =>
+          Promise.all([loadComposeFile(p.tmpDir, p).then(patchComposeFile.bind(null, p))].concat(p.additional.map((pi) => loadComposeFile(p.tmpDir, pi)))).then(
+            (partials) => {
+              p.composePartial = mergeCompose(partials);
+            },
+          ),
+        ),
       );
     }
 
@@ -508,7 +512,7 @@ module.exports = {
       if (services._host) {
         // inline _host to apis
         const host = services._host;
-        delete services._host;
+        services._host = undefined;
         api.forEach((s) => {
           services[s] = mergeCompose([host, services[s]]);
         });
@@ -548,7 +552,9 @@ module.exports = {
       if (tags.length === 0) {
         return Promise.resolve([]);
       }
-      return Promise.all(tags.map((tag) => docker('.', `tag ${tag.image} ${tag.tag}`))).then(() => Promise.all(tags.map((tag) => docker('.', `push ${tag.tag}`))));
+      return Promise.all(tags.map((tag) => docker('.', `tag ${tag.image} ${tag.tag}`))).then(() =>
+        Promise.all(tags.map((tag) => docker('.', `push ${tag.tag}`))),
+      );
     }
 
     function loadPatchFile() {
@@ -580,7 +586,7 @@ module.exports = {
         if (dockerComposePatch.services[d.label] && dockerComposePatch.services[d.label].image) {
           // use a different base image to build the item
           d.baseImage = dockerComposePatch.services[d.label].image;
-          delete dockerComposePatch.services[d.label].image;
+          dockerComposePatch.services[d.label].image = undefined;
         }
         // include hint in the tmp directory which one is it
         d.tmpDir = `./tmp${i}_${d.name.replace(/\s+/, '').slice(0, 5)}`;
@@ -726,7 +732,9 @@ module.exports = {
 
     function installPythonTestDependencies(p) {
       console.log(chalk.yellow('create test environment'));
-      return spawn('pip', 'install --no-cache-dir -r requirements.txt', { cwd: p.tmpDir }).then(() => spawn('pip', 'install --no-cache-dir -r requirements_dev.txt', { cwd: p.tmpDir }));
+      return spawn('pip', 'install --no-cache-dir -r requirements.txt', { cwd: p.tmpDir }).then(() =>
+        spawn('pip', 'install --no-cache-dir -r requirements_dev.txt', { cwd: p.tmpDir }),
+      );
     }
 
     function showPythonTestDependencies(p) {
@@ -746,9 +754,13 @@ module.exports = {
         .then(() => fs.copyAsync(`${p.tmpDir}/${p.name}/build/lib`, `${p.tmpDir}/build/source/`))
         .then(() => fs.copyAsync(`${p.tmpDir}/${p.name}/${p.name.toLowerCase()}.egg-info`, `${p.tmpDir}/build/source/${p.name.toLowerCase()}.egg-info`))
         .then(() => Promise.all(p.additional.map((pi) => fs.copyAsync(`${p.tmpDir}/${pi.name}/build/lib`, `${p.tmpDir}/build/source/`))))
-        .then(() => Promise.all(
-          p.additional.map((pi) => fs.copyAsync(`${p.tmpDir}/${pi.name}/${pi.name.toLowerCase()}.egg-info`, `${p.tmpDir}/build/source/${pi.name.toLowerCase()}.egg-info`)),
-        ));
+        .then(() =>
+          Promise.all(
+            p.additional.map((pi) =>
+              fs.copyAsync(`${p.tmpDir}/${pi.name}/${pi.name.toLowerCase()}.egg-info`, `${p.tmpDir}/build/source/${pi.name.toLowerCase()}.egg-info`),
+            ),
+          ),
+        );
 
       return act;
     }
@@ -873,14 +885,16 @@ module.exports = {
         steps[`show:${suffix}`] = () => catchProductBuild(p, showPythonTestDependencies(p));
       }
       steps[`build:${suffix}`] = isWeb
-        ? () => catchProductBuild(
-          p,
-          resolvePluginTypes(p).then(() => buildWeb(p)),
-        )
-        : () => catchProductBuild(
-          p,
-          resolvePluginTypes(p).then(() => buildServer(p)),
-        );
+        ? () =>
+            catchProductBuild(
+              p,
+              resolvePluginTypes(p).then(() => buildWeb(p)),
+            )
+        : () =>
+            catchProductBuild(
+              p,
+              resolvePluginTypes(p).then(() => buildServer(p)),
+            );
       steps[`data:${suffix}`] = () => catchProductBuild(p, downloadServerDataFiles(p));
       steps[`postbuild:${suffix}`] = isWeb ? () => catchProductBuild(p, cleanUpWebDependencies(p)) : () => null;
       steps[`image:${suffix}`] = () => catchProductBuild(p, buildDockerImage(p));

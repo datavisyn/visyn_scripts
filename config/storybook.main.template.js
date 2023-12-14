@@ -7,7 +7,14 @@ const path = require('path');
  */
 module.exports = ({ name, dirname }) => ({
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/preset-scss', 'storybook-addon-swc', '@storybook/addon-mdx-gfm'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    '@storybook/preset-scss',
+    'storybook-addon-swc',
+    '@storybook/addon-mdx-gfm',
+  ],
   framework: {
     name: '@storybook/react-webpack5',
     options: {
@@ -17,15 +24,19 @@ module.exports = ({ name, dirname }) => ({
     },
   },
   webpackFinal: async (config) => {
-    config.module.rules = config.module.rules.flatMap((rule) => (rule.loader?.includes('swc-loader') ? [
-      rule,
-      {
-        // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
-        ...rule,
-        test: /\.(ts|tsx)$/,
-        exclude: [],
-      },
-    ] : [rule]));
+    config.module.rules = config.module.rules.flatMap((rule) =>
+      rule.loader?.includes('swc-loader')
+        ? [
+            rule,
+            {
+              // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
+              ...rule,
+              test: /\.(ts|tsx)$/,
+              exclude: [],
+            },
+          ]
+        : [rule],
+    );
 
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
