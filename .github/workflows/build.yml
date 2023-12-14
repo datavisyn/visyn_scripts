@@ -8,5 +8,5 @@ on:
 
 jobs:
   build:
-    uses: datavisyn/github-workflows/.github/workflows/build-node.yml@main
+    uses: datavisyn/github-workflows/.github/workflows/build-node.yml@new_deployment
     secrets: inherit
