@@ -1,72 +1,141 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-dynamic-require */
 const path = require('path');
 const fs = require('fs');
+const { defineConfig } = require('@rspack/cli');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
-const getCSSModuleLocalIdent = require('react-dev-utils/getCSSModuleLocalIdent');
 const dotenv = require('dotenv');
-const CopyPlugin = require('copy-webpack-plugin');
 const Dotenv = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const { CopyRspackPlugin, HtmlRspackPlugin, DefinePlugin } = require('@rspack/core');
+const { parseTsconfig } = require('get-tsconfig');
 
+let jquery = null;
+try {
+  jquery = require.resolve('jquery');
+} catch {
+  // pass
+}
+
+// Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
 
+/**
+ * @returns @type {import('@rspack/cli').Configuration}
+ */
 module.exports = (webpackEnv, argv) => {
   const env = {
     ...(parsedEnv.parsed || {}),
     ...(webpackEnv || {}),
   };
-
-  const isSingleRepoMode = true;
-
   const { mode } = argv;
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
-  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
-
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
+  if (!isEnvDevelopment && !isEnvProduction) {
+    throw Error(`Invalid mode passed: ${mode}`);
+  }
+  /**
+   * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
+   */
+  const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
   const isFastMode = env.fast?.toLowerCase() === 'true';
-  const cssRegex = /\.css$/;
-  const cssModuleRegex = /\.module\.css$/;
-  const sassRegex = /\.(scss|sass)$/;
-  const sassModuleRegex = /\.module\.(scss|sass)$/;
+  const devServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
-  const workspacePath = fs.realpathSync(process.cwd());
+  if (isFastMode) {
+    console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
+  }
+
+  const now = new Date();
+  // workspace constants
+  const workspacePath = fs.realpathSync(process.cwd()); // TODO: Add , '../') if you move this file in a subdirectory
+  /* {
+    workspaceAliases: { [key: string]: string };
+    registry: any;
+    frontendRepos: any;
+    maxChunkSize?: number;
+    // TODO: This is not required anymore, because we let webpack split chunks?
+    vendors: any;
+    devServerProxy: any;
+  } */
+  const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
+  const workspacePkg = require(path.join(workspacePath, 'package.json'));
+  const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
+  const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
+  // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
+  const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
+  const workspaceRegistry = workspaceYoRcFile.registry || [];
+  const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
+  const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
+  const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
+  // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
+  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
+
+  const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
 
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
   const defaultAppPath = path.join(workspacePath, defaultApp);
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
-  const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
+  const libName = appPkg.name;
+  const libDesc = appPkg.description || '';
 
-  const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
-  const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
-  const workspaceMaxChunkSize = 5000000;
-  const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
-  const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
+  if (!appPkg.visyn) {
+    throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
+  }
+
+  // Extract workspace proxy configuration from .yo-rc-workspace.json and package.json
+  const workspaceProxy = { ...(appPkg.visyn.devServerProxy || {}), ...(workspaceYoRcFile.devServerProxy || {}) };
+
+  /**
+   * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
+   *
+   * {
+   *   entries: {
+   *     [chunkName: string]: {
+   *       js: string;
+   *       html?: string;
+   *       template?: string;
+   *       excludeChunks?: string[];
+   *       scss?: string;
+   *     };
+   *   };
+   *   registry: any;
+   *   copyFiles?: string[];
+   * }
+   */
+
+  try {
+    // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
+    const visynWebpackOverride = require(path.join(defaultAppPath, 'visynWebpackOverride.js'))({ env }) || {};
+    console.log('Using visynWebpackOverride.js file to override visyn configuration.');
+    Object.assign(appPkg.visyn, visynWebpackOverride);
+  } catch (e) {
+    // ignore if file does not exist
+  }
 
   let {
     // eslint-disable-next-line prefer-const
     entries, registry, copyFiles, historyApiFallback,
   } = appPkg.visyn;
 
-  const resolveAliases = Object.fromEntries(Object.entries({}).map(([key, p]) => [key, path.join(workspacePath, p)]));
-  // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
-  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
+  if (devServerOnly) {
+    // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
+    entries = {};
+  }
 
-  const workspaceProxy = { ...(appPkg.visyn.devServerProxy || {}), ...(workspaceYoRcFile.devServerProxy || {}) };
-
-  const libName = appPkg.name;
-  const libDesc = appPkg.description;
-
-  const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
-  const sourceMap = !isFastMode && (isEnvProduction ? true : isEnvDevelopment);
+  const tsconfigJson = isSingleRepoMode ? parseTsconfig(path.join(workspacePath, 'tsconfig.json')) : null;
+  const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
+  if (isLegacyModuleResolution) {
+    console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
+  }
 
   const copyAppFiles = copyFiles?.map((file) => ({
     from: path.join(defaultAppPath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
+
+  const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
+  const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
 
   const copyPluginPatterns = copyAppFiles.concat(
     [
@@ -108,7 +177,16 @@ module.exports = (webpackEnv, argv) => {
     ].filter(Boolean),
   );
 
-  return {
+  // Merge app and workspace properties
+  const mergedRegistry = {
+    ...(registry || {}),
+    ...workspaceRegistry,
+  };
+
+  // Check if Tailwind config exists
+  const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
+
+  return defineConfig({
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
@@ -120,7 +198,7 @@ module.exports = (webpackEnv, argv) => {
       // The build folder.
       path: path.join(workspacePath, 'bundles'),
       // Add /* filename */ comments to generated require()s in the output.
-      pathinfo: isEnvDevelopment,
+      // TODO: rspack: pathinfo: isEnvDevelopment,
       // There will be one main bundle, and one file per asynchronous chunk.
       filename: '[name].[contenthash:8].js',
       // There are also additional JS chunk files if you use code splitting.
@@ -130,8 +208,11 @@ module.exports = (webpackEnv, argv) => {
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath: '/',
+      clean: !devServerOnly,
     },
     plugins: [
+      /*
+      TODO: Enable, but creates a warning right now
       new Dotenv({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
         safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
@@ -140,6 +221,31 @@ module.exports = (webpackEnv, argv) => {
         silent: true, // hide any errors
         defaults: false, // load '.env.defaults' as the default values if empty.
       }),
+      */
+      new DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(mode),
+        'process.env.__VERSION__': JSON.stringify(appPkg.version),
+        'process.env.__LICENSE__': JSON.stringify(appPkg.license),
+        'process.env.__BUILD_ID__': JSON.stringify(buildId),
+        'process.env.__APP_CONTEXT__': JSON.stringify('/'),
+        'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
+      }),
+      new CopyRspackPlugin({
+        patterns: copyPluginPatterns,
+      }),
+      ...Object.entries(entries).map(
+        ([chunkName, entry]) => new HtmlRspackPlugin({
+          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
+          filename: entry.html || `${chunkName}.html`,
+          title: libName,
+          // By default, exclude all other chunks
+          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
+          meta: {
+            description: libDesc,
+          },
+          minify: isEnvProduction,
+        }),
+      ),
       ...workspaceRepos.map(
         (repo) => !isFastMode && isEnvDevelopment
               && new ForkTsCheckerWebpackPlugin({
@@ -186,32 +292,6 @@ module.exports = (webpackEnv, argv) => {
               }),
       ).filter(Boolean),
     ],
-    builtins: {
-      define: {
-        'process.env.NODE_ENV': JSON.stringify(mode),
-        'process.env.__VERSION__': JSON.stringify(appPkg.version),
-        'process.env.__LICENSE__': JSON.stringify(appPkg.license),
-        'process.env.__BUILD_ID__': JSON.stringify(buildId),
-        'process.env.__APP_CONTEXT__': JSON.stringify('/'),
-        'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
-      },
-      copy: {
-        patterns: copyPluginPatterns,
-      },
-      html: Object.entries(entries).map(
-        ([chunkName, entry]) => ({
-          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
-          filename: entry.html || `${chunkName}.html`,
-          title: libName,
-          // By default, exclude all other chunks
-          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-          meta: {
-            description: libDesc,
-          },
-          minify: isEnvProduction,
-        }),
-      ),
-    },
     devServer: isEnvDevelopment
       ? {
         static: path.resolve(workspacePath, 'bundles'),
@@ -297,19 +377,101 @@ module.exports = (webpackEnv, argv) => {
               },
             },
             {
-              test: /\.css$/i,
-              type: 'css', // this is enabled by default for .css, so you don't need to specify it
-            },
-            {
-              test: sassRegex,
-              use: [
-                {
-                  loader: require.resolve('resolve-url-loader'),
-                  options: {
-                    sourceMap,
-                    // root: paths.appSrc,
+              test: /\.(js|mjs|jsx|ts|tsx)$/,
+              exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
+              loader: 'builtin:swc-loader',
+              options: {
+                sourceMap: true,
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    decorators: true,
+                    // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+                  },
+                  externalHelpers: true,
+                  transform: {
+                    react: {
+                      runtime: 'automatic',
+                      development: isEnvDevelopment,
+                      refresh: isEnvDevelopment,
+                    },
                   },
                 },
+              },
+              type: 'javascript/auto',
+            },
+            // Process application TS with swc-loader even if they are coming from node_modules, i.e. from non-built dependencies.
+            {
+              test: /\.(ts|tsx)$/,
+              loader: 'builtin:swc-loader',
+              options: {
+                sourceMap: true,
+                jsc: {
+                  parser: {
+                    syntax: 'typescript',
+                    decorators: true,
+                    // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+                  },
+                  externalHelpers: true,
+                  transform: {
+                    react: {
+                      runtime: 'automatic',
+                      development: isEnvDevelopment,
+                      refresh: isEnvDevelopment,
+                    },
+                  },
+                },
+              },
+              type: 'javascript/auto',
+            },
+
+            {
+              test: /\.css$/,
+              use: [
+                {
+                  loader: 'postcss-loader',
+                  options: {
+                    postcssOptions: {
+                      plugins: !useTailwind
+                        ? [
+                          'postcss-flexbugs-fixes',
+                          [
+                            'postcss-preset-env',
+                            {
+                              autoprefixer: {
+                                flexbox: 'no-2009',
+                              },
+                              stage: 3,
+                            },
+                          ],
+                          // Adds PostCSS Normalize as the reset css with default options,
+                          // so that it honors browserslist config in package.json
+                          // which in turn let's users customize the target behavior as per their needs.
+                          'postcss-normalize',
+                        ]
+                        : [
+                          'tailwindcss',
+                          'postcss-flexbugs-fixes',
+                          [
+                            'postcss-preset-env',
+                            {
+                              autoprefixer: {
+                                flexbox: 'no-2009',
+                              },
+                              stage: 3,
+                            },
+                          ],
+                        ],
+                    },
+                  },
+                },
+              ],
+              type: 'css/auto',
+            },
+
+            {
+              test: /\.(sass|scss)$/,
+              use: [
                 {
                   loader: 'sass-loader',
                   options: {
@@ -317,8 +479,12 @@ module.exports = (webpackEnv, argv) => {
                   },
                 },
               ],
-              type: 'css',
+              type: 'css/auto',
             },
+
+            // TODO: ifdef-loader
+            // TODO: expose-loader
+
             // "file" loader makes sure those assets get served by WebpackDevServer.
             // When you `import` an asset, you get its (virtual) filename.
             // In production, they would get copied to the `build` folder.
@@ -338,5 +504,5 @@ module.exports = (webpackEnv, argv) => {
         },
       ].filter(Boolean),
     },
-  };
+  });
 };

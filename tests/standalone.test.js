@@ -57,7 +57,7 @@ describe('standalone', () => {
   describe('production build', () => {
     it('builds the production build', () => {
       // Execute the build script of the workspace
-      execSync('npm run webpack:prod', {
+      execSync('npm run bundle:prod', {
         cwd: testDir,
         stdio: 'inherit',
       });
