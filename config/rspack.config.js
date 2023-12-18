@@ -5,11 +5,12 @@ const fs = require('fs');
 const { defineConfig } = require('@rspack/cli');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
-const Dotenv = require('rspack-plugin-dotenv');
+const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const { CopyRspackPlugin, HtmlRspackPlugin, DefinePlugin } = require('@rspack/core');
 const { parseTsconfig } = require('get-tsconfig');
-const MinifyPlugin = require('@rspack/plugin-minify');
+const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 let jquery = null;
 try {
@@ -21,9 +22,6 @@ try {
 // Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
 
-/**
- * @returns @type {import('@rspack/cli').Configuration}
- */
 module.exports = (webpackEnv, argv) => {
   const env = {
     ...(parsedEnv.parsed || {}),
@@ -124,8 +122,9 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
-  const tsconfigJson = isSingleRepoMode ? parseTsconfig(path.join(workspacePath, 'tsconfig.json')) : null;
-  const isLegacyModuleResolution = tsconfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
+  const tsConfigPath = path.join(workspacePath, 'tsconfig.json');
+  const tsConfigJson = isSingleRepoMode ? parseTsconfig(tsConfigPath) : null;
+  const isLegacyModuleResolution = tsConfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
   if (isLegacyModuleResolution) {
     console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
   }
@@ -260,14 +259,15 @@ module.exports = (webpackEnv, argv) => {
       publicPath: '/',
       clean: !devServerOnly,
     },
-    cache: true,
     optimization: {
-      minimize: true,
+      /*
+      minimize: isEnvProduction,
       minimizer: [
         new MinifyPlugin({
           minifier: 'terser',
         }),
       ],
+      */
     },
     /*
     snapshot: {
@@ -277,7 +277,7 @@ module.exports = (webpackEnv, argv) => {
     },
     */
     resolve: {
-      extensions: ['.tsx', '.ts', '.js'],
+      extensions: ['.json', '.wasm', '.tsx', '.ts', '.js', '.jsx'],
       // By default, always search for modules in the relative node_modules. However,
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
@@ -361,6 +361,7 @@ module.exports = (webpackEnv, argv) => {
                 jsc: {
                   parser: {
                     syntax: 'typescript',
+                    tsx: true,
                     decorators: true,
                     // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
                   },
@@ -385,6 +386,7 @@ module.exports = (webpackEnv, argv) => {
                 jsc: {
                   parser: {
                     syntax: 'typescript',
+                    tsx: true,
                     decorators: true,
                     // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
                   },
@@ -400,7 +402,6 @@ module.exports = (webpackEnv, argv) => {
               },
               type: 'javascript/auto',
             },
-
             {
               test: /\.css$/,
               use: [
@@ -444,15 +445,15 @@ module.exports = (webpackEnv, argv) => {
               ],
               type: 'css/auto',
             },
-
             {
               test: /\.(sass|scss)$/,
               use: [
                 {
+                  // Prepend this loader to ensure that relative path imports in scss work: https://github.com/webpack-contrib/sass-loader?tab=readme-ov-file#problems-with-url
+                  loader: 'resolve-url-loader',
+                },
+                {
                   loader: 'sass-loader',
-                  options: {
-                    // ...
-                  },
                 },
               ],
               type: 'css/auto',
@@ -481,9 +482,9 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      /*
-      TODO: Enable, but creates a warning right now
-      new Dotenv({
+      isEnvDevelopment && new ReactRefreshPlugin(),
+      // TODO: Enable, but creates a warning right now
+      new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
         safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
         allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
@@ -491,7 +492,6 @@ module.exports = (webpackEnv, argv) => {
         silent: true, // hide any errors
         defaults: false, // load '.env.defaults' as the default values if empty.
       }),
-      */
       new DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(mode),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
@@ -504,7 +504,8 @@ module.exports = (webpackEnv, argv) => {
         patterns: copyPluginPatterns,
       }),
       ...Object.entries(entries).map(
-        ([chunkName, entry]) => new HtmlRspackPlugin({
+        // TODO: Do not use HtmlRspackPlugin, as it can't handle require calls in ejs templates.
+        ([chunkName, entry]) => new HtmlWebpackPlugin({
           template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
           filename: entry.html || `${chunkName}.html`,
           title: libName,
@@ -560,7 +561,12 @@ module.exports = (webpackEnv, argv) => {
                   },
                 },
               }),
-      ).filter(Boolean),
-    ],
+      ),
+    ].filter(Boolean),
+    experiments: {
+      rspackFuture: {
+        disableTransformByDefault: true,
+      },
+    },
   });
 };

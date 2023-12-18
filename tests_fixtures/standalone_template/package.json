@@ -56,7 +56,7 @@
     "visyn_scripts": "portal:../../"
   },
   "devDependencies": {
-    "@types/react": "^18.0.0",
+    "@types/react": "18.2.42",
     "@types/react-dom": "^18.0.0"
   },
   "resolutions": {
