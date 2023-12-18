@@ -9,6 +9,7 @@ const Dotenv = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const { CopyRspackPlugin, HtmlRspackPlugin, DefinePlugin } = require('@rspack/core');
 const { parseTsconfig } = require('get-tsconfig');
+const MinifyPlugin = require('@rspack/plugin-minify');
 
 let jquery = null;
 try {
@@ -187,111 +188,19 @@ module.exports = (webpackEnv, argv) => {
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
 
   return defineConfig({
+    mode,
+    // Webpack noise constrained to errors and warnings
+    stats: 'errors-warnings',
+    // eslint-disable-next-line no-nested-ternary
+    devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
+    // These are the "entry points" to our application.
+    // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
         [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
-    cache: true,
-    output: {
-      // The build folder.
-      path: path.join(workspacePath, 'bundles'),
-      // Add /* filename */ comments to generated require()s in the output.
-      // TODO: rspack: pathinfo: isEnvDevelopment,
-      // There will be one main bundle, and one file per asynchronous chunk.
-      filename: '[name].[contenthash:8].js',
-      // There are also additional JS chunk files if you use code splitting.
-      chunkFilename: '[name].[contenthash:8].chunk.js',
-      assetModuleFilename: 'assets/[name].[hash][ext]',
-      // webpack uses `publicPath` to determine where the app is being served from.
-      // It requires a trailing slash, or the file assets will get an incorrect path.
-      // We inferred the "public path" (such as / or /my-project) from homepage.
-      publicPath: '/',
-      clean: !devServerOnly,
-    },
-    plugins: [
-      /*
-      TODO: Enable, but creates a warning right now
-      new Dotenv({
-        path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
-        safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
-        allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
-        systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
-        silent: true, // hide any errors
-        defaults: false, // load '.env.defaults' as the default values if empty.
-      }),
-      */
-      new DefinePlugin({
-        'process.env.NODE_ENV': JSON.stringify(mode),
-        'process.env.__VERSION__': JSON.stringify(appPkg.version),
-        'process.env.__LICENSE__': JSON.stringify(appPkg.license),
-        'process.env.__BUILD_ID__': JSON.stringify(buildId),
-        'process.env.__APP_CONTEXT__': JSON.stringify('/'),
-        'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
-      }),
-      new CopyRspackPlugin({
-        patterns: copyPluginPatterns,
-      }),
-      ...Object.entries(entries).map(
-        ([chunkName, entry]) => new HtmlRspackPlugin({
-          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
-          filename: entry.html || `${chunkName}.html`,
-          title: libName,
-          // By default, exclude all other chunks
-          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-          meta: {
-            description: libDesc,
-          },
-          minify: isEnvProduction,
-        }),
-      ),
-      ...workspaceRepos.map(
-        (repo) => !isFastMode && isEnvDevelopment
-              && new ForkTsCheckerWebpackPlugin({
-                async: isEnvDevelopment,
-                typescript: {
-                  diagnosticOptions: {
-                    semantic: true,
-                    syntactic: true,
-                  },
-                  // Build the repo and type-check
-                  build: Object.keys(resolveAliases).length === 0,
-                  mode: 'write-references',
-                  // Use the corresponding config file of the repo folder
-                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
-                  // TODO: Add explanation
-                  configOverwrite: {
-                    compilerOptions: {
-                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
-                      baseUrl: '.',
-                      sourceMap: true,
-                      skipLibCheck: true,
-                      declarationMap: false,
-                      noEmit: false,
-                      incremental: true,
-                      paths: Object.assign(
-                        {},
-                        // Map the aliases to the same path, but within an array like tsc requires it
-                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
-                        ...(!isSingleRepoMode
-                          ? workspaceRepos.map((r) => ({
-                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
-                          }))
-                          : [
-                            {
-                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
-                              [libName]: path.join(workspacePath, 'src/index.ts'),
-                            },
-                          ]),
-                      ),
-                    },
-                  },
-                },
-              }),
-      ).filter(Boolean),
-    ],
     devServer: isEnvDevelopment
       ? {
         static: path.resolve(workspacePath, 'bundles'),
@@ -301,7 +210,7 @@ module.exports = (webpackEnv, argv) => {
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: {
-          // Append on top to allow overriding /api/v1/ for example
+        // Append on top to allow overriding /api/v1/ for example
           ...workspaceProxy,
           ...{
             '/api/*': {
@@ -330,11 +239,78 @@ module.exports = (webpackEnv, argv) => {
           },
         },
         client: {
-          // Do not show the full-page error overlay
+        // Do not show the full-page error overlay
           overlay: false,
         },
       }
       : undefined,
+    output: {
+      // The build folder.
+      path: path.join(workspacePath, 'bundles'),
+      // Add /* filename */ comments to generated require()s in the output.
+      // TODO: rspack: pathinfo: isEnvDevelopment,
+      // There will be one main bundle, and one file per asynchronous chunk.
+      filename: '[name].[contenthash:8].js',
+      // There are also additional JS chunk files if you use code splitting.
+      chunkFilename: '[name].[contenthash:8].chunk.js',
+      assetModuleFilename: 'assets/[name].[hash][ext]',
+      // webpack uses `publicPath` to determine where the app is being served from.
+      // It requires a trailing slash, or the file assets will get an incorrect path.
+      // We inferred the "public path" (such as / or /my-project) from homepage.
+      publicPath: '/',
+      clean: !devServerOnly,
+    },
+    cache: true,
+    optimization: {
+      minimize: true,
+      minimizer: [
+        new MinifyPlugin({
+          minifier: 'terser',
+        }),
+      ],
+    },
+    /*
+    snapshot: {
+      managedPaths: customResolveAliasRegex ? [
+        customResolveAliasRegex,
+      ] : undefined,
+    },
+    */
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js'],
+      // By default, always search for modules in the relative node_modules. However,
+      // if the package can not be found, fall back to the workspace node_modules. This is
+      // useful when using the resolveAliases to resolve a package to somewhere else.
+      modules: ['node_modules', path.join(workspacePath, 'node_modules')],
+      alias: Object.assign(
+        {
+          ...resolveAliases,
+        },
+        // Add aliases for all the workspace repos
+        ...(!isSingleRepoMode
+          ? workspaceRepos.map((repo) => ({
+            // Rewrite all '<repo>/dist' imports to '<repo>/src'
+            [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
+            [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
+          }))
+          : [
+            {
+              // In single repo mode, also rewrite all '<repo>/dist' imports to '<repo>/src'
+              [`${libName}/dist`]: path.join(workspacePath, 'src'),
+              [`${libName}/src`]: path.join(workspacePath, 'src'),
+              [`${libName}`]: path.join(workspacePath, 'src'),
+            },
+          ]),
+      ),
+      fallback: {
+        util: require.resolve('util/'),
+        // Disable polyfills, if required add them via require.resolve("crypto-browserify")
+        crypto: false,
+        path: false,
+        fs: false,
+      },
+    },
     module: {
       rules: [
         {
@@ -504,5 +480,87 @@ module.exports = (webpackEnv, argv) => {
         },
       ].filter(Boolean),
     },
+    plugins: [
+      /*
+      TODO: Enable, but creates a warning right now
+      new Dotenv({
+        path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
+        safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
+        allowEmptyValues: true, // allow empty variables (e.g. `FOO=`) (treat it as empty string, rather than missing)
+        systemvars: true, // load all the predefined 'process.env' variables which will trump anything local per dotenv specs.
+        silent: true, // hide any errors
+        defaults: false, // load '.env.defaults' as the default values if empty.
+      }),
+      */
+      new DefinePlugin({
+        'process.env.NODE_ENV': JSON.stringify(mode),
+        'process.env.__VERSION__': JSON.stringify(appPkg.version),
+        'process.env.__LICENSE__': JSON.stringify(appPkg.license),
+        'process.env.__BUILD_ID__': JSON.stringify(buildId),
+        'process.env.__APP_CONTEXT__': JSON.stringify('/'),
+        'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
+      }),
+      new CopyRspackPlugin({
+        patterns: copyPluginPatterns,
+      }),
+      ...Object.entries(entries).map(
+        ([chunkName, entry]) => new HtmlRspackPlugin({
+          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
+          filename: entry.html || `${chunkName}.html`,
+          title: libName,
+          // By default, exclude all other chunks
+          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
+          meta: {
+            description: libDesc,
+          },
+          minify: isEnvProduction,
+        }),
+      ),
+      ...workspaceRepos.map(
+        (repo) => !isFastMode && isEnvDevelopment
+              && new ForkTsCheckerWebpackPlugin({
+                async: isEnvDevelopment,
+                typescript: {
+                  diagnosticOptions: {
+                    semantic: true,
+                    syntactic: true,
+                  },
+                  // Build the repo and type-check
+                  build: Object.keys(resolveAliases).length === 0,
+                  mode: 'write-references',
+                  // Use the corresponding config file of the repo folder
+                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
+                  // TODO: Add explanation
+                  configOverwrite: {
+                    compilerOptions: {
+                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
+                      baseUrl: '.',
+                      sourceMap: true,
+                      skipLibCheck: true,
+                      declarationMap: false,
+                      noEmit: false,
+                      incremental: true,
+                      paths: Object.assign(
+                        {},
+                        // Map the aliases to the same path, but within an array like tsc requires it
+                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
+                        ...(!isSingleRepoMode
+                          ? workspaceRepos.map((r) => ({
+                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
+                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
+                          }))
+                          : [
+                            {
+                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
+                              [libName]: path.join(workspacePath, 'src/index.ts'),
+                            },
+                          ]),
+                      ),
+                    },
+                  },
+                },
+              }),
+      ).filter(Boolean),
+    ],
   });
 };
