@@ -18,11 +18,14 @@
     "preserveWatchOutput": true,
     "plugins": [{ "name": "typescript-plugin-css-modules" }],
   },
+  // Old "moduleResolution": "Node" option required for Cypress
+  // https://github.com/cypress-io/cypress/issues/26308#issuecomment-1663592648
+  //
+  // TODO: Remove when issue is resolved https://github.com/cypress-io/cypress/issues/27448
   "ts-node": {
     "compilerOptions": {
-      "module": "es2022",
-      "moduleResolution": "node16",
-      "sourceMap": false,
+      "module": "ESNext",
+      "moduleResolution": "Node"
     }
-  },
+  }
 }
