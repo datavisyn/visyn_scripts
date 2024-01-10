@@ -7,8 +7,7 @@ const path = require('path');
  */
 module.exports = ({ name, dirname }) => ({
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  // @storybook/addon-styling-webpack is required to make the styling addon work with webpack 5 (see https://mantine.dev/guides/storybook/)
-  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/preset-scss', 'storybook-addon-swc', '@storybook/addon-mdx-gfm', '@storybook/addon-styling-webpack'],
+  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/preset-scss', 'storybook-addon-swc', '@storybook/addon-mdx-gfm'],
   framework: {
     name: '@storybook/react-webpack5',
     options: {
