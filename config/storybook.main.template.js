@@ -29,8 +29,6 @@ module.exports = ({ name, dirname }) => ({
 
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
-      // I have no clue why this is required, but if this is missing we get a "Can't resolve '../../assets/icons/datavisyn_logo.svg' in '.../src/scss'""
-      '../../assets': path.resolve(dirname, '../src/assets'),
       // Add visyn_pro/dist as alias, as we have scss/code imports like visyn_pro/dist/assets/...
       [`${name}/dist`]: path.resolve(dirname, '../src'),
       [`${name}/src`]: path.resolve(dirname, '../src'),
