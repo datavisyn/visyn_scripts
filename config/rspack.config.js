@@ -11,6 +11,7 @@ const { CopyRspackPlugin, HtmlRspackPlugin, DefinePlugin } = require('@rspack/co
 const { parseTsconfig } = require('get-tsconfig');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
 
 let jquery = null;
 try {
@@ -30,6 +31,7 @@ module.exports = (webpackEnv, argv) => {
   const { mode } = argv;
   const isEnvDevelopment = mode === 'development';
   const isEnvProduction = mode === 'production';
+  const isDevServer = webpackEnv.RSPACK_SERVE;
   if (!isEnvDevelopment && !isEnvProduction) {
     throw Error(`Invalid mode passed: ${mode}`);
   }
@@ -38,7 +40,7 @@ module.exports = (webpackEnv, argv) => {
    */
   const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
   const isFastMode = env.fast?.toLowerCase() === 'true';
-  const devServerOnly = env.dev_server_only?.toLowerCase() === 'true';
+  const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
     console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
@@ -117,7 +119,7 @@ module.exports = (webpackEnv, argv) => {
     entries, registry, copyFiles, historyApiFallback,
   } = appPkg.visyn;
 
-  if (devServerOnly) {
+  if (isDevServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
     entries = {};
   }
@@ -257,7 +259,7 @@ module.exports = (webpackEnv, argv) => {
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath: '/',
-      clean: !devServerOnly,
+      clean: !isDevServerOnly,
     },
     optimization: {
       /*
@@ -370,7 +372,7 @@ module.exports = (webpackEnv, argv) => {
                     react: {
                       runtime: 'automatic',
                       development: isEnvDevelopment,
-                      refresh: isEnvDevelopment,
+                      refresh: isEnvDevelopment && isDevServer && !isDevServerOnly,
                     },
                   },
                 },
@@ -454,6 +456,9 @@ module.exports = (webpackEnv, argv) => {
                 },
                 {
                   loader: 'sass-loader',
+                  options: {
+                    sourceMap: true, // <-- !!IMPORTANT!!
+                  }
                 },
               ],
               type: 'css/auto',
@@ -482,7 +487,8 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      isEnvDevelopment && new ReactRefreshPlugin(),
+      process.env.RSDOCTOR && new RsdoctorRspackPlugin(),
+      isEnvDevelopment && isDevServer && !isDevServerOnly && new ReactRefreshPlugin(),
       // TODO: Enable, but creates a warning right now
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
@@ -563,10 +569,5 @@ module.exports = (webpackEnv, argv) => {
               }),
       ),
     ].filter(Boolean),
-    experiments: {
-      rspackFuture: {
-        disableTransformByDefault: true,
-      },
-    },
   });
 };
