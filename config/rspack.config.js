@@ -7,18 +7,11 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
-const { CopyRspackPlugin, HtmlRspackPlugin, DefinePlugin } = require('@rspack/core');
+const { CopyRspackPlugin, DefinePlugin } = require('@rspack/core');
 const { parseTsconfig } = require('get-tsconfig');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
-
-let jquery = null;
-try {
-  jquery = require.resolve('jquery');
-} catch {
-  // pass
-}
 
 // Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
@@ -64,7 +57,6 @@ module.exports = (webpackEnv, argv) => {
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
   // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
   const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
-  const workspaceRegistry = workspaceYoRcFile.registry || [];
   const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
   const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
   const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
@@ -116,7 +108,7 @@ module.exports = (webpackEnv, argv) => {
 
   let {
     // eslint-disable-next-line prefer-const
-    entries, registry, copyFiles, historyApiFallback,
+    entries, copyFiles, historyApiFallback,
   } = appPkg.visyn;
 
   if (isDevServerOnly) {
@@ -179,12 +171,6 @@ module.exports = (webpackEnv, argv) => {
     ].filter(Boolean),
   );
 
-  // Merge app and workspace properties
-  const mergedRegistry = {
-    ...(registry || {}),
-    ...workspaceRegistry,
-  };
-
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
 
@@ -206,7 +192,7 @@ module.exports = (webpackEnv, argv) => {
       ? {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
-        host: 'localhost',
+        host: '0.0.0.0',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
@@ -458,7 +444,7 @@ module.exports = (webpackEnv, argv) => {
                   loader: 'sass-loader',
                   options: {
                     sourceMap: true, // <-- !!IMPORTANT!!
-                  }
+                  },
                 },
               ],
               type: 'css/auto',
