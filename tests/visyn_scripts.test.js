@@ -49,18 +49,22 @@ describe('cli', () => {
     expect(mockExit).toHaveBeenCalledWith(0);
   });
 
-  it('runs the build script in production mode', async () => {
+  it('runs the bundle script in production mode', async () => {
     // const callSpy = jest.spyOn(utils, "call");
-    await runCommand('build');
-    expect(call).toHaveBeenCalledWith(expect.stringMatching(/(?=.*webpack)/), expect.stringMatching(/(?=.*webpack\.config\.js)/), expect.anything());
+    await runCommand('bundle');
+    expect(call).toHaveBeenCalledWith(
+      expect.stringMatching(/(?=.*rspack)/),
+      expect.stringMatching(/(?=.*rspack\.config\.js)/),
+      expect.anything(),
+    );
   });
 
-  it('runs the build script in development mode', async () => {
+  it('runs the bundle script in development mode', async () => {
     // const callSpy = jest.spyOn(utils, "call");
-    await runCommand('build', '--mode', 'development');
+    await runCommand('bundle', '--mode', 'development');
     expect(call).toHaveBeenCalledWith(
-      expect.stringMatching(/(?=.*webpack)/),
-      expect.stringMatching(/(?=.*--mode development)(?=.*webpack\.config\.js)/),
+      expect.stringMatching(/(?=.*rspack)/),
+      expect.stringMatching(/(?=.*--mode development)(?=.*rspack\.config\.js)/),
       expect.anything(),
     );
   });
