@@ -247,16 +247,6 @@ module.exports = (webpackEnv, argv) => {
       publicPath: '/',
       clean: !isDevServerOnly,
     },
-    optimization: {
-      /*
-      minimize: isEnvProduction,
-      minimizer: [
-        new MinifyPlugin({
-          minifier: 'terser',
-        }),
-      ],
-      */
-    },
     /*
     snapshot: {
       managedPaths: customResolveAliasRegex ? [
