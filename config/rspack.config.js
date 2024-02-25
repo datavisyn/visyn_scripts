@@ -469,6 +469,7 @@ module.exports = (webpackEnv, argv) => {
           template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
           filename: entry.html || `${chunkName}.html`,
           title: libName,
+          chunks: [chunkName],
           // By default, exclude all other chunks
           excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
           meta: {
