@@ -64,8 +64,6 @@ module.exports = (webpackEnv, argv) => {
   const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
   Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
 
-  const workspaceRepoToName = Object.fromEntries(workspaceRepos.map((r) => [r, require(path.join(workspacePath, r, 'package.json')).name]));
-
   const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
   const defaultAppPath = path.join(workspacePath, defaultApp);
   const appPkg = require(path.join(defaultAppPath, 'package.json'));
@@ -176,8 +174,8 @@ module.exports = (webpackEnv, argv) => {
 
   return defineConfig({
     mode,
-    // Webpack noise constrained to errors and warnings
-    stats: 'errors-warnings',
+    // Logging noise constrained to errors and warnings
+    stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
     // eslint-disable-next-line no-nested-ternary
     devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
     // These are the "entry points" to our application.
@@ -260,27 +258,7 @@ module.exports = (webpackEnv, argv) => {
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
       modules: ['node_modules', path.join(workspacePath, 'node_modules')],
-      alias: Object.assign(
-        {
-          ...resolveAliases,
-        },
-        // Add aliases for all the workspace repos
-        ...(!isSingleRepoMode
-          ? workspaceRepos.map((repo) => ({
-            // Rewrite all '<repo>/dist' imports to '<repo>/src'
-            [`${workspaceRepoToName[repo]}/dist`]: path.join(workspacePath, repo, 'src'),
-            [`${workspaceRepoToName[repo]}/src`]: path.join(workspacePath, repo, 'src'),
-            [`${workspaceRepoToName[repo]}`]: path.join(workspacePath, repo, 'src'),
-          }))
-          : [
-            {
-              // In single repo mode, also rewrite all '<repo>/dist' imports to '<repo>/src'
-              [`${libName}/dist`]: path.join(workspacePath, 'src'),
-              [`${libName}/src`]: path.join(workspacePath, 'src'),
-              [`${libName}`]: path.join(workspacePath, 'src'),
-            },
-          ]),
-      ),
+      alias: resolveAliases,
       fallback: {
         util: require.resolve('util/'),
         // Disable polyfills, if required add them via require.resolve("crypto-browserify")
@@ -523,22 +501,8 @@ module.exports = (webpackEnv, argv) => {
                       declarationMap: false,
                       noEmit: false,
                       incremental: true,
-                      paths: Object.assign(
-                        {},
-                        // Map the aliases to the same path, but within an array like tsc requires it
-                        Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
-                        ...(!isSingleRepoMode
-                          ? workspaceRepos.map((r) => ({
-                            [`${workspaceRepoToName[r]}/dist`]: [path.join(workspacePath, r, 'src/*')],
-                            [workspaceRepoToName[r]]: [path.join(workspacePath, r, 'src/index.ts')],
-                          }))
-                          : [
-                            {
-                              [`${libName}/dist`]: path.join(workspacePath, 'src/*'),
-                              [libName]: path.join(workspacePath, 'src/index.ts'),
-                            },
-                          ]),
-                      ),
+                      // Map the aliases to the same path, but within an array like tsc requires it
+                      paths: Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
                     },
                   },
                 },
