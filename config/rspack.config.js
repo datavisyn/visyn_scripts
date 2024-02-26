@@ -32,7 +32,7 @@ module.exports = (webpackEnv, argv) => {
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
-    console.log('Fast mode enabled: disabled sourcemaps, type-checking, ...');
+    console.log('Fast mode enabled: disabled sourcemaps, ...');
   }
 
   const now = new Date();
@@ -444,7 +444,7 @@ module.exports = (webpackEnv, argv) => {
         }),
       ),
       ...workspaceRepos.map(
-        (repo) => !isFastMode && isEnvDevelopment
+        (repo) => isEnvDevelopment
               && new ForkTsCheckerWebpackPlugin({
                 async: isEnvDevelopment,
                 typescript: {
