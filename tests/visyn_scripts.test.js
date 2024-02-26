@@ -44,7 +44,7 @@ describe('cli', () => {
     const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => {});
     await runCommand('help');
     // Use lookahead to confirm that all of these words exist in any order
-    expect(consoleSpy).toBeCalledWith(expect.stringMatching(/(?=(.|\n)*build)(?=(.|\n)*copy)(?=(.|\n)*compile)(?=(.|\n)*docs)(?=(.|\n)*lint)(?=(.|\n)*test)/));
+    expect(consoleSpy).toBeCalledWith(expect.stringMatching(/(?=(.|\n)*copy)(?=(.|\n)*compile)(?=(.|\n)*docs)(?=(.|\n)*lint)(?=(.|\n)*test)/));
     // Confirm that it would have exited
     expect(mockExit).toHaveBeenCalledWith(0);
   });

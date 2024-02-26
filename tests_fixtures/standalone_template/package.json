@@ -43,14 +43,14 @@
     "prepack": "yarn run build",
     "start": "visyn_scripts start --env workspace_mode=single",
     "start:fast": "visyn_scripts start --env workspace_mode=single fast=true",
-    "storybook:build": "NODE_OPTIONS=--max_old_space_size=4096 build-storybook",
-    "storybook": "NODE_OPTIONS=--max_old_space_size=4096 start-storybook -p 6006",
+    "storybook:build": "visyn_scripts storybook build",
+    "storybook": "visyn_scripts storybook dev -p 6006",
     "test": "visyn_scripts test",
     "bundle:dev": "visyn_scripts bundle --mode development --env workspace_mode=single",
     "bundle:prod": "visyn_scripts bundle --mode production --env workspace_mode=single"
   },
   "dependencies": {
-    "cypress": "^12.0.0",
+    "cypress": "^13.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
     "visyn_scripts": "portal:../../"
@@ -73,5 +73,5 @@
       }
     }
   },
-  "packageManager": "yarn@3.2.2"
+  "packageManager": "yarn@4.1.0"
 }

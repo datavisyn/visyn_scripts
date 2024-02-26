@@ -3,7 +3,7 @@ const { call } = require('./utils');
 
 module.exports = {
   command: 'bundle [strings...]',
-  describe: 'Bundles a workspace or a repository',
+  describe: 'Bundles a repository',
   handler: (args) => {
     const configPath = resolve(__dirname, '../../config/rspack.config.js');
     call('rspack', `build --c "${configPath}" ${(args.strings || []).join(' ')}`, {

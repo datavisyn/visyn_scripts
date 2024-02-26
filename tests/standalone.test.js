@@ -45,7 +45,7 @@ describe('standalone', () => {
 
   it('builds the repository', () => {
     // Execute the build script of the repository
-    execSync('npm run build', {
+    execSync('yarn run build', {
       cwd: testDir,
       stdio: 'inherit',
     });
@@ -54,10 +54,20 @@ describe('standalone', () => {
     expect(fs.existsSync(resolve(testDir, 'dist/index.template.ejs'))).toBe(true);
   });
 
+  it('builds storybook', () => {
+    // Execute the build script of the repository
+    execSync('yarn run storybook:build', {
+      cwd: testDir,
+      stdio: 'inherit',
+    });
+    // Expect some dist files to exist after the build
+    expect(fs.existsSync(resolve(testDir, 'storybook-static/index.html'))).toBe(true);
+  });
+
   describe('production build', () => {
     it('builds the production build', () => {
       // Execute the build script of the workspace
-      execSync('npm run bundle:prod', {
+      execSync('yarn run bundle:prod', {
         cwd: testDir,
         stdio: 'inherit',
       });
@@ -74,7 +84,7 @@ describe('standalone', () => {
 
         try {
           // Execute the cypress script of the repository
-          execSync('npm run cy:run', {
+          execSync('yarn run cy:run', {
             cwd: testDir,
             stdio: 'inherit',
             env: {

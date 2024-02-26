@@ -8,7 +8,6 @@ const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const { CopyRspackPlugin, DefinePlugin } = require('@rspack/core');
-const { parseTsconfig } = require('get-tsconfig');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
@@ -28,10 +27,7 @@ module.exports = (webpackEnv, argv) => {
   if (!isEnvDevelopment && !isEnvProduction) {
     throw Error(`Invalid mode passed: ${mode}`);
   }
-  /**
-   * Single repo mode determines if the webpack config is being used in a standalone repository, not within a workspace.
-   */
-  const isSingleRepoMode = env.workspace_mode?.toLowerCase() === 'single';
+
   const isFastMode = env.fast?.toLowerCase() === 'true';
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
@@ -42,31 +38,13 @@ module.exports = (webpackEnv, argv) => {
   const now = new Date();
   // workspace constants
   const workspacePath = fs.realpathSync(process.cwd()); // TODO: Add , '../') if you move this file in a subdirectory
-  /* {
-    workspaceAliases: { [key: string]: string };
-    registry: any;
-    frontendRepos: any;
-    maxChunkSize?: number;
-    // TODO: This is not required anymore, because we let webpack split chunks?
-    vendors: any;
-    devServerProxy: any;
-  } */
-  const workspaceYoRcFile = fs.existsSync(path.join(workspacePath, '.yo-rc-workspace.json')) ? require(path.join(workspacePath, '.yo-rc-workspace.json')) : {};
-  const workspacePkg = require(path.join(workspacePath, 'package.json'));
+  const appPkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
   // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
-  const workspaceRegistryFile = path.join(workspacePath, isSingleRepoMode ? 'src/' : '', 'phovea_registry.ts');
-  const workspaceRepos = isSingleRepoMode ? ['./'] : workspaceYoRcFile.frontendRepos || [];
-  const workspaceMaxChunkSize = workspaceYoRcFile.maxChunkSize || 5000000;
-  const resolveAliases = Object.fromEntries(Object.entries(workspaceYoRcFile.resolveAliases || {}).map(([key, p]) => [key, path.join(workspacePath, p)]));
-  // Use a regex with capturing group as explained in https://github.com/webpack/webpack/pull/14509#issuecomment-1237348087.
-  const customResolveAliasRegex = Object.entries(resolveAliases).length > 0 ? new RegExp(`/^(.+?[\\/]node_modules[\\/](?!(${Object.keys(resolveAliases).join('|')}))(@.+?[\\/])?.+?)[\\/]/`) : null;
-  Object.entries(resolveAliases).forEach(([key, p]) => console.log(`Using custom resolve alias: ${key} -> ${p}`));
+  const workspaceRegistryFile = path.join(workspacePath, 'src/phovea_registry.ts');
+  const workspaceRepos = ['./'];
 
-  const defaultApp = isSingleRepoMode ? './' : workspaceYoRcFile.defaultApp;
-  const defaultAppPath = path.join(workspacePath, defaultApp);
-  const appPkg = require(path.join(defaultAppPath, 'package.json'));
   const libName = appPkg.name;
   const libDesc = appPkg.description || '';
 
@@ -75,7 +53,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   // Extract workspace proxy configuration from .yo-rc-workspace.json and package.json
-  const workspaceProxy = { ...(appPkg.visyn.devServerProxy || {}), ...(workspaceYoRcFile.devServerProxy || {}) };
+  const workspaceProxy = appPkg.visyn.devServerProxy || {};
 
   /**
    * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
@@ -97,7 +75,7 @@ module.exports = (webpackEnv, argv) => {
 
   try {
     // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
-    const visynWebpackOverride = require(path.join(defaultAppPath, 'visynWebpackOverride.js'))({ env }) || {};
+    const visynWebpackOverride = require(path.join(workspacePath, 'visynWebpackOverride.js'))({ env }) || {};
     console.log('Using visynWebpackOverride.js file to override visyn configuration.');
     Object.assign(appPkg.visyn, visynWebpackOverride);
   } catch (e) {
@@ -114,15 +92,8 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
-  const tsConfigPath = path.join(workspacePath, 'tsconfig.json');
-  const tsConfigJson = isSingleRepoMode ? parseTsconfig(tsConfigPath) : null;
-  const isLegacyModuleResolution = tsConfigJson?.compilerOptions?.moduleResolution?.toLowerCase() === 'node';
-  if (isLegacyModuleResolution) {
-    console.warn('visyn user: you are still using moduleResolution: node. Try to upgrade to node16 as soon as possible!');
-  }
-
   const copyAppFiles = copyFiles?.map((file) => ({
-    from: path.join(defaultAppPath, file),
+    from: path.join(workspacePath, file),
     to: path.join(workspacePath, 'bundles', path.basename(file)),
   })) || [];
 
@@ -149,11 +120,11 @@ module.exports = (webpackEnv, argv) => {
             {
               name: appPkg.name,
               displayName: appPkg.displayName || appPkg.name,
-              version: isEnvDevelopment ? appPkg.version : workspacePkg.version,
+              version: appPkg.version,
               repository: appPkg.repository?.url,
               homepage: appPkg.homepage,
               description: appPkg.description,
-              screenshot: resolveScreenshot(defaultAppPath),
+              screenshot: resolveScreenshot(workspacePath),
               buildId,
             },
             null,
@@ -183,7 +154,7 @@ module.exports = (webpackEnv, argv) => {
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(defaultAppPath, entry.js), entry.scss ? path.join(defaultAppPath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
+        [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
     devServer: isEnvDevelopment
@@ -258,7 +229,6 @@ module.exports = (webpackEnv, argv) => {
       // if the package can not be found, fall back to the workspace node_modules. This is
       // useful when using the resolveAliases to resolve a package to somewhere else.
       modules: ['node_modules', path.join(workspacePath, 'node_modules')],
-      alias: resolveAliases,
       fallback: {
         util: require.resolve('util/'),
         // Disable polyfills, if required add them via require.resolve("crypto-browserify")
@@ -288,11 +258,6 @@ module.exports = (webpackEnv, argv) => {
             {
               test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
               type: 'asset',
-              parser: {
-                dataUrlCondition: {
-                  maxSize: workspaceMaxChunkSize,
-                },
-              },
             },
             {
               test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -310,7 +275,7 @@ module.exports = (webpackEnv, argv) => {
             },
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              exclude: [/node_modules/, customResolveAliasRegex].filter(Boolean),
+              exclude: [/node_modules/],
               loader: 'builtin:swc-loader',
               options: {
                 sourceMap: true,
@@ -466,7 +431,7 @@ module.exports = (webpackEnv, argv) => {
       ...Object.entries(entries).map(
         // TODO: Do not use HtmlRspackPlugin, as it can't handle require calls in ejs templates.
         ([chunkName, entry]) => new HtmlWebpackPlugin({
-          template: entry.template ? path.join(defaultAppPath, entry.template) : 'auto',
+          template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
           filename: entry.html || `${chunkName}.html`,
           title: libName,
           chunks: [chunkName],
@@ -488,24 +453,10 @@ module.exports = (webpackEnv, argv) => {
                     syntactic: true,
                   },
                   // Build the repo and type-check
-                  build: Object.keys(resolveAliases).length === 0,
+                  build: true,
                   mode: 'write-references',
                   // Use the corresponding config file of the repo folder
                   configFile: path.join(workspacePath, repo, 'tsconfig.json'),
-                  // TODO: Add explanation
-                  configOverwrite: {
-                    compilerOptions: {
-                      // Similarly to the webpack-alias definition, we need to define the same alias for typescript
-                      baseUrl: '.',
-                      sourceMap: true,
-                      skipLibCheck: true,
-                      declarationMap: false,
-                      noEmit: false,
-                      incremental: true,
-                      // Map the aliases to the same path, but within an array like tsc requires it
-                      paths: Object.fromEntries(Object.entries(resolveAliases).map(([alias, aliasPath]) => [alias, [aliasPath]])),
-                    },
-                  },
                 },
               }),
       ),

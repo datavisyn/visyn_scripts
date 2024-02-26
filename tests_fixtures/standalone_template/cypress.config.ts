@@ -8,5 +8,5 @@ export default defineConfig({
     baseUrl: 'http://localhost:8080',
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setupNodeEvents(on, config) {},
-  }
+  },
 });

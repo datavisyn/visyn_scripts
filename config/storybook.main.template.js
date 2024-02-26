@@ -1,14 +1,39 @@
-/* eslint-disable no-param-reassign */
-const path = require('path');
-
 /**
- * @param {{ name: string; dirname: string; }} param0 Options
- * @returns {import('@storybook/react-webpack5').StorybookConfig}
+ * @type {import('@storybook/react-webpack5').StorybookConfig}
  */
-module.exports = ({ name, dirname }) => ({
+module.exports = {
   stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
-  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/preset-scss', 'storybook-addon-swc', '@storybook/addon-mdx-gfm'],
+  addons: [
+    '@storybook/addon-links',
+    '@storybook/addon-essentials',
+    '@storybook/addon-interactions',
+    {
+      name: '@storybook/addon-styling',
+      options: {
+        // This is our best guess to replicate the style config we are using in the rspack.config.js
+        scssBuildRule: {
+          test: /\.scss$/,
+          use: [
+            'style-loader',
+            {
+              loader: 'css-loader',
+              options: { importLoaders: 1 },
+            },
+            'resolve-url-loader',
+            {
+              loader: 'sass-loader',
+              options: {
+                sourceMap: true,
+              },
+            },
+          ],
+        },
+      },
+    },
+    'storybook-addon-swc',
+  ],
   framework: {
+    // TODO: as soon as rspack storybook integration is ready, use that: https://www.rspack.dev/guide/migrate-storybook
     name: '@storybook/react-webpack5',
     options: {
       builder: {
@@ -17,26 +42,22 @@ module.exports = ({ name, dirname }) => ({
     },
   },
   webpackFinal: async (config) => {
-    config.module.rules = config.module.rules.flatMap((rule) => (rule.loader?.includes('swc-loader') ? [
-      rule,
-      {
-        // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
-        ...rule,
-        test: /\.(ts|tsx)$/,
-        exclude: [],
-      },
-    ] : [rule]));
+    // eslint-disable-next-line no-param-reassign
+    config.module.rules = config.module.rules.flatMap((rule) => (rule.loader?.includes('swc-loader')
+      ? [
+        rule,
+        {
+          // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
+          ...rule,
+          test: /\.(ts|tsx)$/,
+          exclude: [],
+        },
+      ]
+      : [rule]));
 
-    config.resolve.alias = {
-      ...(config.resolve.alias || {}),
-      // Add visyn_pro/dist as alias, as we have scss/code imports like visyn_pro/dist/assets/...
-      [`${name}/dist`]: path.resolve(dirname, '../src'),
-      [`${name}/src`]: path.resolve(dirname, '../src'),
-      [name]: path.resolve(dirname, '../src'),
-    };
     return config;
   },
   docs: {
     autodocs: true,
   },
-});
+};
