@@ -28,7 +28,7 @@ module.exports = (webpackEnv, argv) => {
     throw Error(`Invalid mode passed: ${mode}`);
   }
 
-  const isFastMode = env.fast?.toLowerCase() !== 'false';
+  const isFastMode = env.fast?.toLowerCase() !== 'false' && isDevServer;
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
