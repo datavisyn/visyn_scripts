@@ -28,7 +28,7 @@ module.exports = (webpackEnv, argv) => {
     throw Error(`Invalid mode passed: ${mode}`);
   }
 
-  const isFastMode = env.fast?.toLowerCase() === 'true';
+  const isFastMode = env.fast?.toLowerCase() !== 'false';
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
 
   if (isFastMode) {
@@ -148,7 +148,7 @@ module.exports = (webpackEnv, argv) => {
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
     // eslint-disable-next-line no-nested-ternary
-    devtool: isFastMode ? false : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
+    devtool: isFastMode ? 'eval' : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -161,7 +161,7 @@ module.exports = (webpackEnv, argv) => {
       ? {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
-        host: '0.0.0.0',
+        host: 'localhost',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
