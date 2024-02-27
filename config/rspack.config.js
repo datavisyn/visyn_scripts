@@ -30,30 +30,22 @@ module.exports = (webpackEnv, argv) => {
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
   const isFastMode = env.fast?.toLowerCase() !== 'false' && isDevServer && !isDevServerOnly;
-
+  const isReactRefresh = isDevServer && isEnvDevelopment;
   if (isFastMode) {
     console.log('Fast mode enabled: disabled sourcemaps, ...');
   }
 
   const now = new Date();
-  // workspace constants
-  const workspacePath = fs.realpathSync(process.cwd()); // TODO: Add , '../') if you move this file in a subdirectory
+  const workspacePath = fs.realpathSync(process.cwd());
   const appPkg = require(path.join(workspacePath, 'package.json'));
   const workspaceBuildInfoFile = path.join(workspacePath, 'package-lock.json');
   const workspaceMetaDataFile = path.join(workspacePath, 'metaData.json');
-  // Always look for the phovea_registry.ts in the src folder for standalone repos, or in the workspace root in workspaces.
+  // Always look for the phovea_registry.ts in the src folder for standalone repos.
   const workspaceRegistryFile = path.join(workspacePath, 'src/phovea_registry.ts');
-  const workspaceRepos = ['./'];
-
-  const libName = appPkg.name;
-  const libDesc = appPkg.description || '';
 
   if (!appPkg.visyn) {
     throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
   }
-
-  // Extract workspace proxy configuration from .yo-rc-workspace.json and package.json
-  const workspaceProxy = appPkg.visyn.devServerProxy || {};
 
   /**
    * Configuration of visyn repos. Includes entrypoints, registry configuration, files to copy, ...
@@ -84,7 +76,7 @@ module.exports = (webpackEnv, argv) => {
 
   let {
     // eslint-disable-next-line prefer-const
-    entries, copyFiles, historyApiFallback,
+    devServerProxy, entries, copyFiles, historyApiFallback,
   } = appPkg.visyn;
 
   if (isDevServerOnly) {
@@ -92,53 +84,8 @@ module.exports = (webpackEnv, argv) => {
     entries = {};
   }
 
-  const copyAppFiles = copyFiles?.map((file) => ({
-    from: path.join(workspacePath, file),
-    to: path.join(workspacePath, 'bundles', path.basename(file)),
-  })) || [];
-
   const prefix = (n) => (n < 10 ? `0${n}` : n.toString());
   const buildId = `${now.getUTCFullYear()}${prefix(now.getUTCMonth() + 1)}${prefix(now.getUTCDate())}-${prefix(now.getUTCHours())}${prefix(now.getUTCMinutes())}${prefix(now.getUTCSeconds())}`;
-
-  const copyPluginPatterns = copyAppFiles.concat(
-    [
-      fs.existsSync(workspaceMetaDataFile) && {
-        from: workspaceMetaDataFile,
-        to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
-        // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
-        transform: () => {
-          function resolveScreenshot(appDirectory) {
-            const f = path.join(appDirectory, './media/screenshot.png');
-            if (!fs.existsSync(f)) {
-              return null;
-            }
-            const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
-            return `data:image/png;base64,${buffer}`;
-          }
-
-          return JSON.stringify(
-            {
-              name: appPkg.name,
-              displayName: appPkg.displayName || appPkg.name,
-              version: appPkg.version,
-              repository: appPkg.repository?.url,
-              homepage: appPkg.homepage,
-              description: appPkg.description,
-              screenshot: resolveScreenshot(workspacePath),
-              buildId,
-            },
-            null,
-            2,
-          );
-        },
-      },
-      // use package-lock json as buildInfo
-      fs.existsSync(workspaceBuildInfoFile) && {
-        from: workspaceBuildInfoFile,
-        to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
-      },
-    ].filter(Boolean),
-  );
 
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
@@ -148,7 +95,7 @@ module.exports = (webpackEnv, argv) => {
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
     // eslint-disable-next-line no-nested-ternary
-    devtool: isFastMode ? 'eval' : (isEnvDevelopment ? 'cheap-module-source-map' : 'source-map'),
+    devtool: isFastMode ? 'eval' : isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -167,8 +114,8 @@ module.exports = (webpackEnv, argv) => {
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: {
-        // Append on top to allow overriding /api/v1/ for example
-          ...workspaceProxy,
+          // Append on top to allow overriding /api/v1/ for example
+          ...(devServerProxy || {}),
           ...{
             '/api/*': {
               target: 'http://localhost:9000',
@@ -192,11 +139,11 @@ module.exports = (webpackEnv, argv) => {
               secure: false,
             },
             // Append on bottom to allow override of exact key matches like /api/*
-            ...workspaceProxy,
+            ...(devServerProxy || {}),
           },
         },
         client: {
-        // Do not show the full-page error overlay
+          // Do not show the full-page error overlay
           overlay: false,
         },
       }
@@ -292,7 +239,7 @@ module.exports = (webpackEnv, argv) => {
                     react: {
                       runtime: 'automatic',
                       development: isEnvDevelopment,
-                      refresh: isEnvDevelopment,
+                      refresh: isReactRefresh,
                     },
                   },
                 },
@@ -317,7 +264,7 @@ module.exports = (webpackEnv, argv) => {
                     react: {
                       runtime: 'automatic',
                       development: isEnvDevelopment,
-                      refresh: isEnvDevelopment,
+                      refresh: isReactRefresh,
                     },
                   },
                 },
@@ -408,7 +355,7 @@ module.exports = (webpackEnv, argv) => {
     },
     plugins: [
       process.env.RSDOCTOR && new RsdoctorRspackPlugin(),
-      isEnvDevelopment && new ReactRefreshPlugin(),
+      isReactRefresh && new ReactRefreshPlugin(),
       // TODO: Enable, but creates a warning right now
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
@@ -427,40 +374,79 @@ module.exports = (webpackEnv, argv) => {
         'process.env.__DEBUG__': JSON.stringify(isEnvDevelopment),
       }),
       new CopyRspackPlugin({
-        patterns: copyPluginPatterns,
+        patterns: [
+          ...(copyFiles?.map((file) => ({
+            from: path.join(workspacePath, file),
+            to: path.join(workspacePath, 'bundles', path.basename(file)),
+          })) || []),
+          ...[
+            fs.existsSync(workspaceMetaDataFile) && {
+              from: workspaceMetaDataFile,
+              to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
+              // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+              transform: () => {
+                function resolveScreenshot(appDirectory) {
+                  const f = path.join(appDirectory, './media/screenshot.png');
+                  if (!fs.existsSync(f)) {
+                    return null;
+                  }
+                  const buffer = Buffer.from(fs.readFileSync(f)).toString('base64');
+                  return `data:image/png;base64,${buffer}`;
+                }
+
+                return JSON.stringify(
+                  {
+                    name: appPkg.name,
+                    displayName: appPkg.displayName || appPkg.name,
+                    version: appPkg.version,
+                    repository: appPkg.repository?.url,
+                    homepage: appPkg.homepage,
+                    description: appPkg.description,
+                    screenshot: resolveScreenshot(workspacePath),
+                    buildId,
+                  },
+                  null,
+                  2,
+                );
+              },
+            },
+            // use package-lock json as buildInfo
+            fs.existsSync(workspaceBuildInfoFile) && {
+              from: workspaceBuildInfoFile,
+              to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
+            },
+          ].filter(Boolean),
+        ],
       }),
       ...Object.entries(entries).map(
         // TODO: Do not use HtmlRspackPlugin, as it can't handle require calls in ejs templates.
         ([chunkName, entry]) => new HtmlWebpackPlugin({
           template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
           filename: entry.html || `${chunkName}.html`,
-          title: libName,
+          title: appPkg.name,
           chunks: [chunkName],
           // By default, exclude all other chunks
           excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
           meta: {
-            description: libDesc,
+            description: appPkg.description || '',
           },
           minify: isEnvProduction,
         }),
       ),
-      ...workspaceRepos.map(
-        (repo) => isEnvDevelopment
-              && new ForkTsCheckerWebpackPlugin({
-                async: isEnvDevelopment,
-                typescript: {
-                  diagnosticOptions: {
-                    semantic: true,
-                    syntactic: true,
-                  },
-                  // Build the repo and type-check
-                  build: true,
-                  mode: 'write-references',
-                  // Use the corresponding config file of the repo folder
-                  configFile: path.join(workspacePath, repo, 'tsconfig.json'),
-                },
-              }),
-      ),
+      isEnvDevelopment
+        && new ForkTsCheckerWebpackPlugin({
+          async: isEnvDevelopment,
+          typescript: {
+            diagnosticOptions: {
+              semantic: true,
+              syntactic: true,
+            },
+            // Build the repo and type-check
+            build: true,
+            mode: 'write-references',
+            configFile: path.join(workspacePath, 'tsconfig.json'),
+          },
+        }),
     ].filter(Boolean),
   });
 };
