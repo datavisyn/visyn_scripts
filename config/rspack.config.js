@@ -28,8 +28,8 @@ module.exports = (webpackEnv, argv) => {
     throw Error(`Invalid mode passed: ${mode}`);
   }
 
-  const isFastMode = env.fast?.toLowerCase() !== 'false' && isDevServer;
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
+  const isFastMode = env.fast?.toLowerCase() !== 'false' && isDevServer && !isDevServerOnly;
 
   if (isFastMode) {
     console.log('Fast mode enabled: disabled sourcemaps, ...');
@@ -292,7 +292,7 @@ module.exports = (webpackEnv, argv) => {
                     react: {
                       runtime: 'automatic',
                       development: isEnvDevelopment,
-                      refresh: isEnvDevelopment && isDevServer && !isDevServerOnly,
+                      refresh: isEnvDevelopment,
                     },
                   },
                 },
@@ -408,7 +408,7 @@ module.exports = (webpackEnv, argv) => {
     },
     plugins: [
       process.env.RSDOCTOR && new RsdoctorRspackPlugin(),
-      isEnvDevelopment && isDevServer && !isDevServerOnly && new ReactRefreshPlugin(),
+      isEnvDevelopment && new ReactRefreshPlugin(),
       // TODO: Enable, but creates a warning right now
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
