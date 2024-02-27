@@ -1,6 +1,3 @@
-const { devServer } = require('cypress-rspack-dev-server');
-const rspackConfig = require('./rspack.config');
-
 module.exports = {
   viewportHeight: 1080,
   viewportWidth: 1920,
@@ -9,6 +6,10 @@ module.exports = {
     baseUrl: 'http://localhost:8080',
     setupNodeEvents() {},
   },
+  /*
+  // TODO: cypress-rspack-dev-server is currently using an outdated version of rspack
+  const rspackConfig = require('./rspack.config');
+  const { devServer } = require('cypress-rspack-dev-server');
   component: {
     devServer(devServerConfig) {
       return devServer({
@@ -18,4 +19,5 @@ module.exports = {
       });
     },
   },
+  */
 };
