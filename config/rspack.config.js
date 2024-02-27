@@ -161,7 +161,8 @@ module.exports = (webpackEnv, argv) => {
       ? {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
-        host: 'localhost',
+        // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
+        host: '127.0.0.1',
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
