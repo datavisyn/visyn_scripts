@@ -45,10 +45,34 @@ module.exports = {
     // eslint-disable-next-line no-param-reassign
     config.module.rules = config.module.rules.flatMap((rule) => (rule.loader?.includes('swc-loader')
       ? [
-        rule,
+        {
+          ...rule,
+          options: {
+            ...(rule?.options || {}),
+            jsc: {
+              ...(rule?.options?.jsc || {}),
+              parser: {
+                ...(rule?.options?.jsc?.parser || {}),
+                // Sync rules with our rspack config
+                decorators: true,
+              },
+            },
+          },
+        },
         {
           // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
           ...rule,
+          options: {
+            ...(rule?.options || {}),
+            jsc: {
+              ...(rule?.options?.jsc || {}),
+              parser: {
+                ...(rule?.options?.jsc?.parser || {}),
+                // Sync rules with our rspack config
+                decorators: true,
+              },
+            },
+          },
           test: /\.(ts|tsx)$/,
           exclude: [],
         },
