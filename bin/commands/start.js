@@ -3,9 +3,9 @@ const { call } = require('./utils');
 
 module.exports = {
   command: 'start [strings...]',
-  describe: 'Start webpack serve',
+  describe: 'Start dev server',
   handler: (args) => {
-    const configPath = resolve(__dirname, '../../config/webpack.config.js');
-    call('webpack', `serve --mode development --config "${configPath}" --progress ${(args.strings || []).join(' ')}`);
+    const configPath = resolve(__dirname, '../../config/rspack.config.js');
+    call('rspack', `serve --mode development --c "${configPath}" ${(args.strings || []).join(' ')}`);
   },
 };
