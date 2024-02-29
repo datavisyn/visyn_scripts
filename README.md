@@ -11,34 +11,6 @@ Install visyn_scripts via npm: `npm i --save-dev git+ssh://git@github.com/datavi
 
 Add visyn_scripts to your package.json scripts, i.e. add `"compile": "visyn_scripts compile"` and execute it with `npm run compile`, or alternatively directly execute it with `npx visyn_scripts compile`.
 
-## Scripts
-
-The main purpose of visyn_scripts are the unified scripts:
-
-### build
-
-Builds a workspace using webpack.
-
-### compile
-
-Builds a repository using typescript.
-
-### copy
-
-Copies assets, styles, and static files to the dist folder.
-
-### docs
-
-Generates docs of a repository using typedoc.
-
-### lint
-
-Lints a repository using ESLint.
-
-### test
-
-Tests a repository using Jest.
-
 ## Configurations
 
 visyn_scripts also includes default configurations for ESLint, Prettier, Typescript, ...

@@ -3,6 +3,7 @@
 /.eslintcache
 /.idea
 /build/
+/storybook-static/
 /dist/
 /dist/tsBuildInfoFile
 /dist_python/
