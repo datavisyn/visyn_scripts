@@ -6,7 +6,7 @@ const path = require('path');
  * @returns {import('@storybook/react-webpack5').StorybookConfig}
  */
 module.exports = ({ name, dirname }) => ({
-  stories: ['../src/**/*.stories.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  stories: ['../src/**/*.stories.mdx', '../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
   addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions', '@storybook/preset-scss', 'storybook-addon-swc', '@storybook/addon-mdx-gfm'],
   framework: {
     name: '@storybook/react-webpack5',
