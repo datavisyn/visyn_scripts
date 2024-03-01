@@ -7,7 +7,9 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
-const { CopyRspackPlugin, DefinePlugin } = require('@rspack/core');
+const {
+  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, SwcCssMinimizerRspackPlugin,
+} = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
@@ -184,6 +186,16 @@ module.exports = (webpackEnv, argv) => {
         path: false,
         fs: false,
       },
+    },
+    optimization: {
+      minimizer: [
+        // Disable compress as it has some bugs, i.e. when using arquero#from it fails if no names are passed.
+        // See https://github.com/web-infra-dev/rspack/issues/4980 for a discussion.
+        new SwcJsMinimizerRspackPlugin({
+          compress: false,
+        }),
+        new SwcCssMinimizerRspackPlugin(),
+      ],
     },
     module: {
       rules: [
