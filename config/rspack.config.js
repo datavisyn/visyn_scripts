@@ -31,11 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const isFastMode = env.fast?.toLowerCase() !== 'false' && isDevServer && !isDevServerOnly;
   const isReactRefresh = isDevServer && isEnvDevelopment;
-  if (isFastMode) {
-    console.log('Fast mode enabled: disabled sourcemaps, ...');
-  }
 
   const now = new Date();
   const workspacePath = fs.realpathSync(process.cwd());
@@ -96,8 +92,7 @@ module.exports = (webpackEnv, argv) => {
     mode,
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
-    // eslint-disable-next-line no-nested-ternary
-    devtool: isFastMode ? 'eval' : isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
+    devtool: isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -369,7 +364,6 @@ module.exports = (webpackEnv, argv) => {
     plugins: [
       process.env.RSDOCTOR && new RsdoctorRspackPlugin(),
       isReactRefresh && new ReactRefreshPlugin(),
-      // TODO: Enable, but creates a warning right now
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
         safe: false, // load '.env.example' to verify the '.env' variables are all set. Can also be a string to a different file.
