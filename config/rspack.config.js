@@ -334,7 +334,7 @@ module.exports = (webpackEnv, argv) => {
                   options: {
                     sourceMap: true, // <-- !!IMPORTANT!!
                     sassOptions: {
-                        outputStyle: 'expanded', // @see https://github.com/FortAwesome/Font-Awesome/issues/17644#issuecomment-1703318326
+                      outputStyle: 'expanded', // @see https://github.com/FortAwesome/Font-Awesome/issues/17644#issuecomment-1703318326
                     },
                   },
                 },
