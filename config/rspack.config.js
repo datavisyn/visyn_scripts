@@ -123,18 +123,6 @@ module.exports = (webpackEnv, argv) => {
                 res.on('close', () => proxyReq.destroy());
               },
             },
-            '/login': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/logout': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/loggedinas': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
             // Append on bottom to allow override of exact key matches like /api/*
             ...(devServerProxy || {}),
           },
