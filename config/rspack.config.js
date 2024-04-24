@@ -337,6 +337,9 @@ module.exports = (webpackEnv, argv) => {
                   loader: 'sass-loader',
                   options: {
                     sourceMap: true, // <-- !!IMPORTANT!!
+                    sassOptions: {
+                      outputStyle: 'expanded', // @see https://github.com/FortAwesome/Font-Awesome/issues/17644#issuecomment-1703318326
+                    },
                   },
                 },
               ],
