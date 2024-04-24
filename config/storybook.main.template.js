@@ -1,5 +1,3 @@
-const remarkGfm = require('remark-gfm');
-
 /**
  * @type {import('@storybook/react-webpack5').StorybookConfig}
  */
@@ -33,16 +31,6 @@ module.exports = {
       },
     },
     'storybook-addon-swc',
-    {
-      name: '@storybook/addon-docs',
-      options: {
-        mdxPluginOptions: {
-          mdxCompileOptions: {
-            remarkPlugins: [remarkGfm],
-          },
-        },
-      },
-    },
   ],
   framework: {
     // TODO: as soon as rspack storybook integration is ready, use that: https://www.rspack.dev/guide/migrate-storybook
