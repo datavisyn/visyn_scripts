@@ -31,6 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
+  const devtool = (env.devtool?.toLowerCase() === 'false' ? false : env.devtool) || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map');
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -92,7 +93,7 @@ module.exports = (webpackEnv, argv) => {
     mode,
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
-    devtool: isEnvDevelopment ? 'cheap-module-source-map' : 'source-map',
+    devtool,
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: Object.fromEntries(
@@ -105,6 +106,9 @@ module.exports = (webpackEnv, argv) => {
       ? {
         static: path.resolve(workspacePath, 'bundles'),
         compress: true,
+        // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
+        hot: true,
+        liveReload: false,
         // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
         host: '127.0.0.1',
         open: true,
