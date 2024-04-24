@@ -31,7 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const devtool = (env.devtool?.toLowerCase() === 'false' ? false : env.devtool) || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map');
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map'));
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
