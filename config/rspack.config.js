@@ -188,10 +188,11 @@ module.exports = (webpackEnv, argv) => {
     },
     optimization: {
       minimizer: [
-        // Disable compress as it has some bugs, i.e. when using arquero#from it fails if no names are passed.
+        // Disable compress and mangle as it has some bugs, i.e. when using arquero#from it fails if no names are passed.
         // See https://github.com/web-infra-dev/rspack/issues/4980 for a discussion.
         new SwcJsMinimizerRspackPlugin({
           compress: false,
+          mangle: false,
         }),
         new SwcCssMinimizerRspackPlugin(),
       ],
