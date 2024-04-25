@@ -31,7 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const devtool = (env.devtool?.toLowerCase() === 'false' ? false : env.devtool) || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map');
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map'));
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -126,18 +126,6 @@ module.exports = (webpackEnv, argv) => {
               onProxyReq: (proxyReq, req, res) => {
                 res.on('close', () => proxyReq.destroy());
               },
-            },
-            '/login': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/logout': {
-              target: 'http://localhost:9000',
-              secure: false,
-            },
-            '/loggedinas': {
-              target: 'http://localhost:9000',
-              secure: false,
             },
             // Append on bottom to allow override of exact key matches like /api/*
             ...(devServerProxy || {}),
