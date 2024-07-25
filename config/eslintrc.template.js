@@ -77,6 +77,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'react/no-unused-class-component-methods': 'warn',
     'react/prop-types': 'off',
     'react/require-default-props': 'off',
+    'curly': [2, "all"],
     'react/static-property-placement': [
       'warn',
       'property assignment',
