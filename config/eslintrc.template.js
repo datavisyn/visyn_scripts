@@ -10,7 +10,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: ['react', '@typescript-eslint'],
+  plugins: ['react', '@typescript-eslint', 'react-compiler'],
   ignorePatterns: ['*.js'],
   env: {
     browser: true,
@@ -37,6 +37,7 @@ module.exports = ({ tsconfigRootDir }) => ({
       return acc;
     }, {}),
     'class-methods-use-this': 'off',
+    curly: [2, 'all'],
     'linebreak-style': 'off',
     'no-console': 'off',
     'no-continue': 'off',
@@ -87,6 +88,7 @@ module.exports = ({ tsconfigRootDir }) => ({
         displayName: 'static public field',
       },
     ],
+    'react-compiler/react-compiler': 'warn',
   },
   overrides: [
     {
