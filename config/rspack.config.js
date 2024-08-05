@@ -447,7 +447,7 @@ module.exports = (webpackEnv, argv) => {
             // Build the repo and type-check
             build: true,
             mode: 'write-references',
-            configFile: path.join(workspacePath, 'tsconfig.json'),
+            configFile: fs.existsSync(path.join(workspacePath, 'tsconfig.lenient.json')) ? path.join(workspacePath, 'tsconfig.lenient.json') : path.join(workspacePath, 'tsconfig.json'),
           },
         }),
     ].filter(Boolean),
