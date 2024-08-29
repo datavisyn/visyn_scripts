@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, SwcCssMinimizerRspackPlugin,
+  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, LightningCssMinimizerRspackPlugin,
 } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -31,7 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map'));
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map'));
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -182,8 +182,11 @@ module.exports = (webpackEnv, argv) => {
           compress: false,
           mangle: false,
         }),
-        new SwcCssMinimizerRspackPlugin(),
+        new LightningCssMinimizerRspackPlugin(),
       ],
+    },
+    experiments: {
+      css: true,
     },
     module: {
       rules: [
