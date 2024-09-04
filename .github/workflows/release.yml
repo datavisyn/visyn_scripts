@@ -6,9 +6,11 @@ on:
       release_version:
         type: string
         description: 'The next version to release'
-        required: false
-          
+        required: true
+
 jobs:
   release:
     uses: datavisyn/github-workflows/.github/workflows/release-source.yml@feat-automate-releases-releasenotes
     secrets: inherit 
+    with:
+      release_version: ${{ inputs.release_version }}

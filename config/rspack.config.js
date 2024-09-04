@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, SwcCssMinimizerRspackPlugin,
+  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, LightningCssMinimizerRspackPlugin,
 } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -31,7 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-cheap-module-source-map' : 'source-map'));
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map'));
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -114,23 +114,22 @@ module.exports = (webpackEnv, argv) => {
         open: true,
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
-        proxy: {
+        proxy: [
           // Append on top to allow overriding /api/v1/ for example
-          ...(devServerProxy || {}),
-          ...{
-            '/api/*': {
-              target: 'http://localhost:9000',
-              secure: false,
-              ws: true,
-              // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
-              onProxyReq: (proxyReq, req, res) => {
-                res.on('close', () => proxyReq.destroy());
-              },
+          ...(devServerProxy || []),
+          {
+            context: ['/api/'],
+            target: 'http://localhost:9000',
+            secure: false,
+            ws: true,
+            // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
+            onProxyReq: (proxyReq, req, res) => {
+              res.on('close', () => proxyReq.destroy());
             },
-            // Append on bottom to allow override of exact key matches like /api/*
-            ...(devServerProxy || {}),
           },
-        },
+          // Append on bottom to allow override of exact key matches like /api/*
+          ...(devServerProxy || []),
+        ],
         client: {
           // Do not show the full-page error overlay
           overlay: false,
@@ -182,8 +181,11 @@ module.exports = (webpackEnv, argv) => {
           compress: false,
           mangle: false,
         }),
-        new SwcCssMinimizerRspackPlugin(),
+        new LightningCssMinimizerRspackPlugin(),
       ],
+    },
+    experiments: {
+      css: true,
     },
     module: {
       rules: [
