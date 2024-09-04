@@ -9,9 +9,9 @@ module.exports = ({ tsconfigRootDir }) => ({
     'plugin:react/recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
-    'plugin:lodash/recommended',
+    // 'plugin:lodash/recommended',
   ],
-  plugins: ['react', '@typescript-eslint', 'react-compiler', 'lodash'],
+  plugins: ['react', '@typescript-eslint', 'react-compiler'],
   ignorePatterns: ['*.js'],
   env: {
     browser: true,
