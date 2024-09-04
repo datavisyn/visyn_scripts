@@ -90,6 +90,7 @@
     "tslib": "~2.7.0",
     "typescript": "~5.5.4",
     "util": "^0.12.5",
+    "webpack": "^5.94.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
