@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, LightningCssMinimizerRspackPlugin,
+  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
 } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -183,7 +183,8 @@ module.exports = (webpackEnv, argv) => {
             mangle: false,
           },
         }),
-        new LightningCssMinimizerRspackPlugin(),
+        // Disable CSS minimizer as has some bugs, i.e. a production build will show weird icon sizes in mantine-react-table.
+        // new LightningCssMinimizerRspackPlugin(),
       ],
     },
     experiments: {
