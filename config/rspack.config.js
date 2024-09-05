@@ -183,7 +183,8 @@ module.exports = (webpackEnv, argv) => {
             mangle: false,
           },
         }),
-        new LightningCssMinimizerRspackPlugin(),
+        // Disable CSS minimizer as has some bugs, i.e. a production build will show weird icon sizes in mantine-react-table.
+        // new LightningCssMinimizerRspackPlugin(),
       ],
     },
     experiments: {
