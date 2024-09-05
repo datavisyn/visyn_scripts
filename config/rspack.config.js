@@ -8,7 +8,7 @@ const dotenv = require('dotenv');
 const { DotenvPlugin } = require('rspack-plugin-dotenv');
 const dotenvExpand = require('dotenv-expand');
 const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin, LightningCssMinimizerRspackPlugin,
+  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
 } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
