@@ -363,7 +363,11 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      process.env.RSDOCTOR && new RsdoctorRspackPlugin(),
+      process.env.RSDOCTOR && new RsdoctorRspackPlugin({
+        supports: {
+          generateTileGraph: true,
+        }
+      }),
       isReactRefresh && new ReactRefreshPlugin(),
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
