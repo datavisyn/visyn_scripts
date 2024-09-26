@@ -366,7 +366,7 @@ module.exports = (webpackEnv, argv) => {
       process.env.RSDOCTOR && new RsdoctorRspackPlugin({
         supports: {
           generateTileGraph: true,
-        }
+        },
       }),
       isReactRefresh && new ReactRefreshPlugin(),
       new DotenvPlugin({
