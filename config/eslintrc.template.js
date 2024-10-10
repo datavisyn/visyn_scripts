@@ -11,7 +11,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'plugin:prettier/recommended',
     // 'plugin:lodash/recommended',
   ],
-  plugins: ['react', '@typescript-eslint', 'react-compiler'],
+  plugins: ['react', '@typescript-eslint', 'react-compiler', 'unused-imports'],
   ignorePatterns: ['*.js'],
   env: {
     browser: true,
@@ -68,7 +68,33 @@ module.exports = ({ tsconfigRootDir }) => ({
     'import/no-webpack-loader-syntax': 'off', // Disable to allow webpack file-loaders syntax
     'import/no-unresolved': 'off', // Disable to allow webpack file-loaders syntax
     'import/prefer-default-export': 'off',
-    'import/order': 'error',
+    'sort-imports': [
+      1,
+      {
+        ignoreCase: false,
+        ignoreDeclarationSort: true, // don't want to sort import lines, use eslint-plugin-import instead
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        allowSeparatedGroups: true,
+      },
+    ],
+    'import/order': [
+      1,
+      {
+        groups: [['builtin', 'external'], 'internal', ['sibling', 'parent']],
+        pathGroups: [
+          {
+            pattern: 'react*',
+            group: 'external',
+            position: 'before',
+          },
+          { pattern: 'src/**', group: 'internal', position: 'after' },
+        ],
+        pathGroupsExcludedImportTypes: ['internal', 'react'],
+        'newlines-between': 'always',
+        alphabetize: { order: 'asc' },
+      },
+    ],
     'prefer-destructuring': ['warn', { object: true, array: false }],
     'prefer-promise-reject-errors': 'warn',
     'prefer-spread': 'warn',
@@ -90,6 +116,17 @@ module.exports = ({ tsconfigRootDir }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
+    'unused-imports/no-unused-imports': 'error',
+    'unused-imports/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
+
   },
   overrides: [
     {
