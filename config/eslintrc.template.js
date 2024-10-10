@@ -1,4 +1,4 @@
-module.exports = ({ tsconfigRootDir }) => ({
+module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
   root: true,
   extends: [
     'airbnb',
@@ -11,7 +11,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'plugin:prettier/recommended',
     // 'plugin:lodash/recommended',
   ],
-  plugins: ['react', '@typescript-eslint', 'react-compiler', 'unused-imports'],
+  plugins: ['react', '@typescript-eslint', 'react-compiler', ...(optimizeImports ? ['unused-imports'] : [])],
   ignorePatterns: ['*.js'],
   env: {
     browser: true,
@@ -68,17 +68,7 @@ module.exports = ({ tsconfigRootDir }) => ({
     'import/no-webpack-loader-syntax': 'off', // Disable to allow webpack file-loaders syntax
     'import/no-unresolved': 'off', // Disable to allow webpack file-loaders syntax
     'import/prefer-default-export': 'off',
-    'sort-imports': [
-      1,
-      {
-        ignoreCase: false,
-        ignoreDeclarationSort: true, // don't want to sort import lines, use eslint-plugin-import instead
-        ignoreMemberSort: false,
-        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
-        allowSeparatedGroups: true,
-      },
-    ],
-    'import/order': [
+    'import/order': optimizeImports ? [
       1,
       {
         groups: [['builtin', 'external'], 'internal', ['sibling', 'parent']],
@@ -94,7 +84,17 @@ module.exports = ({ tsconfigRootDir }) => ({
         'newlines-between': 'always',
         alphabetize: { order: 'asc' },
       },
-    ],
+    ] : 'error',
+    'sort-imports': optimizeImports ? [
+      1,
+      {
+        ignoreCase: false,
+        ignoreDeclarationSort: true, // don't want to sort import lines, use eslint-plugin-import instead
+        ignoreMemberSort: false,
+        memberSyntaxSortOrder: ['none', 'all', 'multiple', 'single'],
+        allowSeparatedGroups: true,
+      },
+    ] : undefined,
     'prefer-destructuring': ['warn', { object: true, array: false }],
     'prefer-promise-reject-errors': 'warn',
     'prefer-spread': 'warn',
@@ -116,8 +116,8 @@ module.exports = ({ tsconfigRootDir }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
-    'unused-imports/no-unused-imports': 'error',
-    'unused-imports/no-unused-vars': [
+    'unused-imports/no-unused-imports': optimizeImports ? 'error' : undefined,
+    'unused-imports/no-unused-vars': optimizeImports ? [
       'warn',
       {
         vars: 'all',
@@ -125,8 +125,7 @@ module.exports = ({ tsconfigRootDir }) => ({
         args: 'after-used',
         argsIgnorePattern: '^_',
       },
-    ],
-
+    ] : undefined,
   },
   overrides: [
     {
