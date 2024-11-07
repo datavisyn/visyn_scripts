@@ -96,6 +96,7 @@
   },
   "devDependencies": {
     "@types/yargs": "^17.0.33",
+    "eslint-plugin-playwright": "^2.0.1",
     "http-server": "^14.1.1",
     "jest-dev-server": "^6.2.0"
   },
