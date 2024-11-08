@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "11.2.0",
+  "version": "11.3.0",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -63,6 +63,7 @@
     "eslint-plugin-react-compiler": "0.0.0-experimental-b8a7b48-20240830",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-unused-imports": "^4.1.4",
+    "eslint-plugin-playwright": "^2.0.1",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "fs-extra": "^11.2.0",
     "glob": "^11.0.0",
