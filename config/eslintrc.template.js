@@ -145,5 +145,9 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       extends: ['plugin:jest/recommended'],
       plugins: ['jest'],
     },
+    {
+      files: 'playwright/**/*.{test|spec}.ts',
+      extends: 'plugin:playwright/recommended',
+    },
   ],
 });
