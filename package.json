@@ -98,7 +98,8 @@
   "devDependencies": {
     "@types/yargs": "^17.0.33",
     "http-server": "^14.1.1",
-    "jest-dev-server": "^6.2.0"
+    "jest-dev-server": "^6.2.0",
+    "storybook-react-rsbuild": "^0.1.4"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",
