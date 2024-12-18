@@ -39,6 +39,9 @@
     "@rspack/core": "~1.1.1",
     "@rspack/plugin-minify": "~0.7.5",
     "@rspack/plugin-react-refresh": "~1.0.0",
+    "@rsbuild/core": "^1.1.10",
+    "@rsbuild/plugin-react": "^1.1.0",
+    "@rsbuild/plugin-sass": "^1.1.2",
     "@swc/core": "~1.9.2",
     "@swc/helpers": "~0.5.15",
     "@swc/jest": "~0.2.37",
@@ -98,7 +101,8 @@
   "devDependencies": {
     "@types/yargs": "^17.0.33",
     "http-server": "^14.1.1",
-    "jest-dev-server": "^6.2.0"
+    "jest-dev-server": "^6.2.0",
+    "storybook-react-rsbuild": "^0.1.4"
   },
   "peerDependencies": {
     "@types/react": "^18.3.12",

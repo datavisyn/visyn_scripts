@@ -1,5 +1,7 @@
+const { resolve } = require('path');
+
 /**
- * @type {import('@storybook/react-webpack5').StorybookConfig}
+ * @type {import('storybook-react-rsbuild').StorybookConfig}
  */
 module.exports = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
@@ -7,77 +9,29 @@ module.exports = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-styling',
-      options: {
-        // This is our best guess to replicate the style config we are using in the rspack.config.js
-        scssBuildRule: {
-          test: /\.scss$/,
-          use: [
-            'style-loader',
-            {
-              loader: 'css-loader',
-              options: { importLoaders: 1 },
-            },
-            'resolve-url-loader',
-            {
-              loader: 'sass-loader',
-              options: {
-                sourceMap: true,
-              },
-            },
-          ],
-        },
-      },
-    },
-    'storybook-addon-swc',
   ],
   framework: {
-    // TODO: as soon as rspack storybook integration is ready, use that: https://www.rspack.dev/guide/migrate-storybook
-    name: '@storybook/react-webpack5',
+    name: 'storybook-react-rsbuild',
     options: {
       builder: {
-        useSWC: true,
+        rsbuildConfigPath: resolve(__dirname, './storybook.rsbuild.config.ts'),
       },
     },
   },
-  webpackFinal: async (config) => {
+  rsbuildFinal: async (config) => {
+    const reactDocgenLoaderRule = config.tools.rspack[1].module.rules[0];
+
     // eslint-disable-next-line no-param-reassign
-    config.module.rules = config.module.rules.flatMap((rule) => (rule.loader?.includes('swc-loader')
-      ? [
-        {
-          ...rule,
-          options: {
-            ...(rule?.options || {}),
-            jsc: {
-              ...(rule?.options?.jsc || {}),
-              parser: {
-                ...(rule?.options?.jsc?.parser || {}),
-                // Sync rules with our rspack config
-                decorators: true,
-              },
-            },
-          },
-        },
-        {
-          // In addition to the swc-loader rule from storybook, add a rule which allows transforming ts and tsx files (i.e. to transform node_modules/visyn_core)
-          ...rule,
-          options: {
-            ...(rule?.options || {}),
-            jsc: {
-              ...(rule?.options?.jsc || {}),
-              parser: {
-                ...(rule?.options?.jsc?.parser || {}),
-                // Sync rules with our rspack config
-                decorators: true,
-              },
-            },
-          },
-          test: /\.(ts|tsx)$/,
-          exclude: [],
-        },
-      ]
-      : [rule]));
+    config.tools.rspack[1].module.rules = [
+      reactDocgenLoaderRule,
+      {
+        // Copy the rule (found here: https://github.com/rspack-contrib/storybook-rsbuild/blob/c6b92bd1d40b63cebdf78b8bf75594ec0568b972/packages/framework-react/src/react-docs.ts#L27)
+        // And modify it to not exclude node_modules
+        ...reactDocgenLoaderRule,
+        test: /\.(tsx?)$/,
+        exclude: /(\.(stories|story)\.(js|jsx|ts|tsx))/,
+      },
+    ];
 
     return config;
   },
