@@ -57,21 +57,18 @@
     "visyn_scripts": "portal:../../"
   },
   "devDependencies": {
-    "@rsbuild/core": "^1.1.1",
-    "@rsbuild/plugin-react": "^1.0.7",
-    "@storybook/addon-actions": "^8.4.2",
-    "@storybook/addon-essentials": "^8.4.2",
-    "@storybook/addon-interactions": "^8.4.2",
-    "@storybook/addon-links": "^8.4.2",
-    "@storybook/addon-styling-webpack": "^1.0.1",
-    "@storybook/cli": "^8.4.2",
-    "@storybook/react": "^8.4.2",
-    "@storybook/react-webpack5": "^8.4.2",
-    "@storybook/testing-library": "0.2.2",
+    "@storybook/addon-actions": "^8.4.7",
+    "@storybook/addon-essentials": "^8.4.7",
+    "@storybook/addon-interactions": "^8.4.7",
+    "@storybook/addon-links": "^8.4.7",
+    "@storybook/blocks": "8.4.7",
+    "@storybook/cli": "^8.4.7",
+    "@storybook/react": "^8.4.7",
+    "@storybook/react-webpack5": "^8.4.7",
     "@types/react": "18.3.12",
     "@types/react-dom": "^18.3.1",
-    "storybook": "^8.4.2",
-    "storybook-react-rsbuild": "^0.1.4"
+    "storybook": "^8.4.7",
+    "storybook-react-rsbuild": "^0.1.6"
   },
   "resolutions": {
     "visyn_scripts": "portal:../../"

@@ -1,3 +1,5 @@
+const { resolve } = require('path');
+
 /**
  * @type {import('storybook-react-rsbuild').StorybookConfig}
  */
@@ -7,33 +9,14 @@ module.exports = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    {
-      name: '@storybook/addon-styling-webpack',
-      options: {
-        // This is our best guess to replicate the style config we are using in the rspack.config.js
-        scssBuildRule: {
-          test: /\.scss$/,
-          use: [
-            'style-loader',
-            {
-              loader: 'css-loader',
-              options: { importLoaders: 1 },
-            },
-            'resolve-url-loader',
-            {
-              loader: 'sass-loader',
-              options: {
-                sourceMap: true,
-              },
-            },
-          ],
-        },
-      },
-    },
-    'storybook-addon-swc',
   ],
   framework: {
     name: 'storybook-react-rsbuild',
+    options: {
+      builder: {
+        rsbuildConfigPath: resolve(__dirname, './storybook.rsbuild.config.ts'),
+      },
+    },
   },
   rsbuildFinal: async (config) => {
     const reactDocgenLoaderRule = config.tools.rspack[1].module.rules[0];
