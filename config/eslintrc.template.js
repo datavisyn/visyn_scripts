@@ -130,6 +130,9 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
+    'react-hooks/exhaustive-deps': ['warn', {
+      additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
+    }],
   },
   overrides: [
     {
@@ -144,6 +147,10 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       files: ['{src|tests}/**/*.{test|spec}.ts'],
       extends: ['plugin:jest/recommended'],
       plugins: ['jest'],
+    },
+    {
+      files: 'playwright/**/*.{test|spec}.ts',
+      extends: 'plugin:playwright/recommended',
     },
   ],
 });
