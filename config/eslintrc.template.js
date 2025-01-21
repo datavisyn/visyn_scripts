@@ -37,6 +37,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
       return acc;
     }, {}),
     'class-methods-use-this': 'off',
+    '@typescript-eslint/class-methods-use-this': 'off',
     curly: [2, 'all'],
     'linebreak-style': 'off',
     'no-console': 'off',
