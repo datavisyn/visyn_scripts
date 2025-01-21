@@ -34,6 +34,9 @@
   },
   "dependencies": {
     "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
+    "@rsbuild/core": "^1.2.0",
+    "@rsbuild/plugin-react": "^1.1.0",
+    "@rsbuild/plugin-sass": "^1.2.0",
     "@rsdoctor/cli": "^0.4.13",
     "@rsdoctor/rspack-plugin": "^0.4.13",
     "@rspack/cli": "~1.2.0",
@@ -98,7 +101,8 @@
   "devDependencies": {
     "@types/yargs": "^17.0.33",
     "http-server": "^14.1.1",
-    "jest-dev-server": "^6.2.0"
+    "jest-dev-server": "^6.2.0",
+    "storybook-react-rsbuild": "^0.1.8"
   },
   "peerDependencies": {
     "@types/react": "^18.3.18",
