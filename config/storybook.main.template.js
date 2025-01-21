@@ -5,6 +5,12 @@ const { resolve } = require('path');
  */
 module.exports = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
+  core: {
+    disableTelemetry: true,
+  },
+  docs: {
+    autodocs: true,
+  },
   addons: [
     '@storybook/addon-links',
     '@storybook/addon-essentials',
@@ -34,8 +40,5 @@ module.exports = {
     ];
 
     return config;
-  },
-  docs: {
-    autodocs: true,
   },
 };
