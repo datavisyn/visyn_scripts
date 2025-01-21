@@ -131,7 +131,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
     ],
     'react-compiler/react-compiler': 'warn',
     'react-hooks/exhaustive-deps': ['warn', {
-      additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo)'
+      additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo)',
     }],
   },
   overrides: [
