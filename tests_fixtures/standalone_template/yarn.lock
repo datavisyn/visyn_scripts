@@ -3354,7 +3354,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/addon-actions@npm:8.5.0, @storybook/addon-actions@npm:^8.4.7":
+"@storybook/addon-actions@npm:8.5.0, @storybook/addon-actions@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/addon-actions@npm:8.5.0"
   dependencies:
@@ -3412,7 +3412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/addon-essentials@npm:^8.4.7":
+"@storybook/addon-essentials@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/addon-essentials@npm:8.5.0"
   dependencies:
@@ -3443,7 +3443,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/addon-interactions@npm:^8.4.7":
+"@storybook/addon-interactions@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/addon-interactions@npm:8.5.0"
   dependencies:
@@ -3458,7 +3458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/addon-links@npm:^8.4.7":
+"@storybook/addon-links@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/addon-links@npm:8.5.0"
   dependencies:
@@ -3519,26 +3519,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/blocks@npm:8.4.7":
-  version: 8.4.7
-  resolution: "@storybook/blocks@npm:8.4.7"
-  dependencies:
-    "@storybook/csf": "npm:^0.1.11"
-    "@storybook/icons": "npm:^1.2.12"
-    ts-dedent: "npm:^2.0.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
-    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0-beta
-    storybook: ^8.4.7
-  peerDependenciesMeta:
-    react:
-      optional: true
-    react-dom:
-      optional: true
-  checksum: 10c0/1cb87811f9c7bad087dca752fb0d6483c237cb5776abea59cb555d8fce9ca14f4d5487725f5d8679a49f7e3f38bbe84189703498a31f2a9aa306f9fb3c8e65c8
-  languageName: node
-  linkType: hard
-
 "@storybook/blocks@npm:8.5.0":
   version: 8.5.0
   resolution: "@storybook/blocks@npm:8.5.0"
@@ -3596,7 +3576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/cli@npm:^8.4.7":
+"@storybook/cli@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/cli@npm:8.5.0"
   dependencies:
@@ -3708,15 +3688,6 @@ __metadata:
   dependencies:
     type-fest: "npm:^2.19.0"
   checksum: 10c0/3d96a976ada67eb683279338d1eb6aa730b228107d4c4f6616ea7b94061899c1fdc11957a756e7bc0708d18cb39af0010c865d124efd84559cd82dcb2d8bc959
-  languageName: node
-  linkType: hard
-
-"@storybook/csf@npm:^0.1.11":
-  version: 0.1.13
-  resolution: "@storybook/csf@npm:0.1.13"
-  dependencies:
-    type-fest: "npm:^2.19.0"
-  checksum: 10c0/7c57b531ac95ca45239f498d419483d675e58cd8d549e0bac623519cc1ef4f3c9c6b75ec3873aa51cc2872728012db5dd5e1f2c2d8085014241eb4b896480996
   languageName: node
   linkType: hard
 
@@ -3840,7 +3811,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/react-webpack5@npm:^8.4.7":
+"@storybook/react-webpack5@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/react-webpack5@npm:8.5.0"
   dependencies:
@@ -3859,7 +3830,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@storybook/react@npm:8.5.0, @storybook/react@npm:^8.2.1, @storybook/react@npm:^8.4.7":
+"@storybook/react@npm:8.5.0, @storybook/react@npm:^8.2.1, @storybook/react@npm:^8.5.0":
   version: 8.5.0
   resolution: "@storybook/react@npm:8.5.0"
   dependencies:
@@ -7192,21 +7163,21 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "demo@workspace:."
   dependencies:
-    "@storybook/addon-actions": "npm:^8.4.7"
-    "@storybook/addon-essentials": "npm:^8.4.7"
-    "@storybook/addon-interactions": "npm:^8.4.7"
-    "@storybook/addon-links": "npm:^8.4.7"
-    "@storybook/blocks": "npm:8.4.7"
-    "@storybook/cli": "npm:^8.4.7"
-    "@storybook/react": "npm:^8.4.7"
-    "@storybook/react-webpack5": "npm:^8.4.7"
+    "@storybook/addon-actions": "npm:^8.5.0"
+    "@storybook/addon-essentials": "npm:^8.5.0"
+    "@storybook/addon-interactions": "npm:^8.5.0"
+    "@storybook/addon-links": "npm:^8.5.0"
+    "@storybook/blocks": "npm:8.5.0"
+    "@storybook/cli": "npm:^8.5.0"
+    "@storybook/react": "npm:^8.5.0"
+    "@storybook/react-webpack5": "npm:^8.5.0"
     "@types/react": "npm:18.3.12"
     "@types/react-dom": "npm:^18.3.1"
     cypress: "npm:^13.15.2"
     react: "npm:^18.3.1"
     react-dom: "npm:^18.3.1"
-    storybook: "npm:^8.4.7"
-    storybook-react-rsbuild: "npm:^0.1.6"
+    storybook: "npm:^8.5.0"
+    storybook-react-rsbuild: "npm:^0.1.8"
     visyn_scripts: "portal:../../"
   languageName: unknown
   linkType: soft
@@ -15270,7 +15241,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"storybook-react-rsbuild@npm:^0.1.6":
+"storybook-react-rsbuild@npm:^0.1.8":
   version: 0.1.8
   resolution: "storybook-react-rsbuild@npm:0.1.8"
   dependencies:
@@ -15297,7 +15268,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"storybook@npm:8.5.0, storybook@npm:^8.4.7":
+"storybook@npm:8.5.0, storybook@npm:^8.5.0":
   version: 8.5.0
   resolution: "storybook@npm:8.5.0"
   dependencies:
