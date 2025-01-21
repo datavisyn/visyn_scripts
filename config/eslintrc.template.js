@@ -1,8 +1,8 @@
-module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
+module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
   root: true,
   extends: [
     'airbnb',
-    'airbnb-typescript',
+    '@kesills/airbnb-typescript',
     'airbnb/hooks',
     'eslint:recommended',
     'plugin:import/recommended',
@@ -17,7 +17,6 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
     browser: true,
     es6: true,
     jest: true,
-    'cypress/globals': true,
   },
   globals: {
     Atomics: 'readonly',
@@ -63,14 +62,13 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
     '@typescript-eslint/no-unused-vars': 'warn',
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
-    'cypress/unsafe-to-chain-command': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-webpack-loader-syntax': 'off', // Disable to allow webpack file-loaders syntax
     'import/no-unresolved': 'off', // Disable to allow webpack file-loaders syntax
     'import/prefer-default-export': 'off',
     ...(optimizeImports ? {
       'import/order': [
-        1,
+        'error',
         {
           groups: [['builtin', 'external'], 'internal', ['sibling', 'parent']],
           pathGroups: [
@@ -87,7 +85,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
         },
       ],
       'sort-imports': [
-        1,
+        'error',
         {
           ignoreCase: false,
           ignoreDeclarationSort: true, // don't want to sort import lines, use eslint-plugin-import instead
@@ -130,16 +128,18 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
+    'react-hooks/exhaustive-deps': ['warn', {
+      additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
+    }],
+    /*
+    The fork of the eslint-config-airbnb-typescript package has added ESLint Stylistic plugin
+    to the config. see:https://github.com/Kenneth-Sills/eslint-config-airbnb-typescript/pull/3
+    Some of the stylistic rules are not compatible with our current prettier config so we disable them.
+    */
+    '@stylistic/indent': 'off',
+    '@stylistic/comma-dangle': 'off',
   },
   overrides: [
-    {
-      files: ['cypress/**/*'],
-      extends: ['plugin:cypress/recommended', 'plugin:chai-friendly/recommended'],
-      rules: {
-        'cypress/unsafe-to-chain-command': 'warn',
-      },
-      plugins: ['cypress', 'chai-friendly'],
-    },
     {
       files: ['{src|tests}/**/*.{test|spec}.ts'],
       extends: ['plugin:jest/recommended'],
