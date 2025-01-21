@@ -5,7 +5,7 @@ const fs = require('fs');
 const { defineConfig } = require('@rspack/cli');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
-const { DotenvPlugin } = require('rspack-plugin-dotenv');
+const DotenvPlugin = require('dotenv-webpack');
 const dotenvExpand = require('dotenv-expand');
 const {
   CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
