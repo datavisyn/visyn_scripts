@@ -8,6 +8,6 @@ module.exports = {
     type: 'boolean',
   }),
   handler: (args) => {
-    call('eslint', `${args.cache ? '--cache' : ''} --no-error-on-unmatched-pattern ${(args.strings || []).join(' ')} "src/**/*.ts{,x}" "tests/**/*.ts{,x}" "cypress/**/*.ts{,x}"`);
+    call('eslint', `${args.cache ? '--cache' : ''} --no-error-on-unmatched-pattern ${(args.strings || []).join(' ')} "src/**/*.ts{,x}" "tests/**/*.ts{,x}" "cypress/**/*.ts{,x}" "playwright/**/*.ts{,x}"`);
   },
 };

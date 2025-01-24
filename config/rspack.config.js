@@ -5,7 +5,7 @@ const fs = require('fs');
 const { defineConfig } = require('@rspack/cli');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const dotenv = require('dotenv');
-const { DotenvPlugin } = require('rspack-plugin-dotenv');
+const DotenvPlugin = require('dotenv-webpack');
 const dotenvExpand = require('dotenv-expand');
 const {
   CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
@@ -90,6 +90,10 @@ module.exports = (webpackEnv, argv) => {
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
 
   return defineConfig({
+    watchOptions: {
+      // Override the ignore to avoid ignoring node_modules: https://github.com/web-infra-dev/rspack/pull/8645
+      ignored: /[\\/](?:\.git)[\\/]/,
+    },
     mode,
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
@@ -174,6 +178,8 @@ module.exports = (webpackEnv, argv) => {
       },
     },
     optimization: {
+      // Without this, HMR is broken: https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/394#issuecomment-1463926441
+      runtimeChunk: isEnvDevelopment ? 'single' : undefined,
       minimizer: [
         // Disable compress and mangle as it has some bugs, i.e. when using arquero#from it fails if no names are passed.
         // See https://github.com/web-infra-dev/rspack/issues/4980 for a discussion.
