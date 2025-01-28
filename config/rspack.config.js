@@ -3,7 +3,7 @@
 const path = require('path');
 const fs = require('fs');
 const { defineConfig } = require('@rspack/cli');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 const dotenv = require('dotenv');
 const DotenvPlugin = require('dotenv-webpack');
 const dotenvExpand = require('dotenv-expand');
@@ -90,10 +90,6 @@ module.exports = (webpackEnv, argv) => {
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
 
   return defineConfig({
-    watchOptions: {
-      // Override the ignore to avoid ignoring node_modules: https://github.com/web-infra-dev/rspack/pull/8645
-      ignored: /[\\/](?:\.git)[\\/]/,
-    },
     mode,
     // Logging noise constrained to errors and warnings
     stats: 'errors-warnings', //  { logging: 'verbose', timings: true, assets: true },
@@ -106,6 +102,10 @@ module.exports = (webpackEnv, argv) => {
         [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
+    watchOptions: {
+      // Override the ignore to avoid ignoring node_modules: https://github.com/web-infra-dev/rspack/pull/8645
+      ignored: /[\\/](?:\.git)[\\/]/,
+    },
     devServer: isEnvDevelopment
       ? {
         static: path.resolve(workspacePath, 'bundles'),
@@ -452,7 +452,7 @@ module.exports = (webpackEnv, argv) => {
         }),
       ),
       isEnvDevelopment
-        && new ForkTsCheckerWebpackPlugin({
+        && new TsCheckerRspackPlugin({
           async: isEnvDevelopment,
           typescript: {
             diagnosticOptions: {
