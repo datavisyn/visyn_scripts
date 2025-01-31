@@ -13,6 +13,7 @@ const {
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
+const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 
 // Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
@@ -216,12 +217,50 @@ module.exports = (webpackEnv, argv) => {
             // A missing `test` is equivalent to a match.
             {
               test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+              use: [
+                {
+                  // Compress images as described in https://rspack.dev/guide/features/asset-module#using-optimizers-as-loaders
+                  loader: ImageMinimizerPlugin.loader,
+                  options: {
+                    minimizer: {
+                      implementation: ImageMinimizerPlugin.sharpMinify,
+                      options: {
+                        encodeOptions: {
+                          // https://sharp.pixelplumbing.com/api-output
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
               type: 'asset',
             },
             {
               test: /\.svg(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
               // css-loader is messing up SVGs: https://github.com/webpack/webpack/issues/13835
               // Pin css-loader and always load them as file-resource.
+              use: [
+                {
+                  // Compress images as described in https://rspack.dev/guide/features/asset-module#using-optimizers-as-loaders
+                  loader: ImageMinimizerPlugin.loader,
+                  options: {
+                    minimizer: {
+                      implementation: ImageMinimizerPlugin.svgoMinify,
+                      options: {
+                        encodeOptions: {
+                          // Pass over SVGs multiple times to ensure all optimizations are applied. False by default
+                          multipass: true,
+                          plugins: [
+                            // set of built-in plugins enabled by default
+                            // see: https://github.com/svg/svgo#default-preset
+                            'preset-default',
+                          ],
+                        },
+                      },
+                    },
+                  },
+                },
+              ],
               type: 'asset/resource',
             },
             {
