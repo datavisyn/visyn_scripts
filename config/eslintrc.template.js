@@ -129,7 +129,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
-    'react-hooks/exhaustive-deps': ['warn', {
+    'react-hooks/exhaustive-deps': ['error', {
       additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
     }],
     /*
