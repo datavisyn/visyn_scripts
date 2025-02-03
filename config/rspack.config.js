@@ -216,7 +216,7 @@ module.exports = (webpackEnv, argv) => {
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
             {
-              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
+              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/, /\.webp$/],
               use: [
                 {
                   // Compress images as described in https://rspack.dev/guide/features/asset-module#using-optimizers-as-loaders
