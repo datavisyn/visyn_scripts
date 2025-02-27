@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "12.1.1-SNAPSHOT",
+  "version": "12.1.2-SNAPSHOT",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -87,7 +87,7 @@
     "react-refresh": "^0.16.0",
     "resolve-url-loader": "^5.0.0",
     "rimraf": "~6.0.1",
-    "sass-embedded": "~1.83.4",
+    "sass-embedded": "~1.85.0",
     "sass-loader": "^16.0.4",
     "sharp": "^0.33.5",
     "shx": "~0.3.4",
