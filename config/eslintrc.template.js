@@ -51,6 +51,23 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [{
+          name: 'lodash',
+          message: 'Please import specific methods from lodash/<util> instead.',
+        },
+        {
+          name: '@fortawesome/free-solid-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-solid-svg-icons/<icon> instead.',
+        },
+        {
+          name: '@fortawesome/free-regular-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-regular-svg-icons/<icon> instead.',
+        }],
+      },
+    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': [
       'error',
