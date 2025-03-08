@@ -385,6 +385,8 @@ module.exports = (webpackEnv, argv) => {
       }),
       new DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(mode),
+        'process.env.__APP_NAME__': JSON.stringify(appPkg.name),
+        'process.env.__APP_DISPLAY_NAME__': JSON.stringify(appPkg.displayName || appPkg.name),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
         'process.env.__BUILD_ID__': JSON.stringify(buildId),
