@@ -31,6 +31,7 @@ module.exports = (webpackEnv, argv) => {
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
+  const packageJsonKey = env.package_json_key || 'visyn';
   const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map'));
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
@@ -42,8 +43,8 @@ module.exports = (webpackEnv, argv) => {
   // Always look for the phovea_registry.ts in the src folder for standalone repos.
   const workspaceRegistryFile = path.join(workspacePath, 'src/phovea_registry.ts');
 
-  if (!appPkg.visyn) {
-    throw Error(`The package.json of ${appPkg.name} does not contain a 'visyn' entry.`);
+  if (!appPkg[packageJsonKey]) {
+    throw Error(`The package.json of ${appPkg.name} does not contain a '${packageJsonKey}' entry.`);
   }
 
   /**
@@ -68,15 +69,15 @@ module.exports = (webpackEnv, argv) => {
     // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
     const visynWebpackOverride = require(path.join(workspacePath, 'visynWebpackOverride.js'))({ env }) || {};
     console.log('Using visynWebpackOverride.js file to override visyn configuration.');
-    Object.assign(appPkg.visyn, visynWebpackOverride);
+    Object.assign(appPkg[packageJsonKey], visynWebpackOverride);
   } catch (e) {
     // ignore if file does not exist
   }
 
   let {
     // eslint-disable-next-line prefer-const
-    devServerProxy, entries, copyFiles, historyApiFallback,
-  } = appPkg.visyn;
+    bundleFolder = '', devServerProxy, entries, copyFiles, historyApiFallback,
+  } = appPkg[packageJsonKey];
 
   if (isDevServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
@@ -88,6 +89,8 @@ module.exports = (webpackEnv, argv) => {
 
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
+
+  const bundlesFolder = `bundles/${bundleFolder}`;
 
   return defineConfig({
     mode,
@@ -108,7 +111,7 @@ module.exports = (webpackEnv, argv) => {
     },
     devServer: isEnvDevelopment
       ? {
-        static: path.resolve(workspacePath, 'bundles'),
+        static: path.resolve(workspacePath, bundlesFolder),
         compress: true,
         // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
         hot: true,
@@ -142,7 +145,7 @@ module.exports = (webpackEnv, argv) => {
       : undefined,
     output: {
       // The build folder.
-      path: path.join(workspacePath, 'bundles'),
+      path: path.join(workspacePath, bundlesFolder),
       // Add /* filename */ comments to generated require()s in the output.
       // TODO: rspack: pathinfo: isEnvDevelopment,
       // There will be one main bundle, and one file per asynchronous chunk.
@@ -153,7 +156,7 @@ module.exports = (webpackEnv, argv) => {
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
-      publicPath: '/',
+      publicPath: bundleFolder ? `/${bundleFolder}/` : '/',
       clean: !isDevServerOnly,
     },
     /*
@@ -397,12 +400,12 @@ module.exports = (webpackEnv, argv) => {
         patterns: [
           ...(copyFiles?.map((file) => ({
             from: path.join(workspacePath, file),
-            to: path.join(workspacePath, 'bundles', path.basename(file)),
+            to: path.join(workspacePath, bundlesFolder, path.basename(file)),
           })) || []),
           ...[
             fs.existsSync(workspaceMetaDataFile) && {
               from: workspaceMetaDataFile,
-              to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
+              to: path.join(workspacePath, bundlesFolder, 'phoveaMetaData.json'),
               // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
               transform: () => {
                 function resolveScreenshot(appDirectory) {
@@ -433,7 +436,7 @@ module.exports = (webpackEnv, argv) => {
             // use package-lock json as buildInfo
             fs.existsSync(workspaceBuildInfoFile) && {
               from: workspaceBuildInfoFile,
-              to: path.join(workspacePath, 'bundles', 'buildInfo.json'),
+              to: path.join(workspacePath, bundlesFolder, 'buildInfo.json'),
             },
           ].filter(Boolean),
         ],
