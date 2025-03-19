@@ -51,6 +51,23 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [{
+          name: 'lodash',
+          message: 'Please import specific methods from lodash/<util> instead.',
+        },
+        {
+          name: '@fortawesome/free-solid-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-solid-svg-icons/<icon> instead.',
+        },
+        {
+          name: '@fortawesome/free-regular-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-regular-svg-icons/<icon> instead.',
+        }],
+      },
+    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': [
       'error',
@@ -60,7 +77,15 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
         allowTaggedTemplates: true,
       },
     ],
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
     'import/no-extraneous-dependencies': 'off',
@@ -96,15 +121,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
         },
       ],
       'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-        },
-      ],
+      'unused-imports/no-unused-vars': 'off', // https://github.com/sweepline/eslint-plugin-unused-imports/blob/master/docs/rules/no-unused-vars.md
     } : {
       'import/order': 'error',
     }),
@@ -129,7 +146,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
-    'react-hooks/exhaustive-deps': ['warn', {
+    'react-hooks/exhaustive-deps': ['error', {
       additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
     }],
     /*
