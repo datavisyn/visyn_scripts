@@ -5658,13 +5658,13 @@ __metadata:
   linkType: hard
 
 "axios@npm:^1.7.9":
-  version: 1.7.9
-  resolution: "axios@npm:1.7.9"
+  version: 1.9.0
+  resolution: "axios@npm:1.9.0"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10c0/b7a41e24b59fee5f0f26c1fc844b45b17442832eb3a0fb42dd4f1430eb4abc571fe168e67913e8a1d91c993232bd1d1ab03e20e4d1fee8c6147649b576fc1b0b
+  checksum: 10c0/9371a56886c2e43e4ff5647b5c2c3c046ed0a3d13482ef1d0135b994a628c41fbad459796f101c655e62f0c161d03883454474d2e435b2e021b1924d9f24994c
   languageName: node
   linkType: hard
 
@@ -9353,7 +9353,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:^11.0.0, glob@npm:^11.0.1":
+"glob@npm:^11.0.0":
   version: 11.0.1
   resolution: "glob@npm:11.0.1"
   dependencies:
@@ -14458,7 +14458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sass-embedded@npm:^1.83.4, sass-embedded@npm:~1.83.4":
+"sass-embedded@npm:^1.83.4":
   version: 1.83.4
   resolution: "sass-embedded@npm:1.83.4"
   dependencies:
@@ -16463,7 +16463,7 @@ __metadata:
     eslint-plugin-react-hooks: "npm:^5.1.0"
     eslint-plugin-unused-imports: "npm:^4.1.4"
     fs-extra: "npm:^11.3.0"
-    glob: "npm:^11.0.1"
+    glob: "npm:^10.0.0"
     html-loader: "npm:~5.1.0"
     html-webpack-plugin: "npm:^5.6.3"
     identity-obj-proxy: "npm:^3.0.0"
@@ -16480,7 +16480,6 @@ __metadata:
     react-refresh: "npm:^0.16.0"
     resolve-url-loader: "npm:^5.0.0"
     rimraf: "npm:~6.0.1"
-    sass-embedded: "npm:~1.83.4"
     sass-loader: "npm:^16.0.4"
     shx: "npm:~0.3.4"
     tailwindcss: "npm:^3.4.17"
