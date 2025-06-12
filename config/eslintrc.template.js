@@ -46,7 +46,13 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
     'no-nested-ternary': 'off',
     'no-return-assign': 'warn',
     'no-restricted-exports': 'off',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'warn',
+      {
+        selector: "MemberExpression[object.name='React'][property.name='useEffect']",
+        message: 'You Might Not Need an Effect\nhttps://react.dev/learn/you-might-not-need-an-effect',
+      },
+    ],
     'no-plusplus': 'off',
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
