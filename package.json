@@ -33,6 +33,7 @@
     "dist": "npm run lint && npm run test"
   },
   "dependencies": {
+    "@rsbuild/plugin-node-polyfill": "^1.4.0",
     "@rsdoctor/cli": "^0.4.1",
     "@rsdoctor/rspack-plugin": "^0.4.1",
     "@rspack/cli": "~1.0.2",
