@@ -1,8 +1,8 @@
-module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
+module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
   root: true,
   extends: [
     'airbnb',
-    'airbnb-typescript',
+    '@kesills/airbnb-typescript',
     'airbnb/hooks',
     'eslint:recommended',
     'plugin:import/recommended',
@@ -17,7 +17,6 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
     browser: true,
     es6: true,
     jest: true,
-    'cypress/globals': true,
   },
   globals: {
     Atomics: 'readonly',
@@ -38,6 +37,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       return acc;
     }, {}),
     'class-methods-use-this': 'off',
+    '@typescript-eslint/class-methods-use-this': 'off',
     curly: [2, 'all'],
     'linebreak-style': 'off',
     'no-console': 'off',
@@ -46,11 +46,34 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
     'no-nested-ternary': 'off',
     'no-return-assign': 'warn',
     'no-restricted-exports': 'off',
-    'no-restricted-syntax': 'off',
+    'no-restricted-syntax': [
+      'warn',
+      {
+        selector: "MemberExpression[object.name='React'][property.name='useEffect']",
+        message: 'You Might Not Need an Effect\nhttps://react.dev/learn/you-might-not-need-an-effect',
+      },
+    ],
     'no-plusplus': 'off',
     'no-prototype-builtins': 'warn',
     'no-minusminus': 'off',
     'no-underscore-dangle': 'off',
+    'no-restricted-imports': [
+      'error',
+      {
+        paths: [{
+          name: 'lodash',
+          message: 'Please import specific methods from lodash/<util> instead.',
+        },
+        {
+          name: '@fortawesome/free-solid-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-solid-svg-icons/<icon> instead.',
+        },
+        {
+          name: '@fortawesome/free-regular-svg-icons',
+          message: 'Please import specific icons from @fortawesome/free-regular-svg-icons/<icon> instead.',
+        }],
+      },
+    ],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-unused-expressions': [
       'error',
@@ -60,17 +83,24 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
         allowTaggedTemplates: true,
       },
     ],
-    '@typescript-eslint/no-unused-vars': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        vars: 'all',
+        varsIgnorePattern: '^_',
+        args: 'after-used',
+        argsIgnorePattern: '^_',
+      },
+    ],
     'max-classes-per-file': 'off',
     'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }], // Exclude state as required by redux-toolkit: https://redux-toolkit.js.org/usage/immer-reducers#linting-state-mutations
-    'cypress/unsafe-to-chain-command': 'off',
     'import/no-extraneous-dependencies': 'off',
     'import/no-webpack-loader-syntax': 'off', // Disable to allow webpack file-loaders syntax
     'import/no-unresolved': 'off', // Disable to allow webpack file-loaders syntax
     'import/prefer-default-export': 'off',
     ...(optimizeImports ? {
       'import/order': [
-        1,
+        'error',
         {
           groups: [['builtin', 'external'], 'internal', ['sibling', 'parent']],
           pathGroups: [
@@ -87,7 +117,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
         },
       ],
       'sort-imports': [
-        1,
+        'error',
         {
           ignoreCase: false,
           ignoreDeclarationSort: true, // don't want to sort import lines, use eslint-plugin-import instead
@@ -97,15 +127,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
         },
       ],
       'unused-imports/no-unused-imports': 'error',
-      'unused-imports/no-unused-vars': [
-        'warn',
-        {
-          vars: 'all',
-          varsIgnorePattern: '^_',
-          args: 'after-used',
-          argsIgnorePattern: '^_',
-        },
-      ],
+      'unused-imports/no-unused-vars': 'off', // https://github.com/sweepline/eslint-plugin-unused-imports/blob/master/docs/rules/no-unused-vars.md
     } : {
       'import/order': 'error',
     }),
@@ -130,20 +152,26 @@ module.exports = ({ tsconfigRootDir, optimizeImports }) => ({
       },
     ],
     'react-compiler/react-compiler': 'warn',
+    'react-hooks/exhaustive-deps': ['error', {
+      additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
+    }],
+    /*
+    The fork of the eslint-config-airbnb-typescript package has added ESLint Stylistic plugin
+    to the config. see:https://github.com/Kenneth-Sills/eslint-config-airbnb-typescript/pull/3
+    Some of the stylistic rules are not compatible with our current prettier config so we disable them.
+    */
+    '@stylistic/indent': 'off',
+    '@stylistic/comma-dangle': 'off',
   },
   overrides: [
-    {
-      files: ['cypress/**/*'],
-      extends: ['plugin:cypress/recommended', 'plugin:chai-friendly/recommended'],
-      rules: {
-        'cypress/unsafe-to-chain-command': 'warn',
-      },
-      plugins: ['cypress', 'chai-friendly'],
-    },
     {
       files: ['{src|tests}/**/*.{test|spec}.ts'],
       extends: ['plugin:jest/recommended'],
       plugins: ['jest'],
+    },
+    {
+      files: 'playwright/**/*.{test|spec}.ts',
+      extends: 'plugin:playwright/recommended',
     },
   ],
 });

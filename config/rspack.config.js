@@ -3,9 +3,9 @@
 const path = require('path');
 const fs = require('fs');
 const { defineConfig } = require('@rspack/cli');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 const dotenv = require('dotenv');
-const { DotenvPlugin } = require('rspack-plugin-dotenv');
+const DotenvPlugin = require('dotenv-webpack');
 const dotenvExpand = require('dotenv-expand');
 const {
   CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
@@ -102,6 +102,10 @@ module.exports = (webpackEnv, argv) => {
         [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
       ]),
     ),
+    watchOptions: {
+      // Override the ignore to avoid ignoring node_modules: https://github.com/web-infra-dev/rspack/pull/8645
+      ignored: /[\\/](?:\.git)[\\/]/,
+    },
     devServer: isEnvDevelopment
       ? {
         static: path.resolve(workspacePath, 'bundles'),
@@ -174,6 +178,8 @@ module.exports = (webpackEnv, argv) => {
       },
     },
     optimization: {
+      // Without this, HMR is broken: https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/394#issuecomment-1463926441
+      runtimeChunk: isEnvDevelopment ? 'single' : undefined,
       minimizer: [
         // Disable compress and mangle as it has some bugs, i.e. when using arquero#from it fails if no names are passed.
         // See https://github.com/web-infra-dev/rspack/issues/4980 for a discussion.
@@ -379,6 +385,8 @@ module.exports = (webpackEnv, argv) => {
       }),
       new DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify(mode),
+        'process.env.__APP_NAME__': JSON.stringify(appPkg.name),
+        'process.env.__APP_DISPLAY_NAME__': JSON.stringify(appPkg.displayName || appPkg.name),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
         'process.env.__BUILD_ID__': JSON.stringify(buildId),
@@ -446,7 +454,7 @@ module.exports = (webpackEnv, argv) => {
         }),
       ),
       isEnvDevelopment
-        && new ForkTsCheckerWebpackPlugin({
+        && new TsCheckerRspackPlugin({
           async: isEnvDevelopment,
           typescript: {
             diagnosticOptions: {
