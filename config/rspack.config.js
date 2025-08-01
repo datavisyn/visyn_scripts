@@ -1,4 +1,3 @@
-const { pluginNodePolyfill } = require('@rsbuild/plugin-node-polyfill');
 /* eslint-disable global-require */
 /* eslint-disable import/no-dynamic-require */
 const path = require('path');
@@ -364,7 +363,6 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      pluginNodePolyfill(),
       process.env.RSDOCTOR && new RsdoctorRspackPlugin({
         supports: {
           generateTileGraph: true,
