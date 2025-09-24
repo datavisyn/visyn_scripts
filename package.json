@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "13.2.1",
+  "version": "13.2.2",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -34,7 +34,7 @@
   },
   "dependencies": {
     "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
-    "@rsbuild/core": "^1.2.0",
+    "@rsbuild/core": "1.2.0",
     "@rsbuild/plugin-node-polyfill": "^1.4.0",
     "@rsbuild/plugin-react": "^1.1.0",
     "@rsbuild/plugin-sass": "^1.2.0",
