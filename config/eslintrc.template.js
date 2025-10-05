@@ -7,6 +7,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
     'eslint:recommended',
     'plugin:import/recommended',
     'plugin:react/recommended',
+    'plugin:react-hooks/recommended-legacy',
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended',
     // 'plugin:lodash/recommended',
