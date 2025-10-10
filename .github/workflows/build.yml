@@ -10,6 +10,3 @@ jobs:
   build:
     uses: datavisyn/github-workflows/.github/workflows/build-node.yml@main
     secrets: inherit
-    with:
-      node_version: '24' # TODO: Remove as soon as it's the default
-
