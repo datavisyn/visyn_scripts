@@ -2,6 +2,7 @@
 /* eslint-disable import/no-dynamic-require */
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
 const { defineConfig } = require('@rspack/cli');
 const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 const dotenv = require('dotenv');
@@ -28,6 +29,20 @@ module.exports = (webpackEnv, argv) => {
   const isDevServer = webpackEnv.RSPACK_SERVE;
   if (!isEnvDevelopment && !isEnvProduction) {
     throw Error(`Invalid mode passed: ${mode}`);
+  }
+
+  // Extract the git branch and commit from environment variables or git commands
+  let gitBranch = env.GIT_BRANCH;
+  let gitCommitHash = env.GIT_COMMIT_HASH;
+  try {
+    if (!gitBranch) {
+      gitBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+    }
+    if (!gitCommitHash) {
+      gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim();
+    }
+  } catch (e) {
+    console.warn('Could not determine git branch/commit hash via git command, falling back to environment variables or undefined.');
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
@@ -386,6 +401,8 @@ module.exports = (webpackEnv, argv) => {
         'process.env.__APP_NAME__': JSON.stringify(appPkg.name),
         'process.env.__APP_DISPLAY_NAME__': JSON.stringify(appPkg.displayName || appPkg.name),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
+        'process.env.__GIT_BRANCH__': JSON.stringify(gitBranch),
+        'process.env.__GIT_COMMIT_HASH__': JSON.stringify(gitCommitHash),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
         'process.env.__BUILD_ID__': JSON.stringify(buildId),
         'process.env.__APP_CONTEXT__': JSON.stringify('/'),
