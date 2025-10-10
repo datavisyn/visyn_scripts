@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "13.2.3",
+  "version": "14.0.0",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -24,6 +24,9 @@
     "visyn": "./bin/visyn_scripts.js",
     "visyn_scripts": "./bin/visyn_scripts.js"
   },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "lint": "eslint bin/**/*.js config/**/*.js tests/**/*.js",
     "lint:fix": "eslint --fix bin/**/*.js config/**/*.js tests/**/*.js",
@@ -34,25 +37,25 @@
   },
   "dependencies": {
     "@kesills/eslint-config-airbnb-typescript": "^20.0.0",
-    "@rsbuild/core": "1.2.0",
-    "@rsbuild/plugin-node-polyfill": "^1.4.0",
-    "@rsbuild/plugin-react": "^1.1.0",
-    "@rsbuild/plugin-sass": "^1.2.0",
-    "@rsdoctor/cli": "^0.4.13",
-    "@rsdoctor/rspack-plugin": "^0.4.13",
-    "@rspack/cli": "~1.2.0",
-    "@rspack/core": "~1.2.0",
+    "@rsbuild/core": "1.5.13",
+    "@rsbuild/plugin-node-polyfill": "^1.4.2",
+    "@rsbuild/plugin-react": "^1.4.1",
+    "@rsbuild/plugin-sass": "^1.4.0",
+    "@rsdoctor/cli": "^1.3.1",
+    "@rsdoctor/rspack-plugin": "^1.3.1",
+    "@rspack/cli": "~1.5.8",
+    "@rspack/core": "~1.5.8",
     "@rspack/plugin-minify": "~0.7.5",
-    "@rspack/plugin-react-refresh": "~1.0.1",
-    "@stylistic/eslint-plugin": "^2.13.0",
-    "@swc/core": "~1.10.9",
-    "@swc/helpers": "~0.5.15",
+    "@rspack/plugin-react-refresh": "~1.5.1",
+    "@stylistic/eslint-plugin": "^5.4.0",
+    "@swc/core": "~1.13.5",
+    "@swc/helpers": "~0.5.17",
     "@swc/jest": "~0.2.37",
     "@types/jest": "~27.4.1",
-    "@types/node": "^20.17.14",
+    "@types/node": "^24.6.2",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
-    "@typescript-eslint/parser": "~8.21.0",
-    "dotenv": "^16.4.7",
+    "@typescript-eslint/parser": "~8.45.0",
+    "dotenv": "^17.2.3",
     "dotenv-expand": "^12.0.1",
     "dotenv-webpack": "^8.1.0",
     "eslint": "^8.57.1",
@@ -66,11 +69,11 @@
     "eslint-plugin-playwright": "^2.1.0",
     "eslint-plugin-prettier": "^5.2.3",
     "eslint-plugin-react": "^7.37.4",
-    "eslint-plugin-react-compiler": "0.0.0-experimental-decd7b8-20250118",
-    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-compiler": "19.1.0-rc.2",
+    "eslint-plugin-react-hooks": "^6.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",
     "fs-extra": "^11.3.0",
-    "glob": "^10.0.0",
+    "glob": "^11.0.3",
     "html-loader": "~5.1.0",
     "html-webpack-plugin": "^5.6.3",
     "identity-obj-proxy": "^3.0.0",
@@ -84,16 +87,16 @@
     "postcss-preset-env": "^10.1.3",
     "prettier": "^3.4.2",
     "react-dev-utils": "^12.0.1",
-    "react-refresh": "^0.16.0",
+    "react-refresh": "^0.18.0",
     "resolve-url-loader": "^5.0.0",
     "rimraf": "~6.0.1",
     "sass-loader": "^16.0.4",
-    "shx": "~0.3.4",
+    "shx": "~0.4.0",
     "tailwindcss": "^3.4.17",
     "ts-checker-rspack-plugin": "^1.1.1",
     "ts-node": "^10.9.2",
     "tslib": "~2.8.1",
-    "typescript": "~5.7.3",
+    "typescript": "~5.9.3",
     "util": "^0.12.5",
     "webpack": "^5.97.1",
     "yargs": "^17.7.2"
@@ -103,18 +106,18 @@
     "http-server": "^14.1.1",
     "jest-dev-server": "^6.2.0",
     "storybook": "^8.5.0",
-    "storybook-react-rsbuild": "^0.1.8"
+    "storybook-react-rsbuild": "^1.0.3"
   },
   "peerDependencies": {
-    "@types/react": "^18.3.18",
-    "@types/react-dom": "^18.3.5",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@types/react": "^18 || ~19.2.0",
+    "@types/react-dom": "^18 || ~19.2.0",
+    "react": "^18 || ~19.2.0",
+    "react-dom": "^18 || ~19.2.0"
   },
   "jest": {
     "testPathIgnorePatterns": [
       "/node_modules/|/bin/|/tests_fixtures/"
     ]
   },
-  "packageManager": "yarn@4.6.0"
+  "packageManager": "yarn@4.10.3"
 }

@@ -252,7 +252,6 @@ module.exports = (webpackEnv, argv) => {
               exclude: [/node_modules/],
               loader: 'builtin:swc-loader',
               options: {
-                sourceMap: true,
                 jsc: {
                   parser: {
                     syntax: 'typescript',
@@ -277,7 +276,6 @@ module.exports = (webpackEnv, argv) => {
               test: /\.(ts|tsx)$/,
               loader: 'builtin:swc-loader',
               options: {
-                sourceMap: true,
                 jsc: {
                   parser: {
                     syntax: 'typescript',
