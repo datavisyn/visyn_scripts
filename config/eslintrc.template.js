@@ -76,6 +76,7 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
       },
     ],
     '@typescript-eslint/no-explicit-any': 'warn',
+    '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-unused-expressions': [
       'error',
       {
