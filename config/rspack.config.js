@@ -161,9 +161,9 @@ module.exports = (webpackEnv, argv) => {
       // Add /* filename */ comments to generated require()s in the output.
       // TODO: rspack: pathinfo: isEnvDevelopment,
       // There will be one main bundle, and one file per asynchronous chunk.
-      filename: '[name].[contenthash:8].js',
+      filename: isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js',
       // There are also additional JS chunk files if you use code splitting.
-      chunkFilename: '[name].[contenthash:8].chunk.js',
+      chunkFilename: isEnvDevelopment ? '[name].chunk.js' : '[name].[contenthash:8].chunk.js',
       assetModuleFilename: 'assets/[name].[hash][ext]',
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
