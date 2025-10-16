@@ -161,6 +161,7 @@ module.exports = (webpackEnv, argv) => {
       // Add /* filename */ comments to generated require()s in the output.
       // TODO: rspack: pathinfo: isEnvDevelopment,
       // There will be one main bundle, and one file per asynchronous chunk.
+      // Fix HMR error in development: https://github.com/webpack/webpack-dev-server/issues/3168#issuecomment-816709164
       filename: isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js',
       // There are also additional JS chunk files if you use code splitting.
       chunkFilename: isEnvDevelopment ? '[name].chunk.js' : '[name].[contenthash:8].chunk.js',
