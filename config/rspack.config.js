@@ -1,5 +1,5 @@
-/* eslint-disable global-require */
-/* eslint-disable import/no-dynamic-require */
+/* eslint-disable prefer-const */
+/* eslint-disable import-x/no-dynamic-require */
 const path = require('path');
 const fs = require('fs');
 const { execSync } = require('child_process');
@@ -8,9 +8,7 @@ const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 const dotenv = require('dotenv');
 const DotenvPlugin = require('dotenv-webpack');
 const dotenvExpand = require('dotenv-expand');
-const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
-} = require('@rspack/core');
+const { CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
@@ -42,11 +40,11 @@ module.exports = (webpackEnv, argv) => {
       gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim();
     }
   } catch (e) {
-    console.warn('Could not determine git branch/commit hash via git command, falling back to environment variables or undefined.');
+    console.warn('Could not determine git branch/commit hash via git command, falling back to environment variables or undefined.', e);
   }
 
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
-  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map'));
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map');
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -84,14 +82,11 @@ module.exports = (webpackEnv, argv) => {
     const visynWebpackOverride = require(path.join(workspacePath, 'visynWebpackOverride.js'))({ env }) || {};
     console.log('Using visynWebpackOverride.js file to override visyn configuration.');
     Object.assign(appPkg.visyn, visynWebpackOverride);
-  } catch (e) {
+  } catch {
     // ignore if file does not exist
   }
 
-  let {
-    // eslint-disable-next-line prefer-const
-    devServerProxy, entries, copyFiles, historyApiFallback,
-  } = appPkg.visyn;
+  let { devServerProxy, entries, copyFiles, historyApiFallback } = appPkg.visyn;
 
   if (isDevServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
@@ -114,7 +109,9 @@ module.exports = (webpackEnv, argv) => {
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
+        [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) =>
+          fs.existsSync(v),
+        ),
       ]),
     ),
     watchOptions: {
@@ -123,38 +120,38 @@ module.exports = (webpackEnv, argv) => {
     },
     devServer: isEnvDevelopment
       ? {
-        static: path.resolve(workspacePath, 'bundles'),
-        compress: true,
-        // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
-        hot: true,
-        liveReload: false,
-        // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
-        host: '127.0.0.1',
-        open: true,
-        allowedHosts: 'all',
-        // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
-        proxy: [
-          // Append on top to allow overriding /api/v1/ for example
-          ...(devServerProxy || []),
-          {
-            context: ['/api/'],
-            target: 'http://localhost:9000',
-            secure: false,
-            ws: true,
-            // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
-            onProxyReq: (proxyReq, req, res) => {
-              res.on('close', () => proxyReq.destroy());
+          static: path.resolve(workspacePath, 'bundles'),
+          compress: true,
+          // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
+          hot: true,
+          liveReload: false,
+          // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
+          host: '127.0.0.1',
+          open: true,
+          allowedHosts: 'all',
+          // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
+          historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
+          proxy: [
+            // Append on top to allow overriding /api/v1/ for example
+            ...(devServerProxy || []),
+            {
+              context: ['/api/'],
+              target: 'http://localhost:9000',
+              secure: false,
+              ws: true,
+              // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
+              onProxyReq: (proxyReq, req, res) => {
+                res.on('close', () => proxyReq.destroy());
+              },
             },
+            // Append on bottom to allow override of exact key matches like /api/*
+            ...(devServerProxy || []),
+          ],
+          client: {
+            // Do not show the full-page error overlay
+            overlay: false,
           },
-          // Append on bottom to allow override of exact key matches like /api/*
-          ...(devServerProxy || []),
-        ],
-        client: {
-          // Do not show the full-page error overlay
-          overlay: false,
-        },
-      }
+        }
       : undefined,
     output: {
       // The build folder.
@@ -306,37 +303,37 @@ module.exports = (webpackEnv, argv) => {
                     postcssOptions: {
                       plugins: !useTailwind
                         ? [
-                          'postcss-preset-mantine',
-                          'postcss-flexbugs-fixes',
-                          [
-                            'postcss-preset-env',
-                            {
-                              autoprefixer: {
-                                flexbox: 'no-2009',
+                            'postcss-preset-mantine',
+                            'postcss-flexbugs-fixes',
+                            [
+                              'postcss-preset-env',
+                              {
+                                autoprefixer: {
+                                  flexbox: 'no-2009',
+                                },
+                                stage: 3,
                               },
-                              stage: 3,
-                            },
-                          ],
-                          // Adds PostCSS Normalize as the reset css with default options,
-                          // so that it honors browserslist config in package.json
-                          // which in turn let's users customize the target behavior as per their needs.
-                          'postcss-normalize',
-                        ]
+                            ],
+                            // Adds PostCSS Normalize as the reset css with default options,
+                            // so that it honors browserslist config in package.json
+                            // which in turn let's users customize the target behavior as per their needs.
+                            'postcss-normalize',
+                          ]
                         : [
-                          'tailwindcss/nesting',
-                          'tailwindcss',
-                          'postcss-preset-mantine',
-                          'postcss-flexbugs-fixes',
-                          [
-                            'postcss-preset-env',
-                            {
-                              autoprefixer: {
-                                flexbox: 'no-2009',
+                            'tailwindcss/nesting',
+                            'tailwindcss',
+                            'postcss-preset-mantine',
+                            'postcss-flexbugs-fixes',
+                            [
+                              'postcss-preset-env',
+                              {
+                                autoprefixer: {
+                                  flexbox: 'no-2009',
+                                },
+                                stage: 3,
                               },
-                              stage: 3,
-                            },
+                            ],
                           ],
-                        ],
                     },
                   },
                 },
@@ -386,11 +383,12 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      process.env.RSDOCTOR && new RsdoctorRspackPlugin({
-        supports: {
-          generateTileGraph: true,
-        },
-      }),
+      process.env.RSDOCTOR &&
+        new RsdoctorRspackPlugin({
+          supports: {
+            generateTileGraph: true,
+          },
+        }),
       isReactRefresh && new ReactRefreshPlugin(),
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
@@ -459,21 +457,22 @@ module.exports = (webpackEnv, argv) => {
       }),
       ...Object.entries(entries).map(
         // TODO: Do not use HtmlRspackPlugin, as it can't handle require calls in ejs templates.
-        ([chunkName, entry]) => new HtmlWebpackPlugin({
-          template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
-          filename: entry.html || `${chunkName}.html`,
-          title: appPkg.name,
-          chunks: [chunkName],
-          // By default, exclude all other chunks
-          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-          meta: {
-            description: appPkg.description || '',
-          },
-          minify: isEnvProduction,
-        }),
+        ([chunkName, entry]) =>
+          new HtmlWebpackPlugin({
+            template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
+            filename: entry.html || `${chunkName}.html`,
+            title: appPkg.name,
+            chunks: [chunkName],
+            // By default, exclude all other chunks
+            excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
+            meta: {
+              description: appPkg.description || '',
+            },
+            minify: isEnvProduction,
+          }),
       ),
-      isEnvDevelopment
-        && new TsCheckerRspackPlugin({
+      isEnvDevelopment &&
+        new TsCheckerRspackPlugin({
           async: isEnvDevelopment,
           typescript: {
             diagnosticOptions: {
@@ -483,7 +482,9 @@ module.exports = (webpackEnv, argv) => {
             // Build the repo and type-check
             build: true,
             mode: 'write-references',
-            configFile: fs.existsSync(path.join(workspacePath, 'tsconfig.lenient.json')) ? path.join(workspacePath, 'tsconfig.lenient.json') : path.join(workspacePath, 'tsconfig.json'),
+            configFile: fs.existsSync(path.join(workspacePath, 'tsconfig.lenient.json'))
+              ? path.join(workspacePath, 'tsconfig.lenient.json')
+              : path.join(workspacePath, 'tsconfig.json'),
           },
         }),
     ].filter(Boolean),

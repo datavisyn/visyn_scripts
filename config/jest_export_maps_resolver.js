@@ -1,5 +1,5 @@
 // temporary workaround while we wait for https://github.com/facebook/jest/issues/9771
-// eslint-disable-next-line import/no-extraneous-dependencies
+// eslint-disable-next-line import-x/no-extraneous-dependencies
 const resolver = require('enhanced-resolve').create.sync({
   conditionNames: ['require', 'node', 'default', 'import'],
   extensions: ['.js', '.json', '.node', '.ts', '.tsx'],

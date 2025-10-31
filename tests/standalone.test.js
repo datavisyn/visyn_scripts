@@ -75,21 +75,21 @@ describe('standalone', () => {
       expect(fs.existsSync(resolve(testDir, 'bundles/index.html'))).toBe(true);
     });
 
-    describe('cypress test', () => {
-      it('runs cypress on the production build', async () => {
+    describe('playwright test', () => {
+      it('runs playwright on the production build', async () => {
         await setupDevServer({
           command: `http-server ${testDir}/bundles --port 8090`,
           port: 8090,
         });
 
         try {
-          // Execute the cypress script of the repository
-          execSync('yarn run cy:run', {
+          // Execute the playwright script of the repository
+          execSync('yarn run pw:run', {
             cwd: testDir,
             stdio: 'inherit',
             env: {
               ...process.env,
-              CYPRESS_BASE_URL: 'http://localhost:8090',
+              PLAYWRIGHT_BASE_URL: 'http://localhost:8090',
             },
           });
         } finally {
