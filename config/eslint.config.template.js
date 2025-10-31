@@ -33,6 +33,11 @@ module.exports = ({ tsconfigRootDir }) =>
       plugins: {
         'unused-imports': unusedImports,
       },
+      settings: {
+        react: {
+          version: 'detect',
+        },
+      },
       languageOptions: {
         parserOptions: {
           // Make sure eslint and VS Code use the same path for the tsconfig.json:
