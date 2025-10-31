@@ -138,6 +138,7 @@ module.exports = ({ tsconfigRootDir }) =>
         'no-prototype-builtins': 'warn',
         'no-minusminus': 'off',
         'no-underscore-dangle': 'off',
+        'no-void': 'warn',
         'no-restricted-imports': [
           'error',
           {
@@ -158,6 +159,7 @@ module.exports = ({ tsconfigRootDir }) =>
           },
         ],
         'prefer-arrow-callback': 'warn',
+        '@typescript-eslint/no-require-imports': 'warn',
         '@typescript-eslint/consistent-indexed-object-style': 'off',
         '@typescript-eslint/consistent-type-definitions': 'off',
         '@typescript-eslint/ban-ts-comment': 'warn',
@@ -226,6 +228,8 @@ module.exports = ({ tsconfigRootDir }) =>
         'prefer-spread': 'warn',
         // Not required with the new JSX transform
         'react/react-in-jsx-scope': 'off',
+        'react/function-component-definition': 'warn',
+        'react/no-unstable-nested-components': 'warn',
         'react/no-array-index-key': 'warn',
         'react/jsx-no-useless-fragment': 'warn',
         'react/jsx-pascal-case': 'warn',
