@@ -1,16 +1,76 @@
 const { defineConfig } = require('eslint/config');
-const js = require('@eslint/js');
+const { includeIgnoreFile } = require('@eslint/compat');
+const { rules: prettierConfigRules } = require('eslint-config-prettier');
+const airbnb = require('eslint-config-airbnb-extended');
 const globals = require('globals');
-const importPlugin = require('eslint-plugin-import');
+const jest = require('eslint-plugin-jest');
+const js = require('@eslint/js');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
-const react = require('eslint-plugin-react');
-const reactHooks = require('eslint-plugin-react-hooks');
+const path = require('node:path');
+const playwright = require('eslint-plugin-playwright');
+const prettierPlugin = require('eslint-plugin-prettier');
 const reactCompiler = require('eslint-plugin-react-compiler');
 const unusedImports = require('eslint-plugin-unused-imports');
-const pluginJest = require('eslint-plugin-jest');
-const playwright = require('eslint-plugin-playwright');
-const airbnb = require('eslint-config-airbnb-extended/legacy');
-const prettierRecommended = require('eslint-plugin-prettier/recommended');
+
+const jsConfig = [
+  {
+    name: 'js/config',
+    ...js.configs.recommended,
+  },
+  airbnb.plugins.stylistic,
+  airbnb.plugins.importX,
+  ...airbnb.configs.base.recommended,
+];
+
+const reactConfig = [
+  reactCompiler.configs.recommended,
+  airbnb.plugins.react,
+  airbnb.plugins.reactHooks,
+  airbnb.plugins.reactA11y,
+  ...airbnb.configs.react.recommended,
+];
+
+const typescriptConfig = [
+  // TypeScript ESLint Plugin
+  airbnb.plugins.typescriptEslint,
+  // Airbnb Base TypeScript Config
+  ...airbnb.configs.base.typescript,
+  // Airbnb React TypeScript Config
+  ...airbnb.configs.react.typescript,
+];
+
+const prettierConfig = [
+  {
+    name: 'prettier/plugin/config',
+    plugins: {
+      prettier: prettierPlugin,
+    },
+  },
+  {
+    name: 'prettier/config',
+    rules: {
+      ...prettierConfigRules,
+      'prettier/prettier': 'error',
+    },
+  },
+];
+
+const jestConfig = [
+  {
+    files: ['{src|tests}/**/*.{test|spec}.ts'],
+    plugins: { jest },
+    languageOptions: {
+      globals: jest.environments.globals.globals,
+    },
+  },
+];
+
+const playwrightConfig = [
+  {
+    ...playwright.configs['flat/recommended'],
+    files: ['playwright/**/*.{test|spec}.ts'],
+  },
+];
 
 // Helper to disable jsx-a11y rules
 const jsxA11yOffRules = Object.keys(jsxA11y.rules).reduce((acc, rule) => {
@@ -20,14 +80,13 @@ const jsxA11yOffRules = Object.keys(jsxA11y.rules).reduce((acc, rule) => {
 
 module.exports = ({ tsconfigRootDir }) =>
   defineConfig(
-    js.configs.recommended,
-    ...airbnb.configs.react.typescript,
-    importPlugin.flatConfigs.recommended,
-    react.configs.flat.recommended,
-    reactHooks.configs.flat.recommended,
-    reactCompiler.configs.recommended,
-    prettierRecommended,
-
+    includeIgnoreFile(path.resolve('.', '.gitignore')),
+    ...jsConfig,
+    ...reactConfig,
+    ...typescriptConfig,
+    ...prettierConfig,
+    ...jestConfig,
+    ...playwrightConfig,
     {
       files: ['**/*.{ts,tsx,cts,mts}'],
       plugins: {
@@ -56,10 +115,12 @@ module.exports = ({ tsconfigRootDir }) =>
 
       rules: {
         ...jsxA11yOffRules,
+        'arrow-body-style': 'off',
         'class-methods-use-this': 'off',
-        '@typescript-eslint/class-methods-use-this': 'off',
         curly: [2, 'all'],
         'linebreak-style': 'off',
+        'no-promise-executor-return': 'warn',
+        'no-await-in-loop': 'warn',
         'no-console': 'off',
         'no-continue': 'off',
         'no-multi-assign': 'warn',
@@ -96,6 +157,14 @@ module.exports = ({ tsconfigRootDir }) =>
             ],
           },
         ],
+        'prefer-arrow-callback': 'warn',
+        '@typescript-eslint/consistent-indexed-object-style': 'off',
+        '@typescript-eslint/consistent-type-definitions': 'off',
+        '@typescript-eslint/ban-ts-comment': 'warn',
+        '@typescript-eslint/class-methods-use-this': 'off',
+        '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
+        '@typescript-eslint/no-empty-object-type': 'warn',
+        '@typescript-eslint/prefer-destructuring': 'warn',
         '@typescript-eslint/no-shadow': 'warn',
         '@typescript-eslint/no-use-before-define': 'warn',
         '@typescript-eslint/no-explicit-any': 'warn',
@@ -118,11 +187,11 @@ module.exports = ({ tsconfigRootDir }) =>
         ],
         'max-classes-per-file': 'off',
         'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }],
-        'import/no-extraneous-dependencies': 'off',
-        'import/no-webpack-loader-syntax': 'off',
-        'import/no-unresolved': 'off',
-        'import/prefer-default-export': 'off',
-        'import/order': [
+        'import-x/no-extraneous-dependencies': 'off',
+        'import-x/no-webpack-loader-syntax': 'off',
+        'import-x/no-unresolved': 'off',
+        'import-x/prefer-default-export': 'off',
+        'import-x/order': [
           'error',
           {
             groups: [['builtin', 'external'], 'internal', ['sibling', 'parent']],
@@ -152,11 +221,14 @@ module.exports = ({ tsconfigRootDir }) =>
         'unused-imports/no-unused-imports': 'error',
         'unused-imports/no-unused-vars': 'off',
         'prefer-destructuring': ['warn', { object: true, array: false }],
+        'prefer-rest-params': 'warn',
         'prefer-promise-reject-errors': 'warn',
         'prefer-spread': 'warn',
-        '@typescript-eslint/ban-ts-comment': 'warn',
         // Not required with the new JSX transform
         'react/react-in-jsx-scope': 'off',
+        'react/no-array-index-key': 'warn',
+        'react/jsx-no-useless-fragment': 'warn',
+        'react/jsx-pascal-case': 'warn',
         'react/destructuring-assignment': 'off',
         'react/jsx-curly-brace-presence': 'warn',
         'react/jsx-props-no-spreading': 'off',
@@ -191,18 +263,5 @@ module.exports = ({ tsconfigRootDir }) =>
         '@stylistic/indent': 'off',
         '@stylistic/comma-dangle': 'off',
       },
-    },
-
-    {
-      files: ['{src|tests}/**/*.{test|spec}.ts'],
-      plugins: { jest: pluginJest },
-      languageOptions: {
-        globals: pluginJest.environments.globals.globals,
-      },
-    },
-
-    {
-      ...playwright.configs['flat/recommended'],
-      files: ['playwright/**/*.{test|spec}.ts'],
     },
   );

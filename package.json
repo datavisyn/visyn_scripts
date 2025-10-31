@@ -1,7 +1,7 @@
 {
   "name": "visyn_scripts",
   "description": "",
-  "version": "15.0.0",
+  "version": "15.1.0",
   "author": {
     "name": "datavisyn GmbH",
     "email": "contact@datavisyn.io",
@@ -64,8 +64,6 @@
     "eslint-config-airbnb-extended": "^2.3.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
-    "eslint-plugin-chai-friendly": "^1.1.0",
-    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-import-x": "^4.16.1",
     "eslint-plugin-jest": "^29.0.1",
     "eslint-plugin-jsx-a11y": "^6.10.2",
