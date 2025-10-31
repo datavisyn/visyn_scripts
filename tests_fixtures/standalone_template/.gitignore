@@ -4,6 +4,7 @@
 /.idea
 /build/
 /storybook-static/
+/bundles/
 /dist/
 /dist/tsBuildInfoFile
 /dist_python/
@@ -37,3 +38,10 @@ node_modules/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+playwright/.auth

@@ -11,11 +11,7 @@ module.exports = {
   docs: {
     autodocs: true,
   },
-  addons: [
-    '@storybook/addon-links',
-    '@storybook/addon-essentials',
-    '@storybook/addon-interactions',
-  ],
+  addons: ['@storybook/addon-links', '@storybook/addon-essentials', '@storybook/addon-interactions'],
   framework: {
     name: 'storybook-react-rsbuild',
     options: {
