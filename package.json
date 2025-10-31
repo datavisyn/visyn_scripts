@@ -110,8 +110,6 @@
   },
   "devDependencies": {
     "@types/yargs": "^17.0.33",
-    "http-server": "^14.1.1",
-    "jest-dev-server": "^6.2.0",
     "storybook": "^8.5.0",
     "storybook-react-rsbuild": "^1.0.3"
   },

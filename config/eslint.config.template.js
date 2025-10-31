@@ -41,6 +41,7 @@ module.exports = ({ tsconfigRootDir }) =>
           project: `./tsconfig.eslint.json`,
         },
         globals: {
+          ...globals.node,
           ...globals.browser,
           ...globals.es6,
           Atomics: 'readonly',
@@ -90,6 +91,8 @@ module.exports = ({ tsconfigRootDir }) =>
             ],
           },
         ],
+        '@typescript-eslint/no-shadow': 'warn',
+        '@typescript-eslint/no-use-before-define': 'warn',
         '@typescript-eslint/no-explicit-any': 'warn',
         '@typescript-eslint/no-unused-expressions': [
           'error',
@@ -171,6 +174,11 @@ module.exports = ({ tsconfigRootDir }) =>
             additionalHooks: '(useTriggerFrame|useDeepEffect|useDeepMemo|useDeepCallback|useDeepCompareEffect)',
           },
         ],
+        'react-hooks/refs': 'warn',
+        'react-hooks/purity': 'warn',
+        'react-hooks/immutability': 'warn',
+        'react-hooks/use-memo': 'warn',
+        'react-hooks/preserve-manual-memoization': 'warn',
         '@stylistic/indent': 'off',
         '@stylistic/comma-dangle': 'off',
       },
