@@ -11,7 +11,6 @@ async function runCommand(...args) {
   ];
 
   // Require the yargs CLI script
-  // eslint-disable-next-line global-require
   return require('../bin/visyn_scripts');
 }
 
@@ -25,7 +24,6 @@ describe('cli', () => {
 
     // After resetting the modules, we need to reinitialize the mocks
     jest.mock('../bin/commands/utils');
-    // eslint-disable-next-line global-require
     call = require('../bin/commands/utils').call;
 
     // Each test overwrites process arguments so store the original arguments
@@ -52,11 +50,7 @@ describe('cli', () => {
   it('runs the bundle script in production mode', async () => {
     // const callSpy = jest.spyOn(utils, "call");
     await runCommand('bundle');
-    expect(call).toHaveBeenCalledWith(
-      expect.stringMatching(/(?=.*rspack)/),
-      expect.stringMatching(/(?=.*rspack\.config\.js)/),
-      expect.anything(),
-    );
+    expect(call).toHaveBeenCalledWith(expect.stringMatching(/(?=.*rspack)/), expect.stringMatching(/(?=.*rspack\.config\.js)/), expect.anything());
   });
 
   it('runs the bundle script in development mode', async () => {

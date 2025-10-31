@@ -4,8 +4,13 @@
     "outDir": "./dist",
   },
   "include": [
+    "playwright.config.ts",
+    "playwright/**/*.ts",
+    "playwright/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
+    "tests/**/*.ts",
+    "tests/**/*.tsx",
     "tsd.d.ts"
   ]
 }

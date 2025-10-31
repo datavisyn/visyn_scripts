@@ -7,15 +7,18 @@ const pluginsNotToTransform = [
 module.exports = {
   testEnvironment: 'jsdom',
   transform: {
-    '^.+\\.(js|ts|tsx|mjs|mts)$': ['@swc/jest', {
-      // Exactly the same configuration as in the webpack.config.js
-      jsc: {
-        parser: {
-          syntax: 'typescript',
-          decorators: true,
+    '^.+\\.(js|ts|tsx|mjs|mts)$': [
+      '@swc/jest',
+      {
+        // Exactly the same configuration as in the webpack.config.js
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            decorators: true,
+          },
         },
       },
-    }],
+    ],
     '\\.xml$': 'jest-raw-loader',
   },
   testRegex: '(.*(test|spec))\\.(tsx?)$',
