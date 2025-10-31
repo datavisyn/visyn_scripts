@@ -299,7 +299,6 @@ module.exports = (webpackEnv, argv) => {
             },
             {
               test: /\.css$/,
-              exclude: /\.module\.css$/,
               use: [
                 {
                   loader: 'postcss-loader',
@@ -307,6 +306,7 @@ module.exports = (webpackEnv, argv) => {
                     postcssOptions: {
                       plugins: !useTailwind
                         ? [
+                          'postcss-preset-mantine',
                           'postcss-flexbugs-fixes',
                           [
                             'postcss-preset-env',
@@ -325,6 +325,7 @@ module.exports = (webpackEnv, argv) => {
                         : [
                           'tailwindcss/nesting',
                           'tailwindcss',
+                          'postcss-preset-mantine',
                           'postcss-flexbugs-fixes',
                           [
                             'postcss-preset-env',
