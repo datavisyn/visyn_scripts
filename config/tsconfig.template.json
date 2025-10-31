@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     "moduleResolution": "bundler",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowJs": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,

@@ -136,6 +136,8 @@ module.exports = ({ tsconfigRootDir, optimizeImports = true }) => ({
     'prefer-promise-reject-errors': 'warn',
     'prefer-spread': 'warn',
     '@typescript-eslint/ban-ts-comment': 'warn',
+    // Not required with the new JSX transform
+    'react/react-in-jsx-scope': 'off',
     'react/destructuring-assignment': 'off',
     'react/jsx-curly-brace-presence': 'warn',
     'react/jsx-props-no-spreading': 'off',
