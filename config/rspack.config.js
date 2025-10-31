@@ -131,6 +131,7 @@ module.exports = (webpackEnv, argv) => {
         // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
         host: '127.0.0.1',
         open: true,
+        allowedHosts: 'all',
         // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
         historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
         proxy: [
@@ -305,6 +306,7 @@ module.exports = (webpackEnv, argv) => {
                     postcssOptions: {
                       plugins: !useTailwind
                         ? [
+                          'postcss-preset-mantine',
                           'postcss-flexbugs-fixes',
                           [
                             'postcss-preset-env',
@@ -323,6 +325,7 @@ module.exports = (webpackEnv, argv) => {
                         : [
                           'tailwindcss/nesting',
                           'tailwindcss',
+                          'postcss-preset-mantine',
                           'postcss-flexbugs-fixes',
                           [
                             'postcss-preset-env',
@@ -373,7 +376,7 @@ module.exports = (webpackEnv, argv) => {
               // its runtime that would otherwise be processed through "file" loader.
               // Also exclude `html`, `ejs` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.ejs$/, /\.json$/],
+              exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.module\.css$/, /\.html$/, /\.ejs$/, /\.json$/],
               type: 'asset/resource',
             },
             // ** STOP ** Are you adding a new loader?
