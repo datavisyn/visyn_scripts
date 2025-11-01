@@ -50,16 +50,12 @@ describe('cli', () => {
   it('runs the bundle script in production mode', async () => {
     // const callSpy = jest.spyOn(utils, "call");
     await runCommand('bundle');
-    expect(call).toHaveBeenCalledWith(expect.stringMatching(/(?=.*rspack)/), expect.stringMatching(/(?=.*rspack\.config\.js)/), expect.anything());
+    expect(call).toHaveBeenCalledWith(expect.stringMatching(/(?=.*rspack)/), expect.stringMatching(/(?=.*rspack\.config\.js)/));
   });
 
   it('runs the bundle script in development mode', async () => {
     // const callSpy = jest.spyOn(utils, "call");
     await runCommand('bundle', '--mode', 'development');
-    expect(call).toHaveBeenCalledWith(
-      expect.stringMatching(/(?=.*rspack)/),
-      expect.stringMatching(/(?=.*--mode development)(?=.*rspack\.config\.js)/),
-      expect.anything(),
-    );
+    expect(call).toHaveBeenCalledWith(expect.stringMatching(/(?=.*rspack)/), expect.stringMatching(/(?=.*--mode development)(?=.*rspack\.config\.js)/));
   });
 });
