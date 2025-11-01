@@ -1,6 +1,5 @@
 const { defineConfig } = require('eslint/config');
 const { includeIgnoreFile } = require('@eslint/compat');
-const { rules: prettierConfigRules } = require('eslint-config-prettier');
 const airbnb = require('eslint-config-airbnb-extended');
 const globals = require('globals');
 const jest = require('eslint-plugin-jest');
@@ -8,7 +7,7 @@ const js = require('@eslint/js');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
 const path = require('node:path');
 const playwright = require('eslint-plugin-playwright');
-const prettierPlugin = require('eslint-plugin-prettier');
+const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
 const unusedImports = require('eslint-plugin-unused-imports');
 
@@ -39,21 +38,7 @@ const typescriptConfig = [
   ...airbnb.configs.react.typescript,
 ];
 
-const prettierConfig = [
-  {
-    name: 'prettier/plugin/config',
-    plugins: {
-      prettier: prettierPlugin,
-    },
-  },
-  {
-    name: 'prettier/config',
-    rules: {
-      ...prettierConfigRules,
-      'prettier/prettier': 'error',
-    },
-  },
-];
+const prettierConfig = [eslintPluginPrettierRecommended];
 
 const jestConfig = [
   {
