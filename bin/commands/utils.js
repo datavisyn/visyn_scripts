@@ -33,6 +33,8 @@ const call = (command, args, options = {}) => {
         NODE_PATH: nodePath,
         // Increase memory limits for node all processes
         NODE_OPTIONS: '--max-old-space-size=8192 --max-semi-space-size=512',
+        // Enable the faster prettier CLI: https://www.solberg.is/prettier-is-fast
+        PRETTIER_EXPERIMENTAL_CLI: 1,
         ...(options.env || {}),
         ...process.env,
       },
