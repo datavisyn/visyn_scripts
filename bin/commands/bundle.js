@@ -6,10 +6,6 @@ module.exports = {
   describe: 'Bundles a repository',
   handler: (args) => {
     const configPath = resolve(__dirname, '../../config/rspack.config.js');
-    call('rspack', `build --c "${configPath}" ${(args.strings || []).join(' ')}`, {
-      env: {
-        NODE_OPTIONS: '--max-old-space-size=8192',
-      },
-    });
+    call('rspack', `build --c "${configPath}" ${(args.strings || []).join(' ')}`);
   },
 };

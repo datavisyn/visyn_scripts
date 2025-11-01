@@ -31,6 +31,8 @@ const call = (command, args, options = {}) => {
       stdio: 'inherit',
       env: {
         NODE_PATH: nodePath,
+        // Increase memory limits for node all processes
+        NODE_OPTIONS: '--max-old-space-size=8192 --max-semi-space-size=512',
         ...(options.env || {}),
         ...process.env,
       },
