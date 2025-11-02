@@ -1,16 +1,18 @@
-const { defineConfig } = require('eslint/config');
 const { includeIgnoreFile } = require('@eslint/compat');
-const { rules: prettierConfigRules } = require('eslint-config-prettier');
-const airbnb = require('eslint-config-airbnb-extended');
-const globals = require('globals');
-const jest = require('eslint-plugin-jest');
 const js = require('@eslint/js');
+const { defineConfig } = require('eslint/config');
+const airbnb = require('eslint-config-airbnb-extended');
+const eslintConfigPrettier = require('eslint-config-prettier/flat');
+const jest = require('eslint-plugin-jest');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
-const path = require('node:path');
 const playwright = require('eslint-plugin-playwright');
-const prettierPlugin = require('eslint-plugin-prettier');
+const eslintPluginPrettier = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
 const unusedImports = require('eslint-plugin-unused-imports');
+const globals = require('globals');
+const path = require('node:path');
+
+const { isFormatSeparate } = require('../bin/commands/utils');
 
 const jsConfig = [
   {
@@ -30,34 +32,11 @@ const reactConfig = [
   ...airbnb.configs.react.recommended,
 ];
 
-const typescriptConfig = [
-  // TypeScript ESLint Plugin
-  airbnb.plugins.typescriptEslint,
-  // Airbnb Base TypeScript Config
-  ...airbnb.configs.base.typescript,
-  // Airbnb React TypeScript Config
-  ...airbnb.configs.react.typescript,
-];
-
-const prettierConfig = [
-  {
-    name: 'prettier/plugin/config',
-    plugins: {
-      prettier: prettierPlugin,
-    },
-  },
-  {
-    name: 'prettier/config',
-    rules: {
-      ...prettierConfigRules,
-      'prettier/prettier': 'error',
-    },
-  },
-];
+const typescriptConfig = [airbnb.plugins.typescriptEslint, ...airbnb.configs.base.typescript, ...airbnb.configs.react.typescript];
 
 const jestConfig = [
   {
-    files: ['{src|tests}/**/*.{test|spec}.ts'],
+    files: ['{src|tests}/**/*.{test|spec}.{js,ts,jsx,tsx}'],
     plugins: { jest },
     languageOptions: {
       globals: jest.environments.globals.globals,
@@ -68,27 +47,31 @@ const jestConfig = [
 const playwrightConfig = [
   {
     ...playwright.configs['flat/recommended'],
-    files: ['playwright/**/*.{test|spec}.ts'],
+    files: ['playwright/**/*.{test|spec}.{js,ts,jsx,tsx}'],
   },
 ];
 
 // Helper to disable jsx-a11y rules
-const jsxA11yOffRules = Object.keys(jsxA11y.rules).reduce((acc, rule) => {
-  acc[`jsx-a11y/${rule}`] = 'off';
-  return acc;
-}, {});
+const jsxA11yOffRules = Object.fromEntries(Object.keys(jsxA11y.rules).map((rule) => [`jsx-a11y/${rule}`, 'off']));
 
-module.exports = ({ tsconfigRootDir }) =>
+module.exports = ({
+  tsconfigRootDir,
+  includeJS,
+  // For now, keep the prettier plugin enabled. Otherwise, we would have to add the prettier VSCode plugin and adapt workflows for everyone.
+  // The visyn_scripts lint will automatically run prettier if this is enabled.
+  includePrettierPlugin = !isFormatSeparate(),
+}) =>
   defineConfig(
     includeIgnoreFile(path.resolve('.', '.gitignore')),
     ...jsConfig,
     ...reactConfig,
     ...typescriptConfig,
-    ...prettierConfig,
     ...jestConfig,
     ...playwrightConfig,
+    // The prettier plugin contains both the config and the rule to run prettier as an eslint rule, whereas the config just disables conflicting rules (i.e. if you run prettier separately).
+    ...(includePrettierPlugin ? [eslintPluginPrettier] : [eslintConfigPrettier]),
     {
-      files: ['**/*.{ts,tsx,cts,mts}'],
+      files: ['**/*.{ts,tsx,cts,mts}', ...(includeJS ? ['**/*.{js,jsx,cjs,mjs}'] : [])],
       plugins: {
         'unused-imports': unusedImports,
       },
@@ -105,6 +88,8 @@ module.exports = ({ tsconfigRootDir }) =>
           project: `./tsconfig.eslint.json`,
         },
         globals: {
+          ...globals.commonjs,
+          ...globals.jest,
           ...globals.node,
           ...globals.browser,
           ...globals.es6,
@@ -112,7 +97,6 @@ module.exports = ({ tsconfigRootDir }) =>
           SharedArrayBuffer: 'readonly',
         },
       },
-
       rules: {
         ...jsxA11yOffRules,
         'arrow-body-style': 'off',
@@ -159,7 +143,7 @@ module.exports = ({ tsconfigRootDir }) =>
           },
         ],
         'prefer-arrow-callback': 'warn',
-        '@typescript-eslint/no-require-imports': 'warn',
+        '@typescript-eslint/no-require-imports': 'off',
         '@typescript-eslint/consistent-indexed-object-style': 'off',
         '@typescript-eslint/consistent-type-definitions': 'off',
         '@typescript-eslint/ban-ts-comment': 'warn',
