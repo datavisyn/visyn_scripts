@@ -1,17 +1,17 @@
 /* eslint-disable prefer-const */
 /* eslint-disable import-x/no-dynamic-require */
-const path = require('path');
-const fs = require('fs');
-const { execSync } = require('child_process');
+const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
 const { defineConfig } = require('@rspack/cli');
-const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
-const dotenv = require('dotenv');
-const DotenvPlugin = require('dotenv-webpack');
-const dotenvExpand = require('dotenv-expand');
 const { CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin } = require('@rspack/core');
 const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
+const { execSync } = require('child_process');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+const DotenvPlugin = require('dotenv-webpack');
+const fs = require('fs');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
+const path = require('path');
+const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 
 // Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
@@ -420,7 +420,7 @@ module.exports = (webpackEnv, argv) => {
             fs.existsSync(workspaceMetaDataFile) && {
               from: workspaceMetaDataFile,
               to: path.join(workspacePath, 'bundles', 'phoveaMetaData.json'),
-              // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+              // @ts-expect-error TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
               transform: () => {
                 function resolveScreenshot(appDirectory) {
                   const f = path.join(appDirectory, './media/screenshot.png');

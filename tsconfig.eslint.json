@@ -1,0 +1,11 @@
+{
+  "extends": "./config/tsconfig.eslint.template.json",
+  "include": [
+    "**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests_fixtures"
+  ],
+}

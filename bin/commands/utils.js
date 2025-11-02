@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
-const { resolve, join } = require('path');
 const fs = require('fs');
+const { resolve, join } = require('path');
 
 /**
  * Wraps `execSync` with options and error handling.

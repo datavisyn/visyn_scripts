@@ -1,7 +1,7 @@
-const fs = require('fs');
-const { resolve } = require('path');
 const { execSync } = require('child_process');
+const fs = require('fs');
 const fse = require('fs-extra');
+const { resolve } = require('path');
 
 // Mock setup of yargs inspired by https://www.kgajera.com/blog/how-to-test-yargs-cli-with-jest/
 describe('standalone', () => {

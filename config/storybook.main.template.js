@@ -21,6 +21,7 @@ module.exports = {
     },
   },
   rsbuildFinal: async (config) => {
+    // eslint-disable-next-line @typescript-eslint/prefer-destructuring
     const reactDocgenLoaderRule = config.tools.rspack[1].module.rules[0];
 
     // eslint-disable-next-line no-param-reassign

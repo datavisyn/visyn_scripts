@@ -1,15 +1,15 @@
-const { defineConfig } = require('eslint/config');
 const { includeIgnoreFile } = require('@eslint/compat');
-const airbnb = require('eslint-config-airbnb-extended');
-const globals = require('globals');
-const jest = require('eslint-plugin-jest');
 const js = require('@eslint/js');
+const { defineConfig } = require('eslint/config');
+const airbnb = require('eslint-config-airbnb-extended');
+const jest = require('eslint-plugin-jest');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
-const path = require('node:path');
 const playwright = require('eslint-plugin-playwright');
 const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
 const unusedImports = require('eslint-plugin-unused-imports');
+const globals = require('globals');
+const path = require('node:path');
 
 const jsConfig = [
   {
@@ -29,20 +29,13 @@ const reactConfig = [
   ...airbnb.configs.react.recommended,
 ];
 
-const typescriptConfig = [
-  // TypeScript ESLint Plugin
-  airbnb.plugins.typescriptEslint,
-  // Airbnb Base TypeScript Config
-  ...airbnb.configs.base.typescript,
-  // Airbnb React TypeScript Config
-  ...airbnb.configs.react.typescript,
-];
+const typescriptConfig = [airbnb.plugins.typescriptEslint, ...airbnb.configs.base.typescript, ...airbnb.configs.react.typescript];
 
 const prettierConfig = [eslintPluginPrettierRecommended];
 
 const jestConfig = [
   {
-    files: ['{src|tests}/**/*.{test|spec}.ts'],
+    files: ['{src|tests}/**/*.{test|spec}.{js,ts,jsx,tsx}'],
     plugins: { jest },
     languageOptions: {
       globals: jest.environments.globals.globals,
@@ -53,27 +46,24 @@ const jestConfig = [
 const playwrightConfig = [
   {
     ...playwright.configs['flat/recommended'],
-    files: ['playwright/**/*.{test|spec}.ts'],
+    files: ['playwright/**/*.{test|spec}.{js,ts,jsx,tsx}'],
   },
 ];
 
 // Helper to disable jsx-a11y rules
-const jsxA11yOffRules = Object.keys(jsxA11y.rules).reduce((acc, rule) => {
-  acc[`jsx-a11y/${rule}`] = 'off';
-  return acc;
-}, {});
+const jsxA11yOffRules = Object.fromEntries(Object.keys(jsxA11y.rules).map((rule) => [`jsx-a11y/${rule}`, 'off']));
 
-module.exports = ({ tsconfigRootDir }) =>
+module.exports = ({ tsconfigRootDir, includeJS }) =>
   defineConfig(
     includeIgnoreFile(path.resolve('.', '.gitignore')),
     ...jsConfig,
     ...reactConfig,
     ...typescriptConfig,
-    ...prettierConfig,
     ...jestConfig,
     ...playwrightConfig,
+    ...prettierConfig,
     {
-      files: ['**/*.{ts,tsx,cts,mts}'],
+      files: ['**/*.{ts,tsx,cts,mts}', ...(includeJS ? ['**/*.{js,jsx,cjs,mjs}'] : [])],
       plugins: {
         'unused-imports': unusedImports,
       },
@@ -90,6 +80,8 @@ module.exports = ({ tsconfigRootDir }) =>
           project: `./tsconfig.eslint.json`,
         },
         globals: {
+          ...globals.commonjs,
+          ...globals.jest,
           ...globals.node,
           ...globals.browser,
           ...globals.es6,
@@ -144,7 +136,7 @@ module.exports = ({ tsconfigRootDir }) =>
           },
         ],
         'prefer-arrow-callback': 'warn',
-        '@typescript-eslint/no-require-imports': 'warn',
+        '@typescript-eslint/no-require-imports': 'off',
         '@typescript-eslint/consistent-indexed-object-style': 'off',
         '@typescript-eslint/consistent-type-definitions': 'off',
         '@typescript-eslint/ban-ts-comment': 'warn',
