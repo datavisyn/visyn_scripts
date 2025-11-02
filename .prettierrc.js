@@ -1,6 +1,1 @@
-module.exports = {
-  endOfLine: 'auto',
-  singleQuote: true,
-  trailingComma: 'all',
-  printWidth: 160,
-};
+module.exports = require('./config/prettierrc.template');

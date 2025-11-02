@@ -24,6 +24,7 @@ describe('cli', () => {
 
     // After resetting the modules, we need to reinitialize the mocks
     jest.mock('../bin/commands/utils');
+    // eslint-disable-next-line prefer-destructuring, @typescript-eslint/prefer-destructuring
     call = require('../bin/commands/utils').call;
 
     // Each test overwrites process arguments so store the original arguments

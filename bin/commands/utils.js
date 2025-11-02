@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
-const { resolve, join } = require('path');
 const fs = require('fs');
+const { resolve, join } = require('path');
 
 /**
  * Wraps `execSync` with options and error handling.
@@ -33,6 +33,8 @@ const call = (command, args, options = {}) => {
         NODE_PATH: nodePath,
         // Increase memory limits for node all processes
         NODE_OPTIONS: '--max-old-space-size=8192 --max-semi-space-size=512',
+        // Enable the faster prettier CLI: https://www.solberg.is/prettier-is-fast
+        PRETTIER_EXPERIMENTAL_CLI: 1,
         ...(options.env || {}),
         ...process.env,
       },
@@ -43,6 +45,11 @@ const call = (command, args, options = {}) => {
   }
 };
 
+const isFormatSeparate = () => {
+  return ['true', '1'].includes(process.env.VISYN_SCRIPTS_FORMAT_SEPARATE?.toLocaleLowerCase());
+};
+
 module.exports = {
   call,
+  isFormatSeparate,
 };

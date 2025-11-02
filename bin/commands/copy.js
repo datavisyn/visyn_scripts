@@ -1,5 +1,5 @@
-const glob = require('glob');
 const fs = require('fs-extra');
+const glob = require('glob');
 const path = require('path');
 
 module.exports = {
