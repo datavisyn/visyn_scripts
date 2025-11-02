@@ -2,14 +2,17 @@ const { includeIgnoreFile } = require('@eslint/compat');
 const js = require('@eslint/js');
 const { defineConfig } = require('eslint/config');
 const airbnb = require('eslint-config-airbnb-extended');
+const eslintConfigPrettier = require('eslint-config-prettier/flat');
 const jest = require('eslint-plugin-jest');
 const jsxA11y = require('eslint-plugin-jsx-a11y');
 const playwright = require('eslint-plugin-playwright');
-const eslintPluginPrettierRecommended = require('eslint-plugin-prettier/recommended');
+const eslintPluginPrettier = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
 const unusedImports = require('eslint-plugin-unused-imports');
 const globals = require('globals');
 const path = require('node:path');
+
+const { isFormatSeparate } = require('../bin/commands/utils');
 
 const jsConfig = [
   {
@@ -31,8 +34,6 @@ const reactConfig = [
 
 const typescriptConfig = [airbnb.plugins.typescriptEslint, ...airbnb.configs.base.typescript, ...airbnb.configs.react.typescript];
 
-const prettierConfig = [eslintPluginPrettierRecommended];
-
 const jestConfig = [
   {
     files: ['{src|tests}/**/*.{test|spec}.{js,ts,jsx,tsx}'],
@@ -53,7 +54,13 @@ const playwrightConfig = [
 // Helper to disable jsx-a11y rules
 const jsxA11yOffRules = Object.fromEntries(Object.keys(jsxA11y.rules).map((rule) => [`jsx-a11y/${rule}`, 'off']));
 
-module.exports = ({ tsconfigRootDir, includeJS }) =>
+module.exports = ({
+  tsconfigRootDir,
+  includeJS,
+  // For now, keep the prettier plugin enabled. Otherwise, we would have to add the prettier VSCode plugin and adapt workflows for everyone.
+  // The visyn_scripts lint will automatically run prettier if this is enabled.
+  includePrettierPlugin = !isFormatSeparate(),
+}) =>
   defineConfig(
     includeIgnoreFile(path.resolve('.', '.gitignore')),
     ...jsConfig,
@@ -61,7 +68,8 @@ module.exports = ({ tsconfigRootDir, includeJS }) =>
     ...typescriptConfig,
     ...jestConfig,
     ...playwrightConfig,
-    ...prettierConfig,
+    // The prettier plugin contains both the config and the rule to run prettier as an eslint rule, whereas the config just disables conflicting rules (i.e. if you run prettier separately).
+    ...(includePrettierPlugin ? [eslintPluginPrettier] : [eslintConfigPrettier]),
     {
       files: ['**/*.{ts,tsx,cts,mts}', ...(includeJS ? ['**/*.{js,jsx,cjs,mjs}'] : [])],
       plugins: {
@@ -89,7 +97,6 @@ module.exports = ({ tsconfigRootDir, includeJS }) =>
           SharedArrayBuffer: 'readonly',
         },
       },
-
       rules: {
         ...jsxA11yOffRules,
         'arrow-body-style': 'off',

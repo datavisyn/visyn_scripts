@@ -28,9 +28,9 @@
     "node": ">=24"
   },
   "scripts": {
-    "all": "yarn run lint && yarn run test",
-    "lint": "eslint bin/**/*.js config/**/*.js tests/**/*.js *.js",
-    "lint:fix": "eslint --fix bin/**/*.js config/**/*.js tests/**/*.js *.js",
+    "all": "yarn run lint:fix && yarn run test",
+    "lint": "visyn_scripts lint bin/**/*.js config/**/*.js tests/**/*.js *.js",
+    "lint:fix": "visyn_scripts lint --fix bin/**/*.js config/**/*.js tests/**/*.js *.js",
     "test": "jest -w 1",
     "test:watch": "jest -w 1 --watch",
     "build": "echo 'No build script defined'",

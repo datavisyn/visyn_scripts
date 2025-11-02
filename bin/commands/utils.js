@@ -45,6 +45,11 @@ const call = (command, args, options = {}) => {
   }
 };
 
+const isFormatSeparate = () => {
+  return ['true', '1'].includes(process.env.VISYN_SCRIPTS_FORMAT_SEPARATE?.toLocaleLowerCase());
+};
+
 module.exports = {
   call,
+  isFormatSeparate,
 };
