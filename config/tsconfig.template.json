@@ -26,4 +26,12 @@
       }
     ]
   },
+  // Old "moduleResolution": "Node" option required for Cypress, rtk-codegen, ...
+  // https://github.com/cypress-io/cypress/issues/26308#issuecomment-1663592648
+  "ts-node": {
+    "compilerOptions": {
+      "module": "ESNext",
+      "moduleResolution": "Node"
+    }
+  }
 }
