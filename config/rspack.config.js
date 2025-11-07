@@ -87,7 +87,7 @@ module.exports = (webpackEnv, argv) => {
     // ignore if file does not exist
   }
 
-  let { bundleFolder = '', devServerProxy, entries, copyFiles, historyApiFallback } = appPkg[packageJsonKey];
+  let { bundlesFolder = 'bundles', devServerProxy, entries, copyFiles, historyApiFallback } = appPkg[packageJsonKey];
 
   if (isDevServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
@@ -99,8 +99,6 @@ module.exports = (webpackEnv, argv) => {
 
   // Check if Tailwind config exists
   const useTailwind = fs.existsSync(path.join(workspacePath, 'tailwind.config.js'));
-
-  const bundlesFolder = `bundles/${bundleFolder}`;
 
   return defineConfig({
     mode,
@@ -170,7 +168,7 @@ module.exports = (webpackEnv, argv) => {
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
       // We inferred the "public path" (such as / or /my-project) from homepage.
-      publicPath: bundleFolder ? `/${bundleFolder}/` : '/',
+      publicPath: '/',
       clean: !isDevServerOnly,
     },
     /*
