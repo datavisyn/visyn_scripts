@@ -7,7 +7,7 @@
     "declaration": true,
     "declarationMap": true,
     "moduleResolution": "bundler",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "allowJs": true,
     "experimentalDecorators": true,
     "noImplicitAny": true,
@@ -19,12 +19,15 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitReturns": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "plugins": [
+      {
+        "name": "typescript-plugin-css-modules"
+      }
+    ]
   },
-  // Old "moduleResolution": "Node" option required for Cypress
+  // Old "moduleResolution": "Node" option required for Cypress, rtk-codegen, ...
   // https://github.com/cypress-io/cypress/issues/26308#issuecomment-1663592648
-  //
-  // TODO: Remove when issue is resolved https://github.com/cypress-io/cypress/issues/27448
   "ts-node": {
     "compilerOptions": {
       "module": "ESNext",

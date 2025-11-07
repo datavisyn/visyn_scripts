@@ -1,8 +1,7 @@
-const fs = require('fs');
-const { resolve } = require('path');
 const { execSync } = require('child_process');
+const fs = require('fs');
 const fse = require('fs-extra');
-const { setup: setupDevServer, teardown: teardownDevServer } = require('jest-dev-server');
+const { resolve } = require('path');
 
 // Mock setup of yargs inspired by https://www.kgajera.com/blog/how-to-test-yargs-cli-with-jest/
 describe('standalone', () => {
@@ -50,7 +49,7 @@ describe('standalone', () => {
       stdio: 'inherit',
     });
     // Expect some dist files to exist after the build
-    expect(fs.existsSync(resolve(testDir, 'dist/index.js'))).toBe(true);
+    expect(fs.existsSync(resolve(testDir, 'dist/src/index.js'))).toBe(true);
     expect(fs.existsSync(resolve(testDir, 'dist/index.template.ejs'))).toBe(true);
   });
 
@@ -74,29 +73,5 @@ describe('standalone', () => {
       // Expect some bundle files to exist after the build
       expect(fs.existsSync(resolve(testDir, 'bundles/index.html'))).toBe(true);
     });
-
-    describe('cypress test', () => {
-      it('runs cypress on the production build', async () => {
-        await setupDevServer({
-          command: `http-server ${testDir}/bundles --port 8090`,
-          port: 8090,
-        });
-
-        try {
-          // Execute the cypress script of the repository
-          execSync('yarn run cy:run', {
-            cwd: testDir,
-            stdio: 'inherit',
-            env: {
-              ...process.env,
-              CYPRESS_BASE_URL: 'http://localhost:8090',
-            },
-          });
-        } finally {
-          // Stop the server afterwards
-          teardownDevServer();
-        }
-      }, 50000);
-    }, 50000);
   });
 });

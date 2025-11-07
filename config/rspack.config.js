@@ -1,18 +1,17 @@
-/* eslint-disable global-require */
-/* eslint-disable import/no-dynamic-require */
-const path = require('path');
-const fs = require('fs');
-const { defineConfig } = require('@rspack/cli');
-const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
-const dotenv = require('dotenv');
-const DotenvPlugin = require('dotenv-webpack');
-const dotenvExpand = require('dotenv-expand');
-const {
-  CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin,
-} = require('@rspack/core');
-const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+/* eslint-disable prefer-const */
+/* eslint-disable import-x/no-dynamic-require */
 const { RsdoctorRspackPlugin } = require('@rsdoctor/rspack-plugin');
+const { defineConfig } = require('@rspack/cli');
+const { CopyRspackPlugin, DefinePlugin, SwcJsMinimizerRspackPlugin } = require('@rspack/core');
+const ReactRefreshPlugin = require('@rspack/plugin-react-refresh');
+const { execSync } = require('child_process');
+const dotenv = require('dotenv');
+const dotenvExpand = require('dotenv-expand');
+const DotenvPlugin = require('dotenv-webpack');
+const fs = require('fs');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const { TsCheckerRspackPlugin } = require('ts-checker-rspack-plugin');
 
 // Load the current .env and expand it
 const parsedEnv = dotenvExpand.expand(dotenv.config());
@@ -30,9 +29,23 @@ module.exports = (webpackEnv, argv) => {
     throw Error(`Invalid mode passed: ${mode}`);
   }
 
+  // Extract the git branch and commit from environment variables or git commands
+  let gitBranch = env.GIT_BRANCH;
+  let gitCommitHash = env.GIT_COMMIT_HASH;
+  try {
+    if (!gitBranch) {
+      gitBranch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
+    }
+    if (!gitCommitHash) {
+      gitCommitHash = execSync('git rev-parse --short HEAD').toString().trim();
+    }
+  } catch (e) {
+    console.warn('Could not determine git branch/commit hash via git command, falling back to environment variables or undefined.', e);
+  }
+
   const isDevServerOnly = env.dev_server_only?.toLowerCase() === 'true';
   const packageJsonKey = env.package_json_key || 'visyn';
-  const devtool = env.devtool?.toLowerCase() === 'false' ? false : (env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map'));
+  const devtool = env.devtool?.toLowerCase() === 'false' ? false : env.devtool || (isEnvDevelopment ? 'eval-source-map' : 'source-map');
   const isReactRefresh = isDevServer && isEnvDevelopment;
 
   const now = new Date();
@@ -69,15 +82,12 @@ module.exports = (webpackEnv, argv) => {
     // If a visynWebpackOverride.js file exists in the default app, it will be used to override the visyn configuration.
     const visynWebpackOverride = require(path.join(workspacePath, 'visynWebpackOverride.js'))({ env }) || {};
     console.log('Using visynWebpackOverride.js file to override visyn configuration.');
-    Object.assign(appPkg[packageJsonKey], visynWebpackOverride);
-  } catch (e) {
+    Object.assign(appPkg.visyn, visynWebpackOverride);
+  } catch {
     // ignore if file does not exist
   }
 
-  let {
-    // eslint-disable-next-line prefer-const
-    bundleFolder = '', devServerProxy, entries, copyFiles, historyApiFallback,
-  } = appPkg[packageJsonKey];
+  let { bundleFolder = '', devServerProxy, entries, copyFiles, historyApiFallback } = appPkg[packageJsonKey];
 
   if (isDevServerOnly) {
     // If we do yarn start dev_server_only=true, we only want to start the dev server and not build the app (i.e. for proxy support).
@@ -102,7 +112,9 @@ module.exports = (webpackEnv, argv) => {
     entry: Object.fromEntries(
       Object.entries(entries).map(([key, entry]) => [
         key,
-        [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) => fs.existsSync(v)),
+        [workspaceRegistryFile, path.join(workspacePath, entry.js), entry.scss ? path.join(workspacePath, entry.scss) : './workspace.scss'].filter((v) =>
+          fs.existsSync(v),
+        ),
       ]),
     ),
     watchOptions: {
@@ -111,37 +123,38 @@ module.exports = (webpackEnv, argv) => {
     },
     devServer: isEnvDevelopment
       ? {
-        static: path.resolve(workspacePath, bundlesFolder),
-        compress: true,
-        // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
-        hot: true,
-        liveReload: false,
-        // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
-        host: '127.0.0.1',
-        open: true,
-        // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
-        historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
-        proxy: [
-          // Append on top to allow overriding /api/v1/ for example
-          ...(devServerProxy || []),
-          {
-            context: ['/api/'],
-            target: 'http://localhost:9000',
-            secure: false,
-            ws: true,
-            // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
-            onProxyReq: (proxyReq, req, res) => {
-              res.on('close', () => proxyReq.destroy());
+          static: path.resolve(workspacePath, bundlesFolder),
+          compress: true,
+          // Explicitly set hot to true and liveReload to false to ensure that hot is preferred over liveReload
+          hot: true,
+          liveReload: false,
+          // Explicitly set the host to ipv4 local address to ensure that the dev server is reachable from the host machine: https://github.com/cypress-io/cypress/issues/25397
+          host: '127.0.0.1',
+          open: true,
+          allowedHosts: 'all',
+          // Needs to be enabled to make SPAs work: https://stackoverflow.com/questions/31945763/how-to-tell-webpack-dev-server-to-serve-index-html-for-any-route
+          historyApiFallback: historyApiFallback == null ? true : historyApiFallback,
+          proxy: [
+            // Append on top to allow overriding /api/v1/ for example
+            ...(devServerProxy || []),
+            {
+              context: ['/api/'],
+              target: 'http://localhost:9000',
+              secure: false,
+              ws: true,
+              // Explicitly forward close events for properly closing SSE (server-side events). See https://github.com/webpack/webpack-dev-server/issues/2769#issuecomment-1517290190
+              onProxyReq: (proxyReq, req, res) => {
+                res.on('close', () => proxyReq.destroy());
+              },
             },
+            // Append on bottom to allow override of exact key matches like /api/*
+            ...(devServerProxy || []),
+          ],
+          client: {
+            // Do not show the full-page error overlay
+            overlay: false,
           },
-          // Append on bottom to allow override of exact key matches like /api/*
-          ...(devServerProxy || []),
-        ],
-        client: {
-          // Do not show the full-page error overlay
-          overlay: false,
-        },
-      }
+        }
       : undefined,
     output: {
       // The build folder.
@@ -149,9 +162,10 @@ module.exports = (webpackEnv, argv) => {
       // Add /* filename */ comments to generated require()s in the output.
       // TODO: rspack: pathinfo: isEnvDevelopment,
       // There will be one main bundle, and one file per asynchronous chunk.
-      filename: '[name].[contenthash:8].js',
+      // Fix HMR error in development: https://github.com/webpack/webpack-dev-server/issues/3168#issuecomment-816709164
+      filename: isEnvDevelopment ? '[name].js' : '[name].[contenthash:8].js',
       // There are also additional JS chunk files if you use code splitting.
-      chunkFilename: '[name].[contenthash:8].chunk.js',
+      chunkFilename: isEnvDevelopment ? '[name].chunk.js' : '[name].[contenthash:8].chunk.js',
       assetModuleFilename: 'assets/[name].[hash][ext]',
       // webpack uses `publicPath` to determine where the app is being served from.
       // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -240,7 +254,6 @@ module.exports = (webpackEnv, argv) => {
               exclude: [/node_modules/],
               loader: 'builtin:swc-loader',
               options: {
-                sourceMap: true,
                 jsc: {
                   parser: {
                     syntax: 'typescript',
@@ -265,7 +278,6 @@ module.exports = (webpackEnv, argv) => {
               test: /\.(ts|tsx)$/,
               loader: 'builtin:swc-loader',
               options: {
-                sourceMap: true,
                 jsc: {
                   parser: {
                     syntax: 'typescript',
@@ -294,35 +306,37 @@ module.exports = (webpackEnv, argv) => {
                     postcssOptions: {
                       plugins: !useTailwind
                         ? [
-                          'postcss-flexbugs-fixes',
-                          [
-                            'postcss-preset-env',
-                            {
-                              autoprefixer: {
-                                flexbox: 'no-2009',
+                            'postcss-preset-mantine',
+                            'postcss-flexbugs-fixes',
+                            [
+                              'postcss-preset-env',
+                              {
+                                autoprefixer: {
+                                  flexbox: 'no-2009',
+                                },
+                                stage: 3,
                               },
-                              stage: 3,
-                            },
-                          ],
-                          // Adds PostCSS Normalize as the reset css with default options,
-                          // so that it honors browserslist config in package.json
-                          // which in turn let's users customize the target behavior as per their needs.
-                          'postcss-normalize',
-                        ]
+                            ],
+                            // Adds PostCSS Normalize as the reset css with default options,
+                            // so that it honors browserslist config in package.json
+                            // which in turn let's users customize the target behavior as per their needs.
+                            'postcss-normalize',
+                          ]
                         : [
-                          'tailwindcss/nesting',
-                          'tailwindcss',
-                          'postcss-flexbugs-fixes',
-                          [
-                            'postcss-preset-env',
-                            {
-                              autoprefixer: {
-                                flexbox: 'no-2009',
+                            'tailwindcss/nesting',
+                            'tailwindcss',
+                            'postcss-preset-mantine',
+                            'postcss-flexbugs-fixes',
+                            [
+                              'postcss-preset-env',
+                              {
+                                autoprefixer: {
+                                  flexbox: 'no-2009',
+                                },
+                                stage: 3,
                               },
-                              stage: 3,
-                            },
+                            ],
                           ],
-                        ],
                     },
                   },
                 },
@@ -362,7 +376,7 @@ module.exports = (webpackEnv, argv) => {
               // its runtime that would otherwise be processed through "file" loader.
               // Also exclude `html`, `ejs` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.ejs$/, /\.json$/],
+              exclude: [/^$/, /\.(js|mjs|jsx|ts|tsx)$/, /\.module\.css$/, /\.html$/, /\.ejs$/, /\.json$/],
               type: 'asset/resource',
             },
             // ** STOP ** Are you adding a new loader?
@@ -372,11 +386,12 @@ module.exports = (webpackEnv, argv) => {
       ].filter(Boolean),
     },
     plugins: [
-      process.env.RSDOCTOR && new RsdoctorRspackPlugin({
-        supports: {
-          generateTileGraph: true,
-        },
-      }),
+      process.env.RSDOCTOR &&
+        new RsdoctorRspackPlugin({
+          supports: {
+            generateTileGraph: true,
+          },
+        }),
       isReactRefresh && new ReactRefreshPlugin(),
       new DotenvPlugin({
         path: path.join(workspacePath, '.env'), // load this now instead of the ones in '.env'
@@ -391,6 +406,8 @@ module.exports = (webpackEnv, argv) => {
         'process.env.__APP_NAME__': JSON.stringify(appPkg.name),
         'process.env.__APP_DISPLAY_NAME__': JSON.stringify(appPkg.displayName || appPkg.name),
         'process.env.__VERSION__': JSON.stringify(appPkg.version),
+        'process.env.__GIT_BRANCH__': JSON.stringify(gitBranch),
+        'process.env.__GIT_COMMIT_HASH__': JSON.stringify(gitCommitHash),
         'process.env.__LICENSE__': JSON.stringify(appPkg.license),
         'process.env.__BUILD_ID__': JSON.stringify(buildId),
         'process.env.__APP_CONTEXT__': JSON.stringify('/'),
@@ -406,7 +423,7 @@ module.exports = (webpackEnv, argv) => {
             fs.existsSync(workspaceMetaDataFile) && {
               from: workspaceMetaDataFile,
               to: path.join(workspacePath, bundlesFolder, 'phoveaMetaData.json'),
-              // @ts-ignore TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
+              // @ts-expect-error TODO: check why https://webpack.js.org/plugins/copy-webpack-plugin/#transform is not in the typing.
               transform: () => {
                 function resolveScreenshot(appDirectory) {
                   const f = path.join(appDirectory, './media/screenshot.png');
@@ -443,21 +460,22 @@ module.exports = (webpackEnv, argv) => {
       }),
       ...Object.entries(entries).map(
         // TODO: Do not use HtmlRspackPlugin, as it can't handle require calls in ejs templates.
-        ([chunkName, entry]) => new HtmlWebpackPlugin({
-          template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
-          filename: entry.html || `${chunkName}.html`,
-          title: appPkg.name,
-          chunks: [chunkName],
-          // By default, exclude all other chunks
-          excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
-          meta: {
-            description: appPkg.description || '',
-          },
-          minify: isEnvProduction,
-        }),
+        ([chunkName, entry]) =>
+          new HtmlWebpackPlugin({
+            template: entry.template ? path.join(workspacePath, entry.template) : 'auto',
+            filename: entry.html || `${chunkName}.html`,
+            title: appPkg.name,
+            chunks: [chunkName],
+            // By default, exclude all other chunks
+            excludedChunks: entry.excludeChunks || Object.keys(entries).filter((entryKey) => entryKey !== chunkName),
+            meta: {
+              description: appPkg.description || '',
+            },
+            minify: isEnvProduction,
+          }),
       ),
-      isEnvDevelopment
-        && new TsCheckerRspackPlugin({
+      isEnvDevelopment &&
+        new TsCheckerRspackPlugin({
           async: isEnvDevelopment,
           typescript: {
             diagnosticOptions: {
@@ -467,7 +485,9 @@ module.exports = (webpackEnv, argv) => {
             // Build the repo and type-check
             build: true,
             mode: 'write-references',
-            configFile: fs.existsSync(path.join(workspacePath, 'tsconfig.lenient.json')) ? path.join(workspacePath, 'tsconfig.lenient.json') : path.join(workspacePath, 'tsconfig.json'),
+            configFile: fs.existsSync(path.join(workspacePath, 'tsconfig.lenient.json'))
+              ? path.join(workspacePath, 'tsconfig.lenient.json')
+              : path.join(workspacePath, 'tsconfig.json'),
           },
         }),
     ].filter(Boolean),
