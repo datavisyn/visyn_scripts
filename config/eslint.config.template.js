@@ -86,6 +86,8 @@ module.exports = ({
           // https://github.com/typescript-eslint/typescript-eslint/issues/251
           tsconfigRootDir,
           project: `./tsconfig.eslint.json`,
+          // Disable the project service as it must not be set together with project: https://github.com/typescript-eslint/typescript-eslint/issues/11319
+          projectService: false,
         },
         globals: {
           ...globals.commonjs,
