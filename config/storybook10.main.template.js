@@ -33,7 +33,7 @@ export default {
             }
           : undefined,
     });
-    console.log('Final rsbuild config for Storybook:', JSON.stringify(merged, null, 2));
+    // console.log('Final rsbuild config for Storybook:', JSON.stringify(merged, null, 2));
     return merged;
   },
 
