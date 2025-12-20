@@ -3,7 +3,14 @@ import { pluginNodePolyfill } from '@rsbuild/plugin-node-polyfill';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginSass } from '@rsbuild/plugin-sass';
 
+console.warn(
+  'Deprecation Warning: You are using a deprecated Storybook rsbuild configuration file (storybook.rsbuild.config.ts). Please upgrade to Storybook 10+ and use storybook10.main.template.js instead.',
+);
+
 // This is the rsbuild configuration used by storybook, it is not the same as the rspack config!
+/**
+ * @deprecated Upgrade to Storybook 10+ and use `storybook10.main.template.js` instead.
+ */
 export default defineConfig({
   plugins: [pluginReact(), pluginSass(), pluginNodePolyfill()],
 });
