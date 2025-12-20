@@ -12,7 +12,7 @@ export default {
     disableTelemetry: true,
   },
 
-  addons: ['@chromatic-com/storybook', '@storybook/addon-docs', '@storybook/addon-links', '@storybook/addon-vitest'],
+  addons: ['@chromatic-com/storybook', '@storybook/addon-docs', '@storybook/addon-links'],
 
   framework: {
     name: 'storybook-react-rsbuild',
