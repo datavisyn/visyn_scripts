@@ -8,10 +8,19 @@ const jsxA11y = require('eslint-plugin-jsx-a11y');
 const playwright = require('eslint-plugin-playwright');
 const eslintPluginPrettier = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
-const storybook = require('eslint-plugin-storybook');
 const unusedImports = require('eslint-plugin-unused-imports');
 const globals = require('globals');
 const path = require('node:path');
+
+/**
+ * @type {import('eslint-plugin-storybook') | undefined}
+ */
+let storybook;
+try {
+  storybook = require('eslint-plugin-storybook');
+} catch {
+  // only enable if `storybook` is installed, otherwise skip the rules.
+}
 
 const { isFormatSeparate } = require('../bin/commands/utils');
 
@@ -45,7 +54,7 @@ const jestConfig = [
   },
 ];
 
-const storybookConfig = [...storybook.configs['flat/recommended']];
+const storybookConfig = storybook ? [...storybook.configs['flat/recommended']] : [];
 
 const playwrightConfig = [
   {
