@@ -1,7 +1,12 @@
 const { resolve } = require('path');
 
+console.warn(
+  'Deprecation Warning: You are using a deprecated Storybook configuration file (storybook.main.template.js). Please upgrade to Storybook 10+ and use storybook10.main.template.js instead.',
+);
+
 /**
  * @type {import('storybook-react-rsbuild').StorybookConfig}
+ * @deprecated Upgrade to Storybook 10+ and use `storybook10.main.template.js` instead.
  */
 module.exports = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
