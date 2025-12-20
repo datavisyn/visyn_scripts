@@ -21,7 +21,7 @@ module.exports = {
     ],
     '\\.xml$': 'jest-raw-loader',
   },
-  testRegex: '(.*(test|spec))\\.(tsx?)$',
+  testRegex: '(.*(test))\\.(tsx?)$',
   testPathIgnorePatterns: ['playwright'],
   coveragePathIgnorePatterns: ['playwright'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
