@@ -8,6 +8,7 @@ const jsxA11y = require('eslint-plugin-jsx-a11y');
 const playwright = require('eslint-plugin-playwright');
 const eslintPluginPrettier = require('eslint-plugin-prettier/recommended');
 const reactCompiler = require('eslint-plugin-react-compiler');
+const storybook = require('eslint-plugin-storybook');
 const unusedImports = require('eslint-plugin-unused-imports');
 const globals = require('globals');
 const path = require('node:path');
@@ -44,6 +45,8 @@ const jestConfig = [
   },
 ];
 
+const storybookConfig = [...storybook.configs['flat/recommended']];
+
 const playwrightConfig = [
   {
     ...playwright.configs['flat/recommended'],
@@ -67,6 +70,7 @@ module.exports = ({
     ...reactConfig,
     ...typescriptConfig,
     ...jestConfig,
+    ...storybookConfig,
     ...playwrightConfig,
     // The prettier plugin contains both the config and the rule to run prettier as an eslint rule, whereas the config just disables conflicting rules (i.e. if you run prettier separately).
     ...(includePrettierPlugin ? [eslintPluginPrettier] : [eslintConfigPrettier]),
@@ -175,6 +179,7 @@ module.exports = ({
         ],
         'max-classes-per-file': 'off',
         'no-param-reassign': ['warn', { props: true, ignorePropertyModificationsFor: ['state'] }],
+        'import-x/extensions': 'off',
         'import-x/no-extraneous-dependencies': 'off',
         'import-x/no-webpack-loader-syntax': 'off',
         'import-x/no-unresolved': 'off',

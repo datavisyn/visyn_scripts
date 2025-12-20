@@ -2,6 +2,7 @@ const { resolve } = require('path');
 
 /**
  * @type {import('storybook-react-rsbuild').StorybookConfig}
+ * @deprecated Upgrade to Storybook 10+ and use `storybook10.main.template.js` instead.
  */
 module.exports = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|ts|tsx)'],
