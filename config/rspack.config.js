@@ -212,6 +212,13 @@ module.exports = (webpackEnv, argv) => {
       css: true,
     },
     module: {
+      parser: {
+        'css/auto': {
+          // Allow importing css modules via default import, named import, and namespace import: https://rspack.rs/guide/tech/css#built-in-support
+          // Why not use import * as classes from './style.css'? Because storybook uses rsbuild which wants to use default import for css modules.
+          namedExports: false,
+        },
+      },
       rules: [
         {
           // "oneOf" will traverse all following loaders until one will
