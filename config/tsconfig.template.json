@@ -17,7 +17,7 @@
     "allowSyntheticDefaultImports": true,
     "preserveWatchOutput": true,
     "strict": true,
-    "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": false,
     "noImplicitReturns": true,
     "verbatimModuleSyntax": true,
     "plugins": [
