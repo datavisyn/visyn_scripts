@@ -22,6 +22,25 @@ export default {
     const merged = mergeRsbuildConfig(config, {
       // Add additional plugins, i.e. to support SASS
       plugins: [pluginSass(), pluginNodePolyfill()],
+      tools: {
+        // Same configuration as in rspack.config.js, to ensure that storybook behaves the same way.
+        swc: {
+          jsc: {
+            parser: {
+              syntax: 'typescript',
+              tsx: true,
+              decorators: true,
+              // TODO: Check what other settings should be supported: https://swc.rs/docs/configuration/swcrc#compilation
+            },
+            externalHelpers: true,
+            transform: {
+              react: {
+                runtime: 'automatic',
+              },
+            },
+          },
+        },
+      },
       performance:
         // Without this, HMR is broken: https://github.com/pmmmwh/react-refresh-webpack-plugin/issues/394#issuecomment-1463926441
         configType === 'DEVELOPMENT'
